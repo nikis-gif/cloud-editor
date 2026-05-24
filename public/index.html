@@ -19,7 +19,7 @@
 			<header class="minimal-entry-top">
 				<a class="entry-brand minimal-brand" href="#" aria-label="Cloud home">
 					<img src="/assets/cloud-logo.png" alt="Cloud" />
-					<span><strong>Cloud</strong><em data-i18n="entryBrandSubtitle">Game scripting workspace</em></span>
+					<span><strong>Cloud</strong><em data-i18n="entryBrandSubtitle">Professional scripting workspace</em></span>
 				</a>
 
 				<div class="entry-nav-actions minimal-top-actions">
@@ -77,7 +77,7 @@
 				<img class="brand-logo" src="/assets/cloud-logo.png" alt="Cloud" />
 				<div class="brand-copy">
 					<strong>Cloud</strong>
-					<span>A clean workspace for game development.</span>
+					<span>Modern workspace for game scripting.</span>
 				</div>
 			</div>
 
@@ -111,7 +111,7 @@
 
 			<div class="connection-card">
 				<div class="connection-card-title">Session</div>
-				<div id="status" class="status compact">Connect once to open your workspace.</div>
+				<div id="status" class="status compact">Connect to open the project tree and keep your files in sync.</div>
 			</div>
 
 			<div class="project-header">
@@ -120,7 +120,7 @@
 			</div>
 
 			<div class="search-wrap">
-				<input id="searchInput" placeholder="Search by name, class or path" autocomplete="off" />
+				<input id="searchInput" placeholder="Search files, folders, classes, or paths" autocomplete="off" />
 			</div>
 
 			<div id="tree" class="tree"></div>
@@ -134,7 +134,7 @@
 			<div class="editor-header">
 				<div class="editor-title">
 					<strong id="fileTitle">No file open</strong>
-					<span id="filePath">Connect to a private Cloud session and open a script.</span>
+					<span id="filePath">Connect to your private workspace and open a script to begin editing.</span>
 				</div>
 				<div class="editor-actions">
 					<button id="projectSearchButton" class="secondary-button" title="Search project">Search</button>
@@ -155,20 +155,20 @@
 					<div id="monacoEditorSecondary"></div>
 					<textarea id="fallbackEditorSecondary" spellcheck="false"></textarea>
 				</div>
-				<div id="splitDropHint" class="split-drop-hint">Drop tab here to split right</div>
+				<div id="splitDropHint" class="split-drop-hint">Drop a tab here to open a split view</div>
 				<div id="placeholder" class="placeholder">
 					<div class="placeholder-card">
 						<img class="placeholder-logo" src="/assets/cloud-logo.png" alt="Cloud" />
 						<h1>Welcome to Cloud</h1>
-						<p>Open a script from the Explorer to start editing.</p>
+						<p>Open a script from the Explorer to begin working in the editor.</p>
 					</div>
 				</div>
 			</div>
 		</main>
 
 		<footer class="footer">
-			<span id="footerLeft">Ready</span>
-			<span id="footerRight">Ctrl+S save · Shift+Click select · Ctrl+C/X/V copy cut paste · Delete remove</span>
+			<span id="footerLeft">Ready to edit</span>
+			<span id="footerRight">Ctrl+S save · Shift+Click multi-select · Ctrl+C/X/V manage files · Delete remove selected items</span>
 		</footer>
 	</div>
 
@@ -187,12 +187,12 @@
 						<strong>Cloud is ready</strong>
 						<span id="connectedSessionLabel">Session active</span>
 					</div>
-					<p class="connection-helper">Use Forget only when you want to disconnect this browser from the current session.</p>
+					<p class="connection-helper">Use Forget only when you want to remove this device from the current private session.</p>
 				</div>
 				<div id="connectionFormPanel" class="connection-form-panel">
 					<div class="secure-note">
 						<strong>Connect to your workspace.</strong>
-						<span>Your session ID and secret are required before Cloud can read or save files.</span>
+						<span>Cloud needs the Session ID and Hidden Secret before it can read, edit, or save workspace files.</span>
 					</div>
 					<label class="field-label" for="sessionInput">Session ID</label>
 					<input id="sessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
@@ -425,6 +425,15 @@
 				</section>
 
 				<section class="minimal-learn-section">
+					<h3 data-i18n="learnSidebarTitle">What happens behind the scenes</h3>
+					<p data-i18n="learnSidebarBody">Cloud keeps a private session between the app and your development environment, which lets you browse, edit, save, and organize workspace files inside one focused flow.</p>
+					<ol>
+						<li data-i18n="learnStepFiveBody">Open scripts, use tabs, split the editor, search the project, and keep your structure organized.</li>
+						<li data-i18n="learnStepSixBody">Use Ctrl + S to save and the multi-select, copy, cut, paste, and delete actions to manage scripts faster.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
 					<h3 data-i18n="learnSidebarKeysTitle">Shortcuts</h3>
 					<div class="minimal-learn-keys">
 						<div><b>Ctrl + S</b><span data-i18n="learnKeyOne">Save the active script.</span></div>
@@ -432,6 +441,26 @@
 						<div><b>Ctrl + C / X / V</b><span data-i18n="learnKeyFour">Copy, cut, and paste selected scripts or folders.</span></div>
 						<div><b>Delete</b><span data-i18n="learnKeyThree">Remove selected scripts or folders.</span></div>
 					</div>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnRoutineTitle">A practical daily routine</h3>
+					<ol>
+						<li data-i18n="learnRoutineOne">Connect once at the start of the session.</li>
+						<li data-i18n="learnRoutineTwo">Open the scripts you are actively working on.</li>
+						<li data-i18n="learnRoutineThree">Save often and let Cloud keep the workspace current.</li>
+						<li data-i18n="learnRoutineFour">Use Learn again whenever you want the setup steps nearby.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnToolsTitle">What you can manage in the workspace</h3>
+					<ol>
+						<li data-i18n="learnToolsOne">Create new scripts and folders.</li>
+						<li data-i18n="learnToolsTwo">Rename, duplicate, move, and delete items.</li>
+						<li data-i18n="learnToolsThree">Copy, cut, and paste scripts across the workspace.</li>
+						<li data-i18n="learnToolsFour">Switch between tabs or open a split view when you need parallel editing.</li>
+					</ol>
 				</section>
 			</div>
 		</div>
