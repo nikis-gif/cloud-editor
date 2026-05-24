@@ -1247,6 +1247,17 @@ function openTabContextMenu(event, tab) {
 	}, 0);
 }
 
+function setupTabsWheelScroll() {
+	if (!refs.tabsEl) return;
+	refs.tabsEl.addEventListener("wheel", event => {
+		if (refs.tabsEl.scrollWidth <= refs.tabsEl.clientWidth) return;
+		const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+		if (delta === 0) return;
+		event.preventDefault();
+		refs.tabsEl.scrollLeft += delta;
+	}, { passive: false });
+}
+
 function renderTabs() {
 	refs.tabsEl.innerHTML = "";
 

@@ -3801,3 +3801,465 @@ body {
 		min-height: auto;
 	}
 }
+
+
+/* v1.2.9 strict VS Code alignment and standard controls */
+:root {
+	--title-height: 40px;
+	--footer-height: 22px;
+	--bg: #1e1e1e;
+	--bg-soft: #181818;
+	--panel: #252526;
+	--panel-2: #2d2d30;
+	--panel-3: #3a3d41;
+	--editor-bg: #1e1e1e;
+	--border: #2d2d2d;
+	--border-strong: #3c3c3c;
+	--accent: #007acc;
+	--accent-2: #3794ff;
+	--accent-soft: rgba(0, 122, 204, 0.16);
+	--danger: #f48771;
+	--shadow: none;
+	--radius: 4px;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+	font-family: "Segoe UI", Arial, sans-serif;
+}
+
+button,
+.button-like,
+.primary-button,
+.secondary-button,
+.danger-button,
+.ghost-button,
+.download-app-button,
+.roblox-plugin-button,
+.open-learn-button,
+.appearance-select,
+.gate-connect-button,
+.node-action,
+.tab-close {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	line-height: 1;
+	box-shadow: none !important;
+	transform: none !important;
+	filter: none !important;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.ghost-button,
+.download-app-button,
+.roblox-plugin-button,
+.open-learn-button,
+.appearance-select,
+.gate-connect-button {
+	height: 30px;
+	min-height: 30px;
+	padding: 0 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	border: 1px solid #3c3c3c;
+	background: #2d2d30;
+	color: #cccccc;
+	text-decoration: none;
+}
+
+.primary-button,
+.gate-connect-button,
+#gateConnectButton {
+	background: #0e639c !important;
+	border-color: #1177bb !important;
+	color: #ffffff !important;
+}
+
+.primary-button:hover:not(:disabled),
+.gate-connect-button:hover:not(:disabled),
+#gateConnectButton:hover:not(:disabled) {
+	background: #1177bb !important;
+	border-color: #1681d7 !important;
+}
+
+.secondary-button:hover:not(:disabled),
+.ghost-button:hover:not(:disabled),
+.download-app-button:hover,
+.roblox-plugin-button:hover,
+.open-learn-button:hover,
+.appearance-select:hover {
+	background: #3a3d41;
+	border-color: #505050;
+	color: #ffffff;
+}
+
+.danger-button {
+	background: #3a1f1f !important;
+	border-color: #5a2d2d !important;
+	color: #f2b8b8 !important;
+}
+
+.danger-button:hover:not(:disabled) {
+	background: #4a2525 !important;
+	border-color: #7a3838 !important;
+	color: #ffffff !important;
+}
+
+.icon-button {
+	width: 30px;
+	min-width: 30px;
+	height: 30px;
+	min-height: 30px;
+	padding: 0;
+	border: 1px solid #3c3c3c;
+	border-radius: 4px;
+	background: #2d2d30;
+	color: #cccccc;
+	display: inline-grid;
+	place-items: center;
+}
+
+.icon-button svg,
+.node-action svg,
+.tab-close svg,
+.type-icon svg {
+	display: block;
+	margin: auto;
+}
+
+.icon-button:hover {
+	background: #3a3d41;
+	border-color: #505050;
+	color: #ffffff;
+}
+
+.vscode-gate {
+	place-items: stretch !important;
+	justify-items: stretch !important;
+	align-items: stretch !important;
+	grid-template-rows: 36px minmax(0, 1fr);
+	width: 100vw;
+	height: 100vh;
+	padding: 0 !important;
+}
+
+.vscode-gate-titlebar,
+.vscode-gate-workbench {
+	width: 100%;
+	justify-self: stretch;
+}
+
+.vscode-gate-titlebar {
+	height: 36px;
+	padding: 0 10px;
+	background: #181818;
+	border-bottom: 1px solid #2b2b2b;
+}
+
+.vscode-gate-actions {
+	gap: 6px;
+}
+
+.vscode-gate-actions .appearance-select {
+	width: 190px;
+}
+
+.vscode-gate-workbench {
+	grid-template-columns: 48px 240px minmax(0, 1fr);
+	min-width: 0;
+	min-height: 0;
+}
+
+.vscode-gate-activity {
+	padding-top: 14px;
+}
+
+.activity-dot {
+	width: 24px;
+	height: 24px;
+	display: grid;
+	place-items: center;
+	border-radius: 4px;
+}
+
+.vscode-gate-explorer {
+	padding: 10px;
+}
+
+.vscode-gate-editor {
+	min-width: 0;
+	min-height: 0;
+}
+
+.vscode-editor-tabs {
+	height: 35px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex-wrap: nowrap;
+	scrollbar-width: thin;
+}
+
+.vscode-editor-content {
+	width: min(100%, 1120px);
+	max-width: 1120px;
+	margin: 0 auto;
+	grid-template-columns: minmax(520px, 700px) 360px;
+	align-content: center;
+	justify-content: center;
+	gap: 20px;
+	padding: 24px;
+}
+
+.vscode-welcome-card {
+	min-height: 320px;
+	padding: 30px 32px;
+}
+
+.vscode-login-card {
+	min-height: 320px;
+	align-self: stretch;
+	padding: 22px;
+}
+
+.vscode-login-head,
+.vscode-login-form {
+	min-width: 0;
+}
+
+.vscode-login-form input,
+#gateSessionInput,
+#gateSecretInput {
+	height: 32px;
+	border-radius: 3px;
+}
+
+.vscode-learn-inline {
+	align-items: center;
+	justify-content: flex-start;
+	min-height: 36px;
+	border-radius: 4px;
+	text-align: left;
+}
+
+.tabs {
+	height: 35px;
+	padding: 0;
+	gap: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex-wrap: nowrap;
+	scrollbar-width: thin;
+	scrollbar-color: #424242 #181818;
+}
+
+.tabs::-webkit-scrollbar,
+.vscode-editor-tabs::-webkit-scrollbar {
+	display: block;
+	height: 8px;
+}
+
+.tabs::-webkit-scrollbar-track,
+.vscode-editor-tabs::-webkit-scrollbar-track {
+	background: #181818;
+}
+
+.tabs::-webkit-scrollbar-thumb,
+.vscode-editor-tabs::-webkit-scrollbar-thumb {
+	background: #424242;
+	border: 2px solid #181818;
+	border-radius: 999px;
+}
+
+.tabs::-webkit-scrollbar-thumb:hover,
+.vscode-editor-tabs::-webkit-scrollbar-thumb:hover {
+	background: #5a5a5a;
+}
+
+.tab,
+.vscode-editor-tab {
+	flex: 0 0 180px;
+	width: 180px;
+	min-width: 180px;
+	max-width: 180px;
+	height: 34px;
+	padding: 0 10px;
+	border-radius: 0;
+	align-items: center;
+}
+
+.tab-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 130px;
+}
+
+.tab-close {
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	padding: 0;
+	border-radius: 3px;
+}
+
+.tab-close:hover {
+	background: #3a3d41;
+}
+
+.tab-context-menu {
+	min-width: 220px;
+	padding: 4px;
+	border: 1px solid #3c3c3c;
+	border-radius: 4px;
+	background: #252526;
+	box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
+	animation: none;
+}
+
+.tab-context-menu button {
+	height: 30px;
+	padding: 0 9px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #cccccc;
+}
+
+.tab-context-menu button:hover {
+	background: #37373d;
+	color: #ffffff;
+}
+
+.tab-context-menu .hint {
+	font-size: 11px;
+	font-weight: 500;
+	color: #858585;
+}
+
+.node-actions {
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	height: 100%;
+	padding-right: 3px;
+}
+
+.node-action {
+	width: 22px;
+	height: 22px;
+	min-width: 22px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: transparent;
+	color: #9d9d9d;
+}
+
+.node-action svg {
+	width: 14px;
+	height: 14px;
+}
+
+.node-action:hover {
+	background: #3a3d41;
+	border-color: #505050;
+	color: #ffffff;
+}
+
+.node-action.danger-action:hover {
+	background: #3a1f1f;
+	border-color: #5a2d2d;
+	color: #f48771;
+}
+
+.node-icon {
+	width: 20px;
+	height: 26px;
+	display: grid;
+	place-items: center;
+	align-self: center;
+}
+
+.node-icon svg {
+	width: 15px;
+	height: 15px;
+}
+
+.type-card {
+	height: 34px;
+	grid-template-columns: 24px minmax(0, 1fr) auto;
+	border-radius: 4px;
+	background: #1e1e1e;
+	border-color: #3c3c3c;
+}
+
+.type-card.active {
+	background: #37373d;
+	border-color: #007acc;
+	box-shadow: inset 2px 0 0 #007acc !important;
+}
+
+.type-icon {
+	width: 24px;
+	height: 24px;
+	display: grid;
+	place-items: center;
+	border-radius: 3px;
+	background: transparent;
+	border: 0;
+}
+
+.modal,
+.connection-modal,
+.create-modal,
+.search-modal,
+.settings-modal,
+.minimal-learn-panel,
+.confirm-modal {
+	border-radius: 6px !important;
+}
+
+.modal-actions,
+.right-actions,
+.editor-actions,
+.title-actions,
+.vscode-gate-actions {
+	align-items: center;
+}
+
+.editor-header {
+	height: 42px;
+}
+
+.footer {
+	height: 22px;
+}
+
+@media (max-width: 1280px) {
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) 340px;
+		width: 100%;
+	}
+}
+
+@media (max-width: 920px) {
+	.vscode-gate-workbench {
+		grid-template-columns: 42px minmax(0, 1fr);
+	}
+
+	.vscode-gate-explorer {
+		display: none;
+	}
+
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
+	}
+}
