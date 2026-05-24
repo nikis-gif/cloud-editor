@@ -837,10 +837,11 @@ function handleGlobalShortcut(event) {
 	}
 
 	if (!event.shiftKey && (key === "d" || code === "KeyD")) {
+		if (isInputLike(event.target) || isEditorEventTarget(event.target)) return false;
 		event.preventDefault();
 		event.stopPropagation();
 		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
-		if (!isInputLike(event.target) && !isEditorEventTarget(event.target) && getSelectedItems(true).length > 0) {
+		if (getSelectedItems(true).length > 0) {
 			duplicateSelectedItems();
 		} else {
 			duplicateCurrentScript(state.activeGroup || "primary");
@@ -898,7 +899,7 @@ function renderNode(parent, node, depth, query) {
 	row.style.paddingLeft = (depth * 14 + 5) + "px";
 	row.dataset.key = node.key;
 
-	if (state.selectedKey === node.key) row.classList.add("selected");
+	if (state.selectedKey === node.key || state.selectedKeys.has(node.key)) row.classList.add("selected");
 	if (node.item && state.currentFileId === node.item.fileId) row.classList.add("opened");
 
 	const chevron = makeIconButton("chevron" + (hasChildren ? "" : " empty"), hasChildren ? (isExpanded ? "chevronDown" : "chevronRight") : "chevronRight", "Toggle");
@@ -1014,10 +1015,15 @@ function renderNode(parent, node, depth, query) {
 	row.appendChild(nameEl);
 	row.appendChild(actions);
 
-	row.addEventListener("click", () => {
+	row.addEventListener("click", event => {
 		if (node.item && state.renamingItemId === node.item.fileId) return;
-		setSelectedNode(node);
-		if (node.item && isScriptItem(node.item)) openFile(node.item);
+
+		const handledSelection = handleTreeSelection(node, event);
+		if (handledSelection) return;
+
+		if (node.item && isScriptItem(node.item)) {
+			openFile(node.item, { focusEditor: false });
+		}
 	});
 
 	row.addEventListener("dblclick", event => {
@@ -1335,7 +1341,7 @@ function renderTabs() {
 	}
 }
 
-function switchTab(fileId, group = "primary") {
+function switchTab(fileId, group = "primary", options = {}) {
 	const tab = state.openTabs.get(fileId);
 	if (!tab) return;
 
@@ -1370,7 +1376,7 @@ function switchTab(fileId, group = "primary") {
 	renderTabs();
 	renderTree();
 	updateEditorHeader();
-	setTimeout(() => state.editor.focus(targetGroup), 0);
+	if (options.focusEditor !== false) setTimeout(() => state.editor.focus(targetGroup), 0);
 	setTimeout(() => {
 		state.suppressViewStateSaveUntil = 0;
 		saveWorkspaceState(false);
@@ -1404,11 +1410,11 @@ function closeSplit() {
 	saveWorkspaceState();
 }
 
-async function openFile(file) {
+async function openFile(file, options = {}) {
 	if (!hasConnection() || !file || !isScriptItem(file)) return;
 
 	if (state.openTabs.has(file.fileId)) {
-		switchTab(file.fileId, "primary");
+		switchTab(file.fileId, "primary", options);
 		return;
 	}
 
@@ -1430,7 +1436,7 @@ async function openFile(file) {
 			viewState: null,
 		});
 
-		switchTab(file.fileId, "primary");
+		switchTab(file.fileId, "primary", options);
 		setStatus("Opened " + file.name, "success");
 	} catch (error) {
 		setStatus(error.message, "error");
@@ -2659,11 +2665,6 @@ function handleEditorKeys(event, group = state.activeGroup) {
 		saveCurrentFile(false, getActiveFileId(group));
 	}
 
-	if ((event.ctrlKey || event.metaKey) && key === "d") {
-		event.preventDefault();
-		event.stopPropagation();
-		duplicateCurrentScript(group);
-	}
 
 	if ((event.ctrlKey || event.metaKey) && key === "w") {
 		event.preventDefault();
