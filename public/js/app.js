@@ -170,6 +170,8 @@ const state = {
 	isRestoringWorkspace: false,
 	renameStartedAt: 0,
 	suppressViewStateSaveUntil: 0,
+	entryPhraseIndex: 0,
+	entryPhraseTimer: null,
 };
 
 function getAuth() {
@@ -2412,6 +2414,7 @@ function closeSettings() {
 function applySettings() {
 	state.language = applyLanguage(refs.languageInput ? refs.languageInput.value : state.language);
 	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	updateEntryPhrase(false);
 	updateEditorHeader();
 	state.settings = {
 		interfaceTheme: applyInterfaceTheme(refs.appearanceInput ? refs.appearanceInput.value : state.settings.interfaceTheme),
@@ -2589,23 +2592,34 @@ function closeLearnModal() {
 	refs.learnModal.classList.remove("open");
 }
 
+function getEntryPhrases() {
+	return [
+		t(state.language, "entryPhraseOne"),
+		t(state.language, "entryPhraseTwo"),
+		t(state.language, "entryPhraseThree"),
+		t(state.language, "entryPhraseFour"),
+	].filter(Boolean);
+}
+
+function updateEntryPhrase(next = false) {
+	if (!refs.entryPhraseText) return;
+	const phrases = getEntryPhrases();
+	if (phrases.length === 0) return;
+	if (next) state.entryPhraseIndex = (state.entryPhraseIndex + 1) % phrases.length;
+	else state.entryPhraseIndex = state.entryPhraseIndex % phrases.length;
+	refs.entryPhraseText.classList.add("changing");
+	setTimeout(() => {
+		refs.entryPhraseText.textContent = phrases[state.entryPhraseIndex];
+		refs.entryPhraseText.classList.remove("changing");
+	}, 170);
+}
+
 function bootEntryPhrases() {
 	if (!refs.entryPhraseText) return;
-	const phrases = [
-		"Welcome to Cloud, ready to build?",
-		"Connect once. Code with focus.",
-		"Your scripts, floating in one clean workspace.",
-		"Save fast, stay synced, keep building.",
-	];
-	let index = 0;
-	setInterval(() => {
-		index = (index + 1) % phrases.length;
-		refs.entryPhraseText.classList.add("changing");
-		setTimeout(() => {
-			refs.entryPhraseText.textContent = phrases[index];
-			refs.entryPhraseText.classList.remove("changing");
-		}, 180);
-	}, 3600);
+	if (state.entryPhraseTimer) clearInterval(state.entryPhraseTimer);
+	state.entryPhraseIndex = 0;
+	refs.entryPhraseText.textContent = getEntryPhrases()[0] || "Welcome to Cloud, ready to build?";
+	state.entryPhraseTimer = setInterval(() => updateEntryPhrase(true), 3600);
 }
 
 function setupResizer() {
@@ -2756,6 +2770,7 @@ function bindEvents() {
 		refs.languageInput.addEventListener("change", () => {
 			state.language = applyLanguage(refs.languageInput.value);
 			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+			updateEntryPhrase(false);
 			updateEditorHeader();
 		});
 	}
@@ -2763,6 +2778,7 @@ function bindEvents() {
 		refs.betaLanguageSelect.addEventListener("change", () => {
 			state.language = applyLanguage(refs.betaLanguageSelect.value);
 			populateLanguageSelect(refs.languageInput, state.language);
+			updateEntryPhrase(false);
 			updateEditorHeader();
 		});
 	}
@@ -2894,6 +2910,7 @@ function boot() {
 	populateLanguageSelect(refs.languageInput, state.language);
 	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	applyLanguage(state.language);
+	updateEntryPhrase(false);
 	renderTree();
 	updateEditorHeader();
 	updateConnectionUi(hasConnection(), hasConnection() ? "Connected" : "Disconnected");

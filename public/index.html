@@ -18,11 +18,11 @@
 			<span class="entry-line line-one"></span>
 			<span class="entry-line line-two"></span>
 		</div>
-		<div class="entry-shell">
-			<header class="entry-nav">
+		<div class="entry-shell entry-shell-alt">
+			<header class="entry-nav entry-nav-alt">
 				<a class="entry-brand" href="#" aria-label="Cloud home">
 					<img src="/assets/cloud-logo.png" alt="Cloud" />
-					<span><strong>Cloud</strong><em>Game scripting workspace</em></span>
+					<span><strong>Cloud</strong><em id="entryBrandSubtitle" data-i18n="entryBrandSubtitle">Game scripting workspace</em></span>
 				</a>
 				<div class="entry-nav-actions">
 					<select id="gateAppearanceSelect" class="appearance-select" aria-label="Appearance">
@@ -30,82 +30,126 @@
 						<option value="dark">Dark</option>
 						<option value="light">Light</option>
 					</select>
-					<button type="button" class="open-learn-button">Learn</button>
-					<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
+					<button type="button" class="open-learn-button" data-i18n="entryLearn">Learn</button>
+					<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener" data-i18n="entryPlugin">Plugin</a>
 				</div>
 			</header>
 
-			<main class="entry-content">
-				<section class="entry-left-card">
-					<div class="entry-hero-copy">
-						<div class="entry-badge"><i></i>Private workspace</div>
-						<h1>Code lighter. Ship cleaner.</h1>
-						<div class="entry-welcome" aria-live="polite"><span id="entryPhraseText">Welcome to Cloud, ready to build?</span></div>
-						<p>Connect your session, open your project tree, and write scripts in a focused editor made for long building sessions.</p>
-					</div>
-
-					<div class="entry-code-orbit" aria-hidden="true">
-						<div class="entry-code-window">
-							<div class="entry-code-top"><span></span><span></span><span></span><strong>Cloud Workspace</strong></div>
-							<div class="entry-code-body">
-								<code><b>local</b> Controller = {}</code>
-								<code><b>function</b> Controller:Start()</code>
-								<code>&nbsp;&nbsp;self.State = <em>"Ready"</em></code>
-								<code><b>end</b></code>
-								<code><b>return</b> Controller</code>
+			<main class="entry-layout">
+				<section class="entry-side entry-side-left">
+					<div class="entry-panel entry-panel-hero">
+						<div class="entry-badge"><i></i><span data-i18n="entryHeroBadge">Private workspace</span></div>
+						<div class="entry-hero-copy">
+							<h1 id="entryHeroTitle" data-i18n="entryHeroTitle">Keep your scripts tidy and your workflow moving.</h1>
+							<p id="entryHeroBody" data-i18n="entryHeroBody">Cloud keeps session access simple, editing focused, and the workspace clean enough for longer building sessions.</p>
+						</div>
+						<div class="entry-hero-preview">
+							<div class="entry-preview-head">
+								<div>
+									<strong data-i18n="entryPreviewTitle">What Cloud feels like</strong>
+									<span data-i18n="entryPreviewBody">A cleaner editor surface, quick project access, and a smoother path from idea to script.</span>
+								</div>
+								<span class="entry-preview-kicker" data-i18n="entryPreviewKicker">Focused flow</span>
+							</div>
+							<div class="entry-code-window">
+								<div class="entry-code-top"><span></span><span></span><span></span><strong>Cloud Workspace</strong></div>
+								<div class="entry-code-body">
+									<code><b>local</b> Session = {}</code>
+									<code><b>function</b> Session:Open()</code>
+									<code>&nbsp;&nbsp;self.Mode = <em>"Focused"</em></code>
+									<code>&nbsp;&nbsp;self.LastSave = <em>"Synced"</em></code>
+									<code><b>end</b></code>
+									<code><b>return</b> Session</code>
+								</div>
 							</div>
 						</div>
-						<span class="entry-mini-cloud mini-a"></span>
-						<span class="entry-mini-cloud mini-b"></span>
-					</div>
-
-					<div class="entry-metrics">
-						<div><strong>Fast flow</strong><span>Open, edit, save and keep moving without noisy panels.</span></div>
-						<div><strong>Session safe</strong><span>Session ID and Hidden Secret stay required before loading files.</span></div>
-						<div><strong>Cloud feel</strong><span>Soft motion, clean spacing and calmer visuals for coding.</span></div>
+						<div class="entry-feature-grid">
+							<article class="entry-mini-card">
+								<strong data-i18n="entryFeatureOneTitle">Live structure</strong>
+								<span data-i18n="entryFeatureOneBody">Open the workspace tree, keep folders organized, and move between scripts without noise.</span>
+							</article>
+							<article class="entry-mini-card">
+								<strong data-i18n="entryFeatureTwoTitle">Built for longer sessions</strong>
+								<span data-i18n="entryFeatureTwoBody">Clear hierarchy, calmer spacing, and a layout that stays readable while the project grows.</span>
+							</article>
+						</div>
 					</div>
 				</section>
 
-				<aside class="entry-connect-card">
-					<div class="entry-connect-head">
-						<span>Connect</span>
-						<strong>Enter your session</strong>
-						<p>Paste the credentials created by the Cloud plugin to enter your private workspace.</p>
+				<section class="entry-center">
+					<div class="entry-panel entry-panel-connect">
+						<div class="entry-connect-badge" data-i18n="entryConnectBadge">Connect</div>
+						<h2 id="entryConnectTitle" data-i18n="entryConnectTitle">Welcome to Cloud</h2>
+						<p class="entry-phrase-wrap"><span id="entryPhraseText">Welcome to Cloud, ready to build?</span></p>
+						<p class="entry-connect-copy" id="entryConnectBody" data-i18n="entryConnectBody">Enter your Session ID and Hidden Secret to open your private workspace.</p>
+						<div class="entry-connect-flow" aria-hidden="true">
+							<div class="entry-step-card"><b>01</b><span data-i18n="entryFlowOne">Start a session</span></div>
+							<div class="entry-step-card"><b>02</b><span data-i18n="entryFlowTwo">Copy the credentials</span></div>
+							<div class="entry-step-card"><b>03</b><span data-i18n="entryFlowThree">Enter Cloud</span></div>
+						</div>
+						<div class="entry-form-card">
+							<label for="gateSessionInput" data-i18n="entrySessionLabel">Session ID</label>
+							<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" data-i18n-placeholder="entrySessionPlaceholder" />
+							<label for="gateSecretInput" data-i18n="entrySecretLabel">Hidden Secret</label>
+							<input id="gateSecretInput" type="password" placeholder="Paste hidden secret" autocomplete="off" data-i18n-placeholder="entrySecretPlaceholder" />
+							<button id="gateConnectButton" class="gate-connect-button" data-i18n="entryConnectAction">Enter Cloud</button>
+						</div>
+						<div class="entry-shortcut-pills">
+							<span data-i18n="entryShortcutSave">Ctrl + S saves the active script</span>
+							<span data-i18n="entryShortcutSelect">Shift + Click keeps multi-select easy</span>
+							<span data-i18n="entryShortcutDelete">Delete removes selected items</span>
+							<span data-i18n="entryShortcutPaste">Ctrl + C / X / V keeps scripts moving</span>
+						</div>
 					</div>
-					<div class="entry-connect-visual" aria-hidden="true">
-						<div><i></i><span>Plugin</span></div>
-						<b></b>
-						<div><i></i><span>Cloud</span></div>
-						<b></b>
-						<div><i></i><span>Workspace</span></div>
+				</section>
+
+				<aside class="entry-side entry-side-right">
+					<div class="entry-panel entry-panel-guide">
+						<div class="entry-panel-head">
+							<strong data-i18n="entryGuideTitle">Useful right away</strong>
+							<span data-i18n="entryGuideBody">Everything here points to a real part of the workflow, so the screen feels full without feeling noisy.</span>
+						</div>
+						<div class="entry-guide-list">
+							<div class="entry-guide-item">
+								<b data-i18n="entryGuideOneTitle">Open scripts faster</b>
+								<span data-i18n="entryGuideOneBody">Use the explorer, tabs, project search, and split view to stay inside the same flow.</span>
+							</div>
+							<div class="entry-guide-item">
+								<b data-i18n="entryGuideTwoTitle">Keep structure under control</b>
+								<span data-i18n="entryGuideTwoBody">Create, rename, move, duplicate, cut, copy, paste, and delete scripts or folders from one place.</span>
+							</div>
+							<div class="entry-guide-item">
+								<b data-i18n="entryGuideThreeTitle">Stay in sync</b>
+								<span data-i18n="entryGuideThreeBody">Save changes, keep the workspace updated, and use the same session path during the whole coding cycle.</span>
+							</div>
+						</div>
 					</div>
-					<div class="entry-fields-card">
-						<label for="gateSessionInput">Session ID</label>
-						<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
-						<label for="gateSecretInput">Hidden Secret</label>
-						<input id="gateSecretInput" type="password" placeholder="Paste hidden secret" autocomplete="off" />
-						<button id="gateConnectButton" class="gate-connect-button">Enter Cloud</button>
+					<div class="entry-panel entry-panel-shortcuts">
+						<div class="entry-panel-head">
+							<strong data-i18n="entryShortcutPanelTitle">Everyday controls</strong>
+							<span data-i18n="entryShortcutPanelBody">The most common actions stay close so the app feels easier to pick up.</span>
+						</div>
+						<div class="entry-shortcut-grid">
+							<div><strong>Ctrl + S</strong><span data-i18n="entryShortcutGridSave">Save the script you are editing.</span></div>
+							<div><strong>Shift + Click</strong><span data-i18n="entryShortcutGridSelect">Select several scripts at once.</span></div>
+							<div><strong>Delete</strong><span data-i18n="entryShortcutGridDelete">Remove the selected scripts or folders.</span></div>
+							<div><strong>Ctrl + C / X / V</strong><span data-i18n="entryShortcutGridPaste">Copy, cut, and paste scripts into the workspace.</span></div>
+						</div>
 					</div>
-					<div class="entry-shortcuts">
-						<span>Ctrl + S Save</span>
-						<span>Shift + Click Multi-select</span>
-						<span>Del Delete</span>
-					</div>
-					<div class="session-gate-actions">
-						<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download app</a>
-						<button type="button" class="open-learn-button">How it works</button>
+					<div class="entry-panel entry-panel-cta">
+						<div class="entry-panel-head">
+							<strong data-i18n="entryCtaTitle">Need the setup steps?</strong>
+							<span data-i18n="entryCtaBody">Open Learn for the full connection flow, installation notes, and the quick routine for everyday use.</span>
+						</div>
+						<div class="entry-duo-actions session-gate-actions">
+							<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener" data-i18n="entryDownload">Download app</a>
+							<button type="button" class="open-learn-button" data-i18n="entryLearnOpen">Open Learn</button>
+						</div>
 					</div>
 				</aside>
 			</main>
-
-			<section class="entry-learn-strip">
-				<div><strong>1 · Create session</strong><span>Open the plugin in your controlled game editor and generate a private Session ID with a Hidden Secret.</span></div>
-				<div><strong>2 · Paste credentials</strong><span>Enter both values here. Cloud loads the project tree only after the session is validated.</span></div>
-				<div><strong>3 · Build faster</strong><span>Save with Ctrl + S, multi-select with Shift, and copy, cut, paste or delete selected scripts.</span></div>
-			</section>
 		</div>
 	</div>
-
 	<div class="app" id="app">
 		<header class="titlebar">
 			<div class="brand">
@@ -435,38 +479,90 @@
 			</div>
 		</div>
 	</div>
-	<div id="learnModal" class="modal-backdrop">
-		<div class="modal learn-modal">
-			<div class="modal-head learn-head">
+	<div id="learnModal" class="learn-page-backdrop">
+		<div class="learn-page">
+			<div class="entry-atmosphere learn-atmosphere" aria-hidden="true">
+				<span class="entry-cloud cloud-one"></span>
+				<span class="entry-cloud cloud-two"></span>
+				<span class="entry-cloud cloud-three"></span>
+			</div>
+			<header class="learn-page-header">
 				<div>
-					<div class="modal-title">Learn Cloud</div>
-					<div class="modal-subtitle">A simple flow for connecting and coding inside your game development workspace.</div>
+					<div class="learn-page-kicker" data-i18n="learnPageKicker">Learn</div>
+					<div class="modal-title" data-i18n="learnPageTitle">Learn Cloud</div>
+					<div class="modal-subtitle" data-i18n="learnPageSubtitle">A clearer walkthrough for installing Cloud, connecting a session, and keeping your coding flow smooth.</div>
 				</div>
-				<button id="closeLearnButton" class="icon-button" aria-label="Close learn modal">
+				<button id="closeLearnButton" class="icon-button" aria-label="Close learn overlay">
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
 				</button>
-			</div>
-			<div class="modal-body learn-body">
-				<section class="learn-hero-panel">
-					<strong>Cloud keeps your scripting flow clean.</strong>
-					<span>The plugin creates a private session, the app reads the workspace tree, and every save is sent back through the same controlled connection.</span>
+			</header>
+			<div class="learn-page-body">
+				<aside class="learn-page-sidebar">
+					<section class="learn-card learn-card-highlight">
+						<strong data-i18n="learnSidebarTitle">What Cloud is doing</strong>
+						<span data-i18n="learnSidebarBody">Cloud keeps a private session between the app and your development environment, so your files stay inside one focused workflow.</span>
+					</section>
+					<section class="learn-card">
+						<strong data-i18n="learnSidebarQuickTitle">Before you connect</strong>
+						<ul class="learn-bullet-list">
+							<li data-i18n="learnSidebarQuickOne">Install the desktop app if you want the smoothest experience.</li>
+							<li data-i18n="learnSidebarQuickTwo">Open the plugin inside your game development environment.</li>
+							<li data-i18n="learnSidebarQuickThree">Create a session and keep both credentials nearby.</li>
+						</ul>
+					</section>
+					<section class="learn-card">
+						<strong data-i18n="learnSidebarKeysTitle">Helpful shortcuts</strong>
+						<div class="learn-key-grid">
+							<div><b>Ctrl + S</b><span data-i18n="learnKeyOne">Save the active script.</span></div>
+							<div><b>Shift + Click</b><span data-i18n="learnKeyTwo">Select multiple scripts.</span></div>
+							<div><b>Delete</b><span data-i18n="learnKeyThree">Remove selected scripts or folders.</span></div>
+							<div><b>Ctrl + C / X / V</b><span data-i18n="learnKeyFour">Copy, cut, and paste scripts.</span></div>
+						</div>
+					</section>
+				</aside>
+				<section class="learn-page-main">
+					<section class="learn-card learn-hero-card">
+						<div class="learn-hero-copy">
+							<strong data-i18n="learnHeroTitle">A simple path from setup to script editing.</strong>
+							<span data-i18n="learnHeroBody">If you are opening Cloud for the first time, follow these steps once. After that, most of the work becomes open, edit, save, and keep moving.</span>
+						</div>
+					</section>
+					<section class="learn-steps-grid">
+						<article class="learn-step-card"><b>01</b><strong data-i18n="learnStepOneTitle">Install Cloud</strong><span data-i18n="learnStepOneBody">Use the desktop app for the cleanest flow, or the web version when you need quick access.</span></article>
+						<article class="learn-step-card"><b>02</b><strong data-i18n="learnStepTwoTitle">Open the plugin</strong><span data-i18n="learnStepTwoBody">Launch the plugin in your development setup and generate a fresh private session.</span></article>
+						<article class="learn-step-card"><b>03</b><strong data-i18n="learnStepThreeTitle">Copy the credentials</strong><span data-i18n="learnStepThreeBody">Take the Session ID and Hidden Secret together. You will need both before the workspace can load.</span></article>
+						<article class="learn-step-card"><b>04</b><strong data-i18n="learnStepFourTitle">Enter Cloud</strong><span data-i18n="learnStepFourBody">Paste the two values on the start screen and confirm the connection.</span></article>
+						<article class="learn-step-card"><b>05</b><strong data-i18n="learnStepFiveTitle">Build inside the workspace</strong><span data-i18n="learnStepFiveBody">Open scripts, use tabs, split the editor, search the project, and keep your structure organized.</span></article>
+						<article class="learn-step-card"><b>06</b><strong data-i18n="learnStepSixTitle">Save and manage files</strong><span data-i18n="learnStepSixBody">Use Ctrl + S to save and the multi-select, copy, cut, paste, and delete actions to manage scripts faster.</span></article>
+					</section>
+					<section class="learn-page-grid">
+						<div class="learn-card">
+							<strong data-i18n="learnRoutineTitle">A normal everyday routine</strong>
+							<ul class="learn-bullet-list">
+								<li data-i18n="learnRoutineOne">Connect once at the start of the session.</li>
+								<li data-i18n="learnRoutineTwo">Open the scripts you are actively working on.</li>
+								<li data-i18n="learnRoutineThree">Save often and let Cloud keep the workspace current.</li>
+								<li data-i18n="learnRoutineFour">Use Learn again whenever you want the setup steps nearby.</li>
+							</ul>
+						</div>
+						<div class="learn-card">
+							<strong data-i18n="learnToolsTitle">What you can manage inside Cloud</strong>
+							<ul class="learn-bullet-list">
+								<li data-i18n="learnToolsOne">Create new scripts and folders.</li>
+								<li data-i18n="learnToolsTwo">Rename, duplicate, move, and delete items.</li>
+								<li data-i18n="learnToolsThree">Copy, cut, and paste scripts across the workspace.</li>
+								<li data-i18n="learnToolsFour">Switch between tabs or open a split view when you need parallel editing.</li>
+							</ul>
+						</div>
+					</section>
+					<div class="learn-actions-row">
+						<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener" data-i18n="entryDownload">Download app</a>
+						<a class="secondary-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener" data-i18n="learnPluginAction">Open plugin page</a>
+					</div>
 				</section>
-				<div class="learn-steps">
-					<div><b>01</b><strong>Install Cloud</strong><span>Use the desktop app for the smoothest experience, or open the web version when you need a quick fallback.</span></div>
-					<div><b>02</b><strong>Open the plugin</strong><span>Inside your controlled game editor, open the Cloud plugin and create a fresh session.</span></div>
-					<div><b>03</b><strong>Copy credentials</strong><span>Copy the Session ID and Hidden Secret. They are required together so the workspace stays private.</span></div>
-					<div><b>04</b><strong>Enter Cloud</strong><span>Paste both values in the start panel. After validation, the Explorer loads your scripts and folders.</span></div>
-					<div><b>05</b><strong>Edit scripts</strong><span>Open scripts, use tabs, search the project, split the editor, and keep your flow focused.</span></div>
-					<div><b>06</b><strong>Sync changes</strong><span>Press Ctrl + S to save. Use Shift + Click for multi-selection, Delete to remove, and Ctrl + C / X / V for script operations.</span></div>
-				</div>
-				<div class="learn-actions-row">
-					<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download app</a>
-					<a class="secondary-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Open plugin page</a>
-				</div>
 			</div>
 		</div>
 	</div>
-
 	<div id="toastStack" class="toast-stack"></div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
