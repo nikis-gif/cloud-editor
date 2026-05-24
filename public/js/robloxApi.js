@@ -3,11 +3,15 @@ export const LUA_KEYWORDS = [
 ];
 
 export const SERVICE_NAMES = [
-	"Workspace", "Players", "Lighting", "MaterialService", "NetworkClient", "ReplicatedFirst", "ReplicatedStorage", "ServerScriptService", "ServerStorage", "StarterGui", "StarterPack", "StarterPlayer", "Teams", "SoundService", "TextChatService", "CollectionService", "TweenService", "RunService", "UserInputService", "ContextActionService", "Debris", "HttpService", "MarketplaceService", "TeleportService", "DataStoreService", "MemoryStoreService", "MessagingService", "BadgeService", "GroupService", "PhysicsService", "PathfindingService", "ProximityPromptService", "GuiService", "GamepadService", "HapticService", "LocalizationService", "PolicyService", "AnalyticsService", "AvatarEditorService", "AssetService", "InsertService", "ContentProvider", "Selection", "ChangeHistoryService", "ScriptEditorService", "TestService", "TextService", "VoiceChatService",
+	"Workspace", "Players", "Lighting", "MaterialService", "NetworkClient", "ReplicatedFirst", "ReplicatedStorage", "ServerScriptService", "ServerStorage", "StarterGui", "StarterPack", "StarterPlayer", "Teams", "SoundService", "TextChatService", "CollectionService", "TweenService", "RunService", "UserInputService", "ContextActionService", "Debris", "HttpService", "MarketplaceService", "TeleportService", "DataStoreService", "MemoryStoreService", "MessagingService", "BadgeService", "GroupService", "PhysicsService", "PathfindingService", "ProximityPromptService", "GuiService", "GamepadService", "HapticService", "LocalizationService", "PolicyService", "AnalyticsService", "AvatarEditorService", "AssetService", "InsertService", "ContentProvider", "Selection", "ChangeHistoryService", "ScriptEditorService", "TestService", "TextService", "VoiceChatService", "StarterPlayerScripts", "LocalizationTable", "ScriptContext", "LogService", "Stats", "Teams", "Chat", "VRService", "VirtualInputManager", "GamePassService", "UserService", "MemoryStoreService",
+];
+
+export const ROBLOX_CLASSES = [
+	"Accessory", "Accoutrement", "Actor", "AlignOrientation", "AlignPosition", "Animation", "AnimationController", "AnimationTrack", "Animator", "Attachment", "Backpack", "BallSocketConstraint", "Beam", "BindableEvent", "BindableFunction", "BodyAngularVelocity", "BodyForce", "BodyGyro", "BodyPosition", "BodyThrust", "BodyVelocity", "BoolValue", "BoxHandleAdornment", "BrickColorValue", "Camera", "CanvasGroup", "CFrameValue", "ClickDetector", "Color3Value", "Configuration", "Decal", "Dialog", "Explosion", "Fire", "Folder", "ForceField", "Frame", "Highlight", "Humanoid", "HumanoidDescription", "ImageButton", "ImageLabel", "IntValue", "LinearVelocity", "LocalScript", "ManualWeld", "MeshPart", "Model", "ModuleScript", "Motor6D", "NumberValue", "ObjectValue", "Part", "ParticleEmitter", "PointLight", "PrismaticConstraint", "ProximityPrompt", "RemoteEvent", "RemoteFunction", "ScreenGui", "Script", "ScrollingFrame", "Seat", "Smoke", "Sound", "Sparkles", "SpawnLocation", "SpotLight", "StringValue", "SurfaceGui", "TextBox", "TextButton", "TextLabel", "Tool", "Trail", "Vector3Value", "VehicleSeat", "WedgePart", "Weld", "WeldConstraint",
 ];
 
 export const GLOBALS = [
-	"game", "workspace", "script", "shared", "_G", "Enum", "Instance", "CFrame", "Vector2", "Vector3", "Vector3int16", "Color3", "UDim", "UDim2", "Ray", "Region3", "Rect", "BrickColor", "NumberRange", "NumberSequence", "NumberSequenceKeypoint", "ColorSequence", "ColorSequenceKeypoint", "TweenInfo", "Random", "DateTime", "Axes", "Faces", "OverlapParams", "RaycastParams", "PhysicalProperties", "PathWaypoint", "DockWidgetPluginGuiInfo", "task", "math", "string", "table", "coroutine", "os", "debug", "utf8", "buffer", "print", "warn", "error", "assert", "require", "pairs", "ipairs", "next", "select", "tonumber", "tostring", "typeof", "type", "pcall", "xpcall", "rawequal", "rawget", "rawset", "setmetatable", "getmetatable", "collectgarbage", "elapsed", "tick", "time", "wait", "spawn", "delay",
+	"game", "workspace", "script", "shared", "_G", "Enum", "Instance", "CFrame", "Vector2", "Vector3", "Vector3int16", "Color3", "UDim", "UDim2", "Ray", "Region3", "Rect", "BrickColor", "NumberRange", "NumberSequence", "NumberSequenceKeypoint", "ColorSequence", "ColorSequenceKeypoint", "TweenInfo", "Random", "DateTime", "Axes", "Faces", "OverlapParams", "RaycastParams", "PhysicalProperties", "PathWaypoint", "DockWidgetPluginGuiInfo", "ColorSequenceKeypoint", "NumberSequenceKeypoint", "task", "math", "string", "table", "coroutine", "os", "debug", "utf8", "buffer", "print", "warn", "error", "assert", "require", "pairs", "ipairs", "next", "select", "tonumber", "tostring", "typeof", "type", "pcall", "xpcall", "rawequal", "rawget", "rawset", "setmetatable", "getmetatable", "collectgarbage", "elapsed", "tick", "time", "wait", "spawn", "delay",
 ];
 
 export const INSTANCE_METHODS = [
@@ -240,6 +244,16 @@ export const CLASS_HINTS = {
 	remotefunction: "RemoteFunction",
 	tween: "Tween",
 	tool: "Tool",
+	gui: "GuiObject",
+	frame: "GuiObject",
+	button: "GuiButton",
+	textbutton: "GuiButton",
+	textbox: "TextBox",
+	sound: "Sound",
+	bodyvelocity: "BodyVelocity",
+	linearvelocity: "LinearVelocity",
+	attachment: "Attachment",
+	constraint: "Constraint",
 };
 
 export const EXTRA_CLASS_COMPLETIONS = {

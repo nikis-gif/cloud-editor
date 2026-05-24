@@ -936,6 +936,112 @@ function reorderTab(sourceId, targetId, placeAfter) {
 	saveWorkspaceState();
 }
 
+
+function closeTabContextMenu() {
+	const existing = document.querySelector(".tab-context-menu");
+	if (existing) existing.remove();
+}
+
+async function closeAllTabs(force = false) {
+	const tabs = Array.from(state.openTabs.values());
+	if (tabs.length === 0) return;
+	if (!force && tabs.some(tab => tab.dirty)) {
+		const confirmed = await requestConfirm({
+			title: "Close all scripts",
+			message: "Some scripts have unsaved changes. Close all open scripts anyway?",
+			acceptText: "Close all",
+		});
+		if (!confirmed) return;
+	}
+	for (const tab of tabs) state.openTabs.delete(tab.fileId);
+	state.currentFileId = "";
+	state.secondaryFileId = "";
+	state.activeGroup = "primary";
+	state.editor.setSplit(false);
+	state.editor.setValue("", "primary");
+	renderTabs();
+	updateEditorHeader();
+	saveWorkspaceState();
+}
+
+async function closeOtherTabs(fileId) {
+	const target = state.openTabs.get(fileId);
+	if (!target) return;
+	const others = Array.from(state.openTabs.values()).filter(tab => tab.fileId !== fileId);
+	if (others.length === 0) return;
+	if (others.some(tab => tab.dirty)) {
+		const confirmed = await requestConfirm({
+			title: "Close other scripts",
+			message: "Some other scripts have unsaved changes. Close them anyway?",
+			acceptText: "Close others",
+		});
+		if (!confirmed) return;
+	}
+	for (const tab of others) state.openTabs.delete(tab.fileId);
+	state.currentFileId = fileId;
+	if (state.secondaryFileId && state.secondaryFileId !== fileId) {
+		state.secondaryFileId = "";
+		state.editor.setSplit(false);
+	}
+	switchTab(fileId, "primary");
+	saveWorkspaceState();
+}
+
+function revealTabInExplorer(fileId) {
+	const tab = state.openTabs.get(fileId) || getLoadedFile(fileId);
+	if (!tab) return;
+	refs.searchInput.value = "";
+	buildTree();
+	state.expandedKeys.add("root:" + tab.root);
+	const parts = String(tab.relativePath || "").split("/").filter(Boolean);
+	let partial = "";
+	for (let index = 0; index < parts.length - 1; index++) {
+		partial = partial ? partial + "/" + parts[index] : parts[index];
+		const folderItem = getItemByPath(tab.root, partial);
+		state.expandedKeys.add(nodeKey(tab.root, partial, folderItem));
+	}
+	state.selectedKey = "item:" + fileId;
+	state.selectedPayload = { root: tab.root, relativePath: tab.relativePath, itemId: fileId, label: tab.root + "/" + tab.relativePath };
+	saveJson(STORAGE.expanded, Array.from(state.expandedKeys));
+	renderTree();
+	requestAnimationFrame(() => {
+		const row = refs.treeEl.querySelector(`[data-key="item:${CSS.escape(fileId)}"]`);
+		if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+	});
+}
+
+function openTabContextMenu(event, tab) {
+	event.preventDefault();
+	event.stopPropagation();
+	closeTabContextMenu();
+	const menu = document.createElement("div");
+	menu.className = "tab-context-menu";
+	menu.innerHTML = `
+		<button type="button" data-action="close-all"><span>Close all scripts</span><span class="hint">All</span></button>
+		<button type="button" data-action="close-others"><span>Close except this</span><span class="hint">Keep</span></button>
+		<button type="button" data-action="reveal"><span>Go to script</span><span class="hint">Explorer</span></button>
+	`;
+	document.body.appendChild(menu);
+	const rect = menu.getBoundingClientRect();
+	const x = Math.min(event.clientX, window.innerWidth - rect.width - 8);
+	const y = Math.min(event.clientY, window.innerHeight - rect.height - 8);
+	menu.style.left = Math.max(8, x) + "px";
+	menu.style.top = Math.max(8, y) + "px";
+	menu.addEventListener("click", async clickEvent => {
+		const button = clickEvent.target.closest("button[data-action]");
+		if (!button) return;
+		const action = button.dataset.action;
+		closeTabContextMenu();
+		if (action === "close-all") await closeAllTabs(false);
+		if (action === "close-others") await closeOtherTabs(tab.fileId);
+		if (action === "reveal") revealTabInExplorer(tab.fileId);
+	});
+	setTimeout(() => {
+		document.addEventListener("pointerdown", closeTabContextMenu, { once: true });
+		document.addEventListener("keydown", event => { if (event.key === "Escape") closeTabContextMenu(); }, { once: true });
+	}, 0);
+}
+
 function renderTabs() {
 	refs.tabsEl.innerHTML = "";
 
@@ -965,6 +1071,7 @@ function renderTabs() {
 		});
 
 		item.addEventListener("click", () => switchTab(tab.fileId, "primary"));
+		item.addEventListener("contextmenu", event => openTabContextMenu(event, tab));
 		item.addEventListener("dblclick", event => { event.preventDefault(); splitTab(tab.fileId); });
 		item.addEventListener("auxclick", event => {
 			if (event.button === 1) {
@@ -2280,9 +2387,8 @@ function boot() {
 				startPolling();
 			}
 		}, 150);
-		setTimeout(() => openBetaWarning(null), 180);
 	} else {
-		setTimeout(() => openBetaWarning(openConnectionModal), 150);
+		setTimeout(openConnectionModal, 150);
 	}
 }
 

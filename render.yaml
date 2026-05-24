@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: cloud-editor
+    name: cloud-editor-03s5
     runtime: node
     repo: https://github.com/nikis-gif/cloud-editor
     branch: main

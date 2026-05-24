@@ -10,6 +10,7 @@ import {
 	CLASS_HINTS,
 	EXTRA_CLASS_COMPLETIONS,
 	SNIPPETS,
+	ROBLOX_CLASSES,
 } from "./robloxApi.js";
 
 function defineLuaSupport(monaco) {
@@ -82,6 +83,28 @@ function defineThemes(monaco) {
 	monaco.editor.defineTheme("cloud-mono", theme("vs-dark", [
 		{ token: "keyword", foreground: "ffffff", fontStyle: "bold" }, { token: "string", foreground: "d4d4d4" }, { token: "number", foreground: "cfcfcf" }, { token: "comment", foreground: "777777", fontStyle: "italic" }, { token: "function", foreground: "eeeeee" },
 	], { "editor.background": "#101010", "editor.foreground": "#e7e7e7", "editorLineNumber.foreground": "#585858", "editorCursor.foreground": "#ffffff", "editor.selectionBackground": "#3a3a3a", "editorSuggestWidget.background": "#171717", "editorSuggestWidget.border": "#333333", "editorSuggestWidget.selectedBackground": "#2f2f2f", "editorSuggestWidget.highlightForeground": "#ffffff" }));
+	monaco.editor.defineTheme("cloud-black-gray", theme("vs-dark", [
+		{ token: "keyword", foreground: "a5b4fc", fontStyle: "bold" }, { token: "string", foreground: "d1d5db" }, { token: "number", foreground: "93c5fd" }, { token: "comment", foreground: "6b7280", fontStyle: "italic" }, { token: "function", foreground: "f3f4f6" },
+	], { "editor.background": "#090a0e", "editor.foreground": "#e5e7eb", "editorLineNumber.foreground": "#4b5563", "editorCursor.foreground": "#ffffff", "editor.selectionBackground": "#374151", "editorSuggestWidget.background": "#111827", "editorSuggestWidget.border": "#30363d", "editorSuggestWidget.selectedBackground": "#1f2937", "editorSuggestWidget.highlightForeground": "#93c5fd" }));
+	monaco.editor.defineTheme("cloud-white", theme("vs", [
+		{ token: "keyword", foreground: "2563eb", fontStyle: "bold" }, { token: "string", foreground: "b45309" }, { token: "number", foreground: "047857" }, { token: "comment", foreground: "6b7280", fontStyle: "italic" }, { token: "function", foreground: "7c3aed" },
+	], { "editor.background": "#ffffff", "editor.foreground": "#1f2937", "editorLineNumber.foreground": "#9ca3af", "editorCursor.foreground": "#111827", "editor.selectionBackground": "#bfdbfe", "editorSuggestWidget.background": "#ffffff", "editorSuggestWidget.border": "#d1d5db", "editorSuggestWidget.selectedBackground": "#e5efff", "editorSuggestWidget.highlightForeground": "#2563eb" }));
+	monaco.editor.defineTheme("cloud-pink", theme("vs-dark", [
+		{ token: "keyword", foreground: "f472b6", fontStyle: "bold" }, { token: "string", foreground: "f9a8d4" }, { token: "number", foreground: "fda4af" }, { token: "comment", foreground: "9d7189", fontStyle: "italic" }, { token: "function", foreground: "f0abfc" },
+	], { "editor.background": "#1b0f18", "editor.foreground": "#ffe4f1", "editorLineNumber.foreground": "#8b5a72", "editorCursor.foreground": "#f9a8d4", "editor.selectionBackground": "#83184388", "editorSuggestWidget.background": "#21101d", "editorSuggestWidget.border": "#831843", "editorSuggestWidget.selectedBackground": "#3b112d", "editorSuggestWidget.highlightForeground": "#f9a8d4" }));
+	monaco.editor.defineTheme("cloud-purple", theme("vs-dark", [
+		{ token: "keyword", foreground: "c4b5fd", fontStyle: "bold" }, { token: "string", foreground: "ddd6fe" }, { token: "number", foreground: "a78bfa" }, { token: "comment", foreground: "7c719e", fontStyle: "italic" }, { token: "function", foreground: "93c5fd" },
+	], { "editor.background": "#130f24", "editor.foreground": "#ede9fe", "editorLineNumber.foreground": "#6d5c91", "editorCursor.foreground": "#c4b5fd", "editor.selectionBackground": "#5b21b688", "editorSuggestWidget.background": "#1a1332", "editorSuggestWidget.border": "#4c1d95", "editorSuggestWidget.selectedBackground": "#2e1a55", "editorSuggestWidget.highlightForeground": "#c4b5fd" }));
+	monaco.editor.defineTheme("cloud-matrix", theme("vs-dark", [
+		{ token: "keyword", foreground: "00ff84", fontStyle: "bold" }, { token: "string", foreground: "6ee7b7" }, { token: "number", foreground: "bbf7d0" }, { token: "comment", foreground: "166534", fontStyle: "italic" }, { token: "function", foreground: "22c55e" },
+	], { "editor.background": "#020403", "editor.foreground": "#b7ffd8", "editorLineNumber.foreground": "#14532d", "editorCursor.foreground": "#00ff84", "editor.selectionBackground": "#064e3b88", "editorSuggestWidget.background": "#04120a", "editorSuggestWidget.border": "#064e3b", "editorSuggestWidget.selectedBackground": "#06351f", "editorSuggestWidget.highlightForeground": "#00ff84" }));
+	monaco.editor.defineTheme("cloud-bubble", theme("vs-dark", [
+		{ token: "keyword", foreground: "67e8f9", fontStyle: "bold" }, { token: "string", foreground: "f0abfc" }, { token: "number", foreground: "a7f3d0" }, { token: "comment", foreground: "64748b", fontStyle: "italic" }, { token: "function", foreground: "bfdbfe" },
+	], { "editor.background": "#10172a", "editor.foreground": "#e0f2fe", "editorLineNumber.foreground": "#64748b", "editorCursor.foreground": "#67e8f9", "editor.selectionBackground": "#155e7588", "editorSuggestWidget.background": "#0f172a", "editorSuggestWidget.border": "#334155", "editorSuggestWidget.selectedBackground": "#1e293b", "editorSuggestWidget.highlightForeground": "#67e8f9" }));
+	monaco.editor.defineTheme("cloud-sky", theme("vs-dark", [
+		{ token: "keyword", foreground: "38bdf8", fontStyle: "bold" }, { token: "string", foreground: "bae6fd" }, { token: "number", foreground: "7dd3fc" }, { token: "comment", foreground: "64748b", fontStyle: "italic" }, { token: "function", foreground: "fef3c7" },
+	], { "editor.background": "#06162e", "editor.foreground": "#eaf6ff", "editorLineNumber.foreground": "#55708f", "editorCursor.foreground": "#38bdf8", "editor.selectionBackground": "#0369a188", "editorSuggestWidget.background": "#0b1f3a", "editorSuggestWidget.border": "#0c4a6e", "editorSuggestWidget.selectedBackground": "#123861", "editorSuggestWidget.highlightForeground": "#38bdf8" }));
+
 	monaco.editor.defineTheme("cloud-contrast", theme("hc-black", baseRules, { "editor.background": "#000000", "editor.foreground": "#ffffff", "editor.selectionBackground": "#004b76" }));
 }
 
@@ -161,27 +184,32 @@ function registerCompletions(monaco) {
 		return "";
 	}
 
+	function addProperty(suggestions, seen, prop, detail, itemRange, sortPrefix = "020") {
+		const key = "prop|" + detail + "|" + prop;
+		if (seen.has(key)) return;
+		seen.add(key);
+		suggestions.push({ label: prop, kind: propertyKind, detail, insertText: prop, sortText: sortPrefix + prop, range: itemRange });
+	}
+
+	function looksLikeSignalName(name) {
+		return /(?:Added|Removing|Changed|Touched|Ended|Started|Finished|Completed|Stepped|Heartbeat|Died|Activated|Equipped|Unequipped|Event|Invoke|Click|Down|Up|Enter|Leave|Lost|Focused)$/i.test(String(name || ""));
+	}
+
 	function addContextualCompletions(suggestions, seen, contextName, operator, itemRange) {
 		const context = CONTEXT_COMPLETIONS[contextName] || EXTRA_CLASS_COMPLETIONS[contextName];
-		if (!context) return;
+		if (!context) return false;
 
 		if (operator === ":") {
-			for (const item of SIGNAL_METHODS) pushUnique(suggestions, seen, item, eventKind, "000", itemRange);
 			for (const item of context.methods || []) pushUnique(suggestions, seen, item, methodKind, "001", itemRange);
 			for (const item of INSTANCE_METHODS) pushUnique(suggestions, seen, item, methodKind, "030", itemRange);
-			return;
+			return true;
 		}
 
 		for (const item of context.events || []) pushUnique(suggestions, seen, item, eventKind, "000", itemRange);
 		for (const item of context.callbacks || []) pushUnique(suggestions, seen, item, functionKind, "005", itemRange);
 		for (const item of context.methods || []) pushUnique(suggestions, seen, item, methodKind, "010", itemRange);
-		for (const prop of context.properties || []) {
-			const key = "prop|" + prop;
-			if (!seen.has(key)) {
-				seen.add(key);
-				suggestions.push({ label: prop, kind: propertyKind, detail: contextName + " property", insertText: prop, sortText: "020" + prop, range: itemRange });
-			}
-		}
+		for (const prop of context.properties || []) addProperty(suggestions, seen, prop, contextName + " property", itemRange);
+		return true;
 	}
 
 	monaco.languages.registerCompletionItemProvider("lua", {
@@ -247,6 +275,13 @@ function registerCompletions(monaco) {
 
 function getFallbackTheme(themeName) {
 	const themes = {
+		"cloud-black-gray": ["#090a0e", "#e5e7eb"],
+		"cloud-white": ["#ffffff", "#1f2937"],
+		"cloud-pink": ["#1b0f18", "#ffe4f1"],
+		"cloud-purple": ["#130f24", "#ede9fe"],
+		"cloud-matrix": ["#020403", "#b7ffd8"],
+		"cloud-bubble": ["#10172a", "#e0f2fe"],
+		"cloud-sky": ["#06162e", "#eaf6ff"],
 		"cloud-codex": ["#171819", "#d8d8d8"],
 		"cloud-dark": ["#1e1e1e", "#d4d4d4"],
 		"cloud-graphite": ["#111315", "#c9d1d9"],
@@ -261,7 +296,7 @@ function getFallbackTheme(themeName) {
 		"cloud-mono": ["#101010", "#e7e7e7"],
 		"cloud-contrast": ["#000000", "#ffffff"],
 	};
-	return themes[themeName] || themes["cloud-dark"];
+	return themes[themeName] || themes["cloud-black-gray"] || themes["cloud-dark"];
 }
 
 export function createEditorController(options) {

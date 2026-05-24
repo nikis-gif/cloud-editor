@@ -11,7 +11,7 @@ https://github.com/nikis-gif/cloud-editor
 Default cloud endpoint:
 
 ```txt
-https://cloud-editor.onrender.com
+https://cloud-editor-03s5.onrender.com
 ```
 
 Local endpoint:
@@ -68,8 +68,8 @@ git push origin main
 Create the first tag:
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.2.1
+git push origin v1.2.1
 ```
 
 The GitHub Action builds the Windows installer and uploads it to GitHub Releases.
@@ -92,7 +92,7 @@ The plugin checks this order:
 
 ```txt
 1. http://localhost:3000
-2. https://cloud-editor.onrender.com
+2. https://cloud-editor-03s5.onrender.com
 ```
 
 If the Cloud desktop app is open, the plugin uses the local app. If not, it falls back to Render.
@@ -129,5 +129,5 @@ cloud_logo
 ## Version
 
 ```txt
-1.2.0
+1.2.1
 ```

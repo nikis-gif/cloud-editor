@@ -6,7 +6,7 @@ local PLUGIN_NAME = "Cloud"
 local WIDGET_ID = "Cloud_MainWidget"
 
 local LOCAL_BASE_URL = "http://localhost:3000"
-local CLOUD_BASE_URL = "https://cloud-editor.onrender.com"
+local CLOUD_BASE_URL = "https://cloud-editor-03s5.onrender.com"
 
 local AUTO_PULL_INTERVAL = 1
 local AUTO_UPLOAD_INTERVAL = 5

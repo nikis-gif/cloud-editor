@@ -438,7 +438,7 @@ async function handleRequest(req, res) {
 		const url = new URL(req.url, "http://localhost");
 
 		if (req.method === "GET" && url.pathname === "/health") {
-			sendJson(res, 200, { ok: true, service: "Cloud API", version: "1.2.0", time: Date.now() });
+			sendJson(res, 200, { ok: true, service: "Cloud API", version: "1.2.1", time: Date.now() });
 			return;
 		}
 

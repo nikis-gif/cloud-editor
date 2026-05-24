@@ -21,7 +21,7 @@
 					<img class="session-gate-logo" src="/assets/cloud-logo.png" alt="Cloud" />
 					<div>
 						<strong>Cloud</strong>
-						<span>A complete integrated development environment for Roblox.</span>
+						<span>A clean workspace for Roblox development.</span>
 					</div>
 				</div>
 				<div class="session-top-actions">
@@ -39,19 +39,29 @@
 						<span class="session-pill">Private Cloud</span>
 						<span class="cloud-live-pill"><i></i> Ready</span>
 					</div>
-					<h1>Keep your scripts close to the sky.</h1>
-					<p>Open a private session and work from a calm, synced workspace built for Roblox development.</p>
+					<h1>Build scripts without leaving your flow.</h1>
+					<p>Connect the Cloud plugin, open your project, edit Luau scripts, and keep the workspace synced without visual noise.</p>
 					<div class="cloud-window-preview" aria-hidden="true">
 						<div class="cloud-window-top"><span></span><span></span><span></span></div>
 						<div class="cloud-window-body">
 							<div class="cloud-window-tree"><b></b><b></b><b></b><b></b></div>
-							<div class="cloud-window-code"><i></i><i></i><i></i><i></i><i></i></div>
+							<div class="cloud-window-code animated-code"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 						</div>
 					</div>
 					<div class="session-feature-grid cloud-feature-grid">
 						<div><strong>Live workspace</strong><span>Edit, save and keep your project in sync.</span></div>
 						<div><strong>Focused tabs</strong><span>Your scripts stay organized without visual noise.</span></div>
 						<div><strong>Private access</strong><span>Your session only opens with the correct secret.</span></div>
+					</div>
+					<div class="gate-info-grid">
+						<section id="cloudLearnPanel" class="gate-info-card">
+							<strong>How to connect</strong>
+							<span>Open the Cloud plugin in Roblox Studio, create a session, copy the Session ID and Secret, then paste them here.</span>
+						</section>
+						<section class="gate-info-card release-card">
+							<strong>Update notes</strong>
+							<code>v1.2.1 · New endpoint, tab actions, themes, languages and autocomplete cleanup.</code>
+						</section>
 					</div>
 				</section>
 				<section class="session-login-card cloud-login-card">
@@ -80,6 +90,7 @@
 					<div class="session-gate-actions">
 						<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download app</a>
 						<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
+						<a href="#cloudLearnPanel">Learn</a>
 					</div>
 					<div class="cloud-login-note">Local app is used first. Cloud service is used when the app is closed.</div>
 				</section>
@@ -93,7 +104,7 @@
 				<img class="brand-logo" src="/assets/cloud-logo.png" alt="Cloud" />
 				<div class="brand-copy">
 					<strong>Cloud</strong>
-					<span>A complete integrated development environment for Roblox.</span>
+					<span>A clean workspace for Roblox development.</span>
 				</div>
 			</div>
 
@@ -350,13 +361,24 @@
 							<span>Pick a mood, then fine tune it</span>
 						</div>
 						<div class="theme-preset-grid">
+							<button type="button" class="theme-preset" data-theme-preset="cloud-black-gray"><span style="--a:#090a0e;--b:#2b303a;--c:#9ca3af"></span><strong>Black / Gray</strong><em>Default</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-white"><span style="--a:#ffffff;--b:#e9eef7;--c:#3b82f6"></span><strong>White</strong><em>Bright</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-pink"><span style="--a:#1b0f18;--b:#ec4899;--c:#f9a8d4"></span><strong>Pink</strong><em>Soft</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-purple"><span style="--a:#130f24;--b:#8b5cf6;--c:#c4b5fd"></span><strong>Purple</strong><em>Cloud</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-matrix"><span style="--a:#020403;--b:#00ff84;--c:#0f5132"></span><strong>Matrix</strong><em>Terminal</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-bubble"><span style="--a:#0f172a;--b:#22d3ee;--c:#f0abfc"></span><strong>Bubble</strong><em>Playful</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-sky"><span style="--a:#06162e;--b:#38bdf8;--c:#dbeafe"></span><strong>Sky</strong><em>Clean</em></button>
 							<button type="button" class="theme-preset" data-theme-preset="cloud-dark"><span style="--a:#111827;--b:#6d5dfc;--c:#60a5fa"></span><strong>Cloud Dark</strong><em>Balanced</em></button>
-							<button type="button" class="theme-preset" data-theme-preset="cloud-codex"><span style="--a:#0f1115;--b:#7c86a8;--c:#d1d5db"></span><strong>Graphite</strong><em>Clean</em></button>
-							<button type="button" class="theme-preset" data-theme-preset="cloud-midnight"><span style="--a:#08111f;--b:#3b82f6;--c:#93c5fd"></span><strong>Midnight</strong><em>Deep</em></button>
-							<button type="button" class="theme-preset" data-theme-preset="cloud-ocean"><span style="--a:#07131e;--b:#0ea5e9;--c:#67e8f9"></span><strong>Ocean</strong><em>Soft</em></button>
 						</div>
 						<label class="hidden-setting-label" for="editorThemeInput">Editor theme</label>
 						<select id="editorThemeInput" class="theme-select">
+							<option value="cloud-black-gray">Black / Gray</option>
+							<option value="cloud-white">White</option>
+							<option value="cloud-pink">Pink</option>
+							<option value="cloud-purple">Purple</option>
+							<option value="cloud-matrix">Matrix</option>
+							<option value="cloud-bubble">Bubble</option>
+							<option value="cloud-sky">Sky</option>
 							<option value="cloud-dark">Cloud Dark</option>
 							<option value="cloud-codex">Codex Graphite</option>
 							<option value="cloud-graphite">Graphite</option>
@@ -417,6 +439,30 @@
 				<div class="modal-actions beta-actions">
 					<button id="betaContinueButton" class="primary-button">Continue to Cloud</button>
 				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="updateModal" class="modal-backdrop update-backdrop">
+		<div class="modal update-modal">
+			<div class="modal-head">
+				<div>
+					<div class="modal-title">Cloud update</div>
+					<div id="updateModalSubtitle" class="modal-subtitle">A new version is available.</div>
+				</div>
+				<button id="closeUpdateModalButton" class="icon-button" aria-label="Close update modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="updateProgressBox" class="update-progress-box">
+					<strong id="updateStatusText">Preparing update...</strong>
+					<span id="updateStatusDescription">Cloud will download the installer and install it when ready.</span>
+					<div class="update-progress-track"><i id="updateProgressBar"></i></div>
+				</div>
+				<pre class="update-code-note"><code>release: v1.2.1
+status: ready_for_download
+channel: stable</code></pre>
 			</div>
 		</div>
 	</div>

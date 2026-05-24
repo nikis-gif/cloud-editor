@@ -791,7 +791,7 @@ textarea:focus { border-color: color-mix(in srgb, var(--accent) 65%, white 15%);
 }
 
 
-/* Cloud v1.1.4 responsive scale and motion pass */
+/* Cloud v1.2.1 responsive motion pass */
 html {
 	text-size-adjust: 100%;
 }
@@ -1037,5 +1037,175 @@ body.workspace-ready .app {
 		animation-iteration-count: 1 !important;
 		scroll-behavior: auto !important;
 		transition-duration: 0.01ms !important;
+	}
+}
+
+.session-gate-actions {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gate-info-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 10px;
+	margin-top: 12px;
+}
+
+.gate-info-card {
+	min-width: 0;
+	padding: 14px;
+	border: 1px solid var(--border);
+	border-radius: 18px;
+	background: color-mix(in srgb, var(--bg-soft) 88%, var(--accent-soft));
+}
+
+.gate-info-card strong {
+	display: block;
+	margin-bottom: 8px;
+	font-size: 13px;
+	color: var(--text-strong);
+}
+
+.gate-info-card span,
+.gate-info-card code {
+	display: block;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--muted);
+}
+
+.gate-info-card code {
+	padding: 10px;
+	border-radius: 12px;
+	background: var(--editor-bg);
+	border: 1px solid var(--border);
+	font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+	white-space: pre-wrap;
+}
+
+.animated-code i {
+	transform-origin: left center;
+	animation: cloudCodePulse 2.6s ease-in-out infinite;
+}
+
+.animated-code i:nth-child(2) { animation-delay: .12s; }
+.animated-code i:nth-child(3) { animation-delay: .24s; }
+.animated-code i:nth-child(4) { animation-delay: .36s; }
+.animated-code i:nth-child(5) { animation-delay: .48s; }
+.animated-code i:nth-child(6) { width: 70%; animation-delay: .60s; }
+.animated-code i:nth-child(7) { width: 38%; background: color-mix(in srgb, var(--accent) 44%, transparent); animation-delay: .72s; }
+
+@keyframes cloudCodePulse {
+	0%, 100% { opacity: .48; transform: scaleX(.96); }
+	45% { opacity: .95; transform: scaleX(1); }
+}
+
+.tab-context-menu {
+	position: fixed;
+	z-index: 160;
+	min-width: 208px;
+	padding: 6px;
+	border: 1px solid var(--border);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--panel) 94%, black 6%);
+	box-shadow: 0 24px 70px rgba(0,0,0,.36);
+	animation: cloudContextIn 120ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.tab-context-menu button {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px 11px;
+	border-radius: 10px;
+	color: var(--text);
+	font-size: 12px;
+	font-weight: 760;
+	text-align: left;
+}
+
+.tab-context-menu button:hover {
+	background: var(--panel-3);
+	color: var(--text-strong);
+}
+
+.tab-context-menu .hint {
+	font-size: 10px;
+	font-weight: 700;
+	color: var(--muted-2);
+}
+
+@keyframes cloudContextIn {
+	from { opacity: 0; transform: translateY(4px) scale(.98); }
+	to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.update-modal {
+	width: min(520px, 100%);
+}
+
+.update-progress-box {
+	display: grid;
+	gap: 8px;
+	padding: 14px;
+	border: 1px solid var(--border);
+	border-radius: 18px;
+	background: var(--bg-soft);
+}
+
+.update-progress-box strong {
+	color: var(--text-strong);
+	font-size: 15px;
+}
+
+.update-progress-box span {
+	color: var(--muted);
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.update-progress-track {
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--panel-3);
+}
+
+.update-progress-track i {
+	display: block;
+	width: 0%;
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--accent), var(--accent-2));
+	transition: width 180ms ease;
+}
+
+.update-code-note {
+	margin: 0;
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	background: var(--editor-bg);
+	color: var(--text);
+	font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	overflow: auto;
+}
+
+.editor-preview[data-theme="cloud-black-gray"] { background: #090a0e; color: #e5e7eb; }
+.editor-preview[data-theme="cloud-white"] { background: #ffffff; color: #1f2937; }
+.editor-preview[data-theme="cloud-pink"] { background: #1b0f18; color: #ffe4f1; }
+.editor-preview[data-theme="cloud-purple"] { background: #130f24; color: #ede9fe; }
+.editor-preview[data-theme="cloud-matrix"] { background: #020403; color: #b7ffd8; }
+.editor-preview[data-theme="cloud-bubble"] { background: #10172a; color: #e0f2fe; }
+.editor-preview[data-theme="cloud-sky"] { background: #06162e; color: #eaf6ff; }
+
+@media (max-width: 760px) {
+	.gate-info-grid,
+	.session-gate-actions {
+		grid-template-columns: 1fr;
 	}
 }

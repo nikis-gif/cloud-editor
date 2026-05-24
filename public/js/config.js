@@ -45,7 +45,7 @@ export const DEFAULT_SETTINGS = {
 	fontSize: 14,
 	autosaveMs: 3000,
 	wordWrap: "off",
-	editorTheme: "cloud-dark",
+	editorTheme: "cloud-black-gray",
 	minimap: true,
 };
 

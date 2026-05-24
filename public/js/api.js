@@ -5,11 +5,11 @@ function buildHeaders(auth, extra = {}) {
 	};
 
 	if (auth && auth.sessionId) {
-		headers["X-Forge-Session"] = auth.sessionId;
+		headers["X-Cloud-Session"] = auth.sessionId;
 	}
 
 	if (auth && auth.secret) {
-		headers["X-Forge-Secret"] = auth.secret;
+		headers["X-Cloud-Secret"] = auth.secret;
 	}
 
 	return headers;
