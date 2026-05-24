@@ -1,0 +1,94 @@
+{
+	"name": "cloud-editor",
+	"version": "1.2.0",
+	"description": "Cloud - an integrated development environment for Roblox.",
+	"private": true,
+	"main": "electron/main.js",
+	"author": "Niki",
+	"license": "UNLICENSED",
+	"scripts": {
+		"start": "node server.js",
+		"desktop": "electron .",
+		"dev:app": "electron .",
+		"build:win": "electron-builder --win nsis --publish never",
+		"build:app": "electron-builder",
+		"release": "electron-builder --win nsis --publish always",
+		"release:win": "electron-builder --win nsis --publish always"
+	},
+	"dependencies": {
+		"electron-updater": "^6.3.9",
+		"discord-rpc": "^4.0.1"
+	},
+	"devDependencies": {
+		"electron": "^39.0.0",
+		"electron-builder": "^26.0.12"
+	},
+	"build": {
+		"appId": "com.cloud.editor",
+		"productName": "Cloud",
+		"asar": true,
+		"directories": {
+			"output": "dist"
+		},
+		"files": [
+			"electron/**/*",
+			"public/**/*",
+			"src/**/*",
+			"server.js",
+			"package.json",
+			"public/assets/cloud-icon.ico",
+			"public/assets/cloud-icon.png",
+			"public/assets/cloud-logo.png"
+		],
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "nikis-gif",
+				"repo": "cloud-editor",
+				"releaseType": "release"
+			}
+		],
+		"win": {
+			"target": [
+				{
+					"target": "nsis",
+					"arch": [
+						"x64"
+					]
+				}
+			],
+			"artifactName": "Cloud-Setup.${ext}",
+			"icon": "public/assets/cloud-icon.ico"
+		},
+		"nsis": {
+			"oneClick": false,
+			"perMachine": false,
+			"allowElevation": true,
+			"allowToChangeInstallationDirectory": true,
+			"createDesktopShortcut": true,
+			"createStartMenuShortcut": true,
+			"shortcutName": "Cloud",
+			"installerIcon": "public/assets/cloud-icon.ico",
+			"uninstallerIcon": "public/assets/cloud-icon.ico",
+			"installerHeaderIcon": "public/assets/cloud-icon.ico"
+		},
+		"mac": {
+			"target": [
+				"dmg"
+			],
+			"category": "public.app-category.developer-tools"
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			],
+			"category": "Development"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nikis-gif/cloud-editor.git"
+	},
+	"homepage": "https://github.com/nikis-gif/cloud-editor#readme"
+}
