@@ -3503,3 +3503,301 @@ body::after,
 		display: none;
 	}
 }
+
+
+body {
+	min-width: 1180px;
+}
+
+.titlebar {
+	height: 40px;
+	padding: 0 10px;
+	grid-template-columns: auto minmax(180px, 240px) auto;
+	gap: 10px;
+}
+
+.brand {
+	gap: 8px;
+}
+
+.brand-copy {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	min-width: 0;
+}
+
+.command-center {
+	height: 30px;
+	padding: 0 10px;
+}
+
+.title-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.title-actions > .secondary-button,
+.title-actions > .download-app-button,
+.title-actions > .roblox-plugin-button,
+.title-actions > .appearance-select,
+.title-actions > .icon-button,
+.vscode-gate-actions > .appearance-select,
+.vscode-gate-actions > .open-learn-button,
+.vscode-gate-actions > a,
+.editor-actions > .secondary-button,
+.modal-actions > .secondary-button,
+.modal-actions > .primary-button,
+#gateConnectButton,
+.primary-button,
+.secondary-button,
+.download-app-button,
+.roblox-plugin-button,
+.appearance-select {
+	height: 30px;
+	min-height: 30px;
+	padding: 0 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	box-shadow: none;
+	transform: none;
+}
+
+.icon-button {
+	width: 30px;
+	min-width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: 4px;
+}
+
+.primary-button,
+#gateConnectButton,
+.vscode-login-form .gate-connect-button {
+	background: #0e639c;
+	border-color: #1177bb;
+	color: #ffffff;
+	box-shadow: none;
+}
+
+.primary-button:hover:not(:disabled),
+#gateConnectButton:hover,
+.vscode-login-form .gate-connect-button:hover {
+	background: #1177bb;
+	border-color: #1681d7;
+	filter: none;
+	transform: none;
+	box-shadow: none;
+}
+
+.secondary-button:hover:not(:disabled),
+.download-app-button:hover,
+.roblox-plugin-button:hover,
+.icon-button:hover,
+.appearance-select:hover,
+.tab:hover,
+.tree-row:hover,
+.vscode-gate-actions .open-learn-button:hover,
+.vscode-gate-actions a:hover {
+	transform: none;
+}
+
+.sidebar,
+.vscode-gate-explorer {
+	background: #252526;
+}
+
+.vscode-gate {
+	grid-template-rows: 36px minmax(0, 1fr);
+}
+
+.vscode-gate-workbench {
+	grid-template-columns: 48px 238px minmax(0, 1fr);
+}
+
+.vscode-gate-explorer {
+	padding: 10px 10px 12px;
+}
+
+.vscode-section {
+	margin-top: 8px;
+}
+
+.vscode-gate-editor {
+	grid-template-rows: 35px minmax(0, 1fr);
+}
+
+.vscode-editor-content {
+	grid-template-columns: minmax(520px, 700px) minmax(320px, 360px);
+	max-width: 1120px;
+	width: 100%;
+	margin: 0 auto;
+	padding: 24px 26px;
+	gap: 20px;
+	align-content: center;
+}
+
+.vscode-welcome-card,
+.vscode-login-card {
+	border-radius: 6px;
+}
+
+.vscode-welcome-card {
+	min-height: 320px;
+	padding: 30px 32px;
+	gap: 16px;
+}
+
+.vscode-welcome-card h1 {
+	font-size: clamp(34px, 3.5vw, 52px);
+}
+
+.vscode-welcome-card p {
+	max-width: 520px;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.vscode-rotator {
+	min-height: 38px;
+	padding: 0 14px;
+	font-size: 12px;
+}
+
+.vscode-login-card {
+	min-height: 320px;
+	align-self: stretch;
+	align-content: start;
+	padding: 22px;
+	gap: 16px;
+}
+
+.vscode-login-head h2 {
+	font-size: 22px;
+}
+
+.vscode-login-form {
+	gap: 8px;
+}
+
+.vscode-login-form input,
+#gateSessionInput,
+#gateSecretInput {
+	height: 32px;
+}
+
+.vscode-learn-inline {
+	min-height: 36px;
+	padding: 8px 10px;
+}
+
+.tabs {
+	height: 35px;
+	padding: 0;
+	gap: 0;
+	background: #181818;
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex-wrap: nowrap;
+	scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar,
+.vscode-editor-tabs::-webkit-scrollbar {
+	display: none;
+}
+
+.tab,
+.vscode-editor-tab {
+	flex: 0 0 auto;
+	min-width: 156px;
+	max-width: 220px;
+	height: 34px;
+	padding: 0 12px;
+	border-right: 1px solid #2b2b2b;
+	white-space: nowrap;
+}
+
+.tab {
+	border-top: 0;
+	border-left: 0;
+	border-bottom: 0;
+}
+
+.tab-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 150px;
+}
+
+.tab-close {
+	width: 18px;
+	height: 18px;
+	border-radius: 3px;
+}
+
+.editor-header {
+	height: 42px;
+	padding: 0 12px;
+}
+
+.editor-title strong {
+	font-size: 12px;
+}
+
+.editor-title span {
+	font-size: 11px;
+}
+
+.editor-actions {
+	gap: 6px;
+}
+
+.editor-actions .secondary-button {
+	height: 28px;
+	padding: 0 10px;
+}
+
+.footer {
+	height: 22px;
+	padding: 0 10px;
+	font-size: 11px;
+}
+
+.modal,
+.connection-modal,
+.create-modal,
+.search-modal,
+.settings-modal {
+	border-radius: 6px;
+}
+
+.modal-head {
+	min-height: 42px;
+}
+
+@media (max-width: 1280px) {
+	body {
+		min-width: 0;
+	}
+
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) 320px;
+		max-width: 100%;
+	}
+}
+
+@media (max-width: 920px) {
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr);
+		align-content: start;
+		padding: 18px;
+	}
+
+	.vscode-login-card {
+		min-height: auto;
+	}
+}
