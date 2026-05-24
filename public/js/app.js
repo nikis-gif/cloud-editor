@@ -122,6 +122,10 @@ const refs = {
 	gateSessionInput: document.getElementById("gateSessionInput"),
 	gateSecretInput: document.getElementById("gateSecretInput"),
 	gateConnectButton: document.getElementById("gateConnectButton"),
+	openLearnButton: document.getElementById("openLearnButton"),
+	learnModal: document.getElementById("learnModal"),
+	closeLearnButton: document.getElementById("closeLearnButton"),
+	entryPhraseText: document.getElementById("entryPhraseText"),
 };
 
 setupUi(refs);
@@ -135,6 +139,9 @@ const state = {
 	nodeByKey: new Map(),
 	selectedKey: "",
 	selectedPayload: null,
+	selectedKeys: new Set(),
+	lastSelectedKey: "",
+	clipboard: { mode: "copy", items: [] },
 	currentFileId: "",
 	secondaryFileId: "",
 	activeGroup: "primary",
@@ -440,13 +447,135 @@ function setSelectedNode(node) {
 	if (!node) {
 		state.selectedKey = "";
 		state.selectedPayload = null;
+		state.selectedKeys.clear();
+		state.lastSelectedKey = "";
 	} else {
 		state.selectedKey = node.key;
 		state.selectedPayload = getParentPayload(node);
+		state.selectedKeys.clear();
+		if (node.item) state.selectedKeys.add(node.key);
+		state.lastSelectedKey = node.key;
 	}
 
 	renderTree();
 	updateEditorHeader();
+}
+
+function pruneSelectedKeys() {
+	for (const key of Array.from(state.selectedKeys)) {
+		if (!state.nodeByKey.has(key)) state.selectedKeys.delete(key);
+	}
+
+	if (state.selectedKey && !state.nodeByKey.has(state.selectedKey)) {
+		state.selectedKey = "";
+		state.selectedPayload = null;
+	}
+}
+
+function getVisibleItemKeys() {
+	return Array.from(refs.treeEl.querySelectorAll(".tree-row[data-key]"))
+		.map(row => row.dataset.key || "")
+		.filter(key => key.startsWith("item:"));
+}
+
+function selectRangeToNode(node) {
+	const keys = getVisibleItemKeys();
+	const start = keys.indexOf(state.lastSelectedKey);
+	const end = keys.indexOf(node.key);
+
+	if (start < 0 || end < 0) {
+		state.selectedKeys.clear();
+		if (node.item) state.selectedKeys.add(node.key);
+		return;
+	}
+
+	const from = Math.min(start, end);
+	const to = Math.max(start, end);
+	state.selectedKeys = new Set(keys.slice(from, to + 1));
+}
+
+function handleTreeSelection(node, event) {
+	if (!node) return false;
+
+	if (!node.item) {
+		setSelectedNode(node);
+		return false;
+	}
+
+	if (event && event.shiftKey) {
+		selectRangeToNode(node);
+		state.selectedKey = node.key;
+		state.selectedPayload = getParentPayload(node);
+		state.lastSelectedKey = node.key;
+		renderTree();
+		updateEditorHeader();
+		return true;
+	}
+
+	if (event && (event.ctrlKey || event.metaKey)) {
+		if (state.selectedKeys.has(node.key)) {
+			state.selectedKeys.delete(node.key);
+		} else {
+			state.selectedKeys.add(node.key);
+		}
+
+		state.selectedKey = node.key;
+		state.selectedPayload = state.selectedKeys.size > 0 ? getParentPayload(node) : null;
+		state.lastSelectedKey = node.key;
+		renderTree();
+		updateEditorHeader();
+		return true;
+	}
+
+	setSelectedNode(node);
+	return false;
+}
+
+function isEditorEventTarget(target) {
+	return !!(target && target.closest && target.closest(".monaco-editor, #monacoEditor, #monacoEditorSecondary, #fallbackEditor, #fallbackEditorSecondary"));
+}
+
+function getSelectedItems(includeFallback = true) {
+	const ids = [];
+	for (const key of state.selectedKeys) {
+		if (key.startsWith("item:")) ids.push(key.slice(5));
+	}
+
+	if (includeFallback && ids.length === 0 && state.selectedPayload && state.selectedPayload.itemId) {
+		ids.push(state.selectedPayload.itemId);
+	}
+
+	const seen = new Set();
+	const items = [];
+	for (const id of ids) {
+		if (!id || seen.has(id)) continue;
+		seen.add(id);
+		const item = getLoadedFile(id);
+		if (item) items.push(item);
+	}
+
+	return items;
+}
+
+function isClipboardItem(item) {
+	return item && (isScriptClass(item.className) || isContainerClass(item.className));
+}
+
+function getTopLevelItems(items) {
+	const selectedIds = new Set(items.map(item => item.fileId));
+	return items.filter(item => {
+		let cursor = item;
+		const visited = new Set();
+
+		while (cursor && cursor.parentItemId) {
+			if (selectedIds.has(cursor.parentItemId)) return false;
+			if (visited.has(cursor.parentItemId)) return true;
+			visited.add(cursor.parentItemId);
+			cursor = getLoadedFile(cursor.parentItemId);
+		}
+
+		return true;
+	});
 }
 
 function getActiveFileId(group = state.activeGroup) {
@@ -652,6 +781,40 @@ function handleGlobalShortcut(event) {
 
 	if (!mod) return false;
 
+	if (!event.shiftKey && !event.altKey && (key === "s" || code === "KeyS")) {
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		saveCurrentFile(false, getActiveFileId(state.activeGroup || "primary"));
+		return true;
+	}
+
+	if (!event.shiftKey && !event.altKey && !isInputLike(event.target) && !isEditorEventTarget(event.target)) {
+		if (key === "c" || code === "KeyC") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			copySelectedItems(false);
+			return true;
+		}
+
+		if (key === "x" || code === "KeyX") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			copySelectedItems(true);
+			return true;
+		}
+
+		if (key === "v" || code === "KeyV") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			pasteClipboardItems();
+			return true;
+		}
+	}
+
 	if (!event.shiftKey && !event.altKey) {
 		let tabIndex = 0;
 
@@ -675,7 +838,11 @@ function handleGlobalShortcut(event) {
 		event.preventDefault();
 		event.stopPropagation();
 		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
-		duplicateCurrentScript(state.activeGroup || "primary");
+		if (!isInputLike(event.target) && !isEditorEventTarget(event.target) && getSelectedItems(true).length > 0) {
+			duplicateSelectedItems();
+		} else {
+			duplicateCurrentScript(state.activeGroup || "primary");
+		}
 		return true;
 	}
 
@@ -1193,6 +1360,8 @@ function switchTab(fileId, group = "primary") {
 		itemId: tab.fileId,
 		label: tab.root + "/" + tab.relativePath,
 	};
+	state.selectedKeys = new Set(["item:" + fileId]);
+	state.lastSelectedKey = "item:" + fileId;
 
 	state.editor.setValue(tab.source, targetGroup);
 	restoreEditorViewForTab(tab, targetGroup);
@@ -1333,7 +1502,11 @@ async function saveCurrentFile(silent = false, fileId = getActiveFileId()) {
 	if (!hasConnection() || !fileId) return;
 
 	const tab = state.openTabs.get(fileId);
-	if (!tab || !tab.dirty) return;
+	if (!tab) return;
+	if (!tab.dirty) {
+		if (!silent) setStatus("No changes to save.", "success");
+		return;
+	}
 
 	if (tab.fileId === state.secondaryFileId) {
 		tab.source = state.editor.getValue("secondary");
@@ -1402,6 +1575,7 @@ async function loadSessionFiles(showStatus = true) {
 		const data = await fetchSessionFiles(getAuth());
 		state.files = Array.isArray(data.files) ? data.files : [];
 		updateFileIndex();
+		pruneSelectedKeys();
 		updateConnectionUi(true, "Connected");
 
 		for (const tab of Array.from(state.openTabs.values())) {
@@ -1644,6 +1818,9 @@ function disconnectSession() {
 	state.editor.setSplit(false);
 	state.selectedKey = "";
 	state.selectedPayload = null;
+	state.selectedKeys.clear();
+	state.lastSelectedKey = "";
+	state.clipboard = { mode: "copy", items: [] };
 	sessionStorage.removeItem(SESSION_STORAGE.sessionId);
 	sessionStorage.removeItem(SESSION_STORAGE.secret);
 	try { localStorage.removeItem(workspaceKey); } catch (error) {}
@@ -1965,38 +2142,43 @@ async function moveItem(fileId, targetParent) {
 	}
 }
 
+function getDeleteTargets() {
+	return getTopLevelItems(getSelectedItems(true));
+}
+
 function getDeleteTarget() {
-	if (state.selectedPayload && state.selectedPayload.itemId) {
-		return getLoadedFile(state.selectedPayload.itemId);
-	}
-
-	if (state.currentFileId) {
-		return getLoadedFile(state.currentFileId);
-	}
-
-	return null;
+	return getDeleteTargets()[0] || null;
 }
 
 async function deleteSelectedItem() {
-	const item = getDeleteTarget();
-	if (!item) {
+	const items = getDeleteTargets();
+	if (items.length === 0) {
 		showToast("Select a script or folder first.", "warning");
 		return;
 	}
 
+	const title = items.length === 1 ? "Delete Item" : "Delete Items";
+	const message = items.length === 1
+		? "Delete " + items[0].className + " " + getFullPath(items[0]) + "? Descendant scripts/folders will also be removed."
+		: "Delete " + items.length + " selected items? Descendant scripts/folders will also be removed.";
+
 	const confirmed = await requestConfirm({
-		title: "Delete Instance",
-		message: "Delete " + item.className + " " + getFullPath(item) + "? Descendant scripts/folders will also be removed.",
+		title,
+		message,
 		acceptText: "Delete",
 	});
 
 	if (!confirmed) return;
 
 	try {
-		const data = await deleteRemoteItem(getAuth(), item.fileId);
-		const removed = Array.isArray(data.removed) ? data.removed : [{ fileId: item.fileId }];
+		const removedItems = [];
+		for (const item of items) {
+			const data = await deleteRemoteItem(getAuth(), item.fileId);
+			const removed = Array.isArray(data.removed) ? data.removed : [{ fileId: item.fileId }];
+			removedItems.push(...removed);
+		}
 
-		for (const removedItem of removed) {
+		for (const removedItem of removedItems) {
 			if (state.openTabs.has(removedItem.fileId)) {
 				await closeTab(removedItem.fileId, true);
 			}
@@ -2004,13 +2186,211 @@ async function deleteSelectedItem() {
 
 		state.selectedKey = "";
 		state.selectedPayload = null;
+		state.selectedKeys.clear();
+		state.lastSelectedKey = "";
 		await loadSessionFiles(false);
-		showToast("Deleted " + item.name + ".", "success");
+		showToast(items.length === 1 ? "Deleted " + items[0].name + "." : "Deleted " + items.length + " selected items.", "success");
 	} catch (error) {
 		showToast(error.message, "error");
 		setStatus(error.message, "error");
 	}
 }
+
+function getClipboardParent() {
+	const selected = state.selectedPayload && state.selectedPayload.itemId ? getLoadedFile(state.selectedPayload.itemId) : null;
+
+	if (selected && isContainerClass(selected.className)) {
+		return {
+			root: selected.root,
+			relativePath: selected.relativePath || "",
+			itemId: selected.fileId,
+			label: selected.root + "/" + selected.relativePath,
+		};
+	}
+
+	if (selected) {
+		const parentRelativePath = selected.parentRelativePath || getParentPath(selected.relativePath);
+		return {
+			root: selected.root,
+			relativePath: parentRelativePath,
+			itemId: selected.parentItemId || "",
+			label: selected.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+		};
+	}
+
+	return getBestCreationParent();
+}
+
+function copySelectedItems(cut = false) {
+	const items = getTopLevelItems(getSelectedItems(true)).filter(isClipboardItem);
+
+	if (items.length === 0) {
+		showToast("Select one or more scripts or folders first.", "warning");
+		return false;
+	}
+
+	state.clipboard = {
+		mode: cut ? "cut" : "copy",
+		items: items.map(item => ({
+			fileId: item.fileId,
+			name: item.name,
+			className: item.className,
+			root: item.root,
+			relativePath: item.relativePath,
+		})),
+	};
+
+	showToast((cut ? "Cut " : "Copied ") + items.length + (items.length === 1 ? " item." : " items."), "success");
+	return true;
+}
+
+function getChildItems(item) {
+	if (!item) return [];
+	return state.files
+		.filter(child => (child.parentItemId || "") === item.fileId)
+		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function getSourceForClipboard(item) {
+	if (!isScriptItem(item)) return "";
+
+	const tab = state.openTabs.get(item.fileId);
+	if (tab) {
+		if (item.fileId === state.currentFileId) tab.source = state.editor.getValue("primary");
+		if (item.fileId === state.secondaryFileId) tab.source = state.editor.getValue("secondary");
+		return tab.source || "";
+	}
+
+	const data = await fetchSource(getAuth(), item.fileId);
+	return data.source || "";
+}
+
+async function copyItemIntoParent(item, parent, nameOverride = "") {
+	const name = nameOverride || getUniqueChildName(parent, item.name + " Copy");
+	const source = await getSourceForClipboard(item);
+	const data = await createRemoteItem(getAuth(), {
+		className: item.className,
+		name,
+		root: parent.root,
+		parentRelativePath: parent.relativePath || "",
+		parentItemId: parent.itemId || "",
+		source,
+	});
+
+	const created = data.item || null;
+	if (created && isContainerClass(created.className)) {
+		const childParent = {
+			root: created.root,
+			relativePath: created.relativePath || "",
+			itemId: created.fileId,
+			label: created.root + "/" + created.relativePath,
+		};
+
+		for (const child of getChildItems(item)) {
+			if (isClipboardItem(child)) await copyItemIntoParent(child, childParent, child.name);
+		}
+	}
+
+	return created;
+}
+
+async function pasteClipboardItems() {
+	if (!hasConnection()) return false;
+	if (!state.clipboard.items || state.clipboard.items.length === 0) {
+		showToast("Copy or cut scripts first.", "warning");
+		return false;
+	}
+
+	const targetParent = getClipboardParent();
+	const topItems = state.clipboard.items
+		.map(entry => getLoadedFile(entry.fileId))
+		.filter(isClipboardItem);
+
+	if (topItems.length === 0) {
+		showToast("The copied items are no longer available.", "warning");
+		state.clipboard = { mode: "copy", items: [] };
+		return false;
+	}
+
+	try {
+		setStatus("Pasting " + topItems.length + " item(s)...", "warning");
+		let lastCreated = null;
+
+		if (state.clipboard.mode === "cut") {
+			for (const item of topItems) {
+				if (isDescendantTarget(item, targetParent)) {
+					showToast("Cannot move " + item.name + " inside itself.", "warning");
+					continue;
+				}
+
+				if (item.root === targetParent.root && (item.parentRelativePath || getParentPath(item.relativePath)) === (targetParent.relativePath || "")) {
+					continue;
+				}
+
+				await moveRemoteItem(getAuth(), item.fileId, {
+					root: targetParent.root,
+					parentRelativePath: targetParent.relativePath || "",
+					parentItemId: targetParent.itemId || "",
+					name: item.name,
+				});
+			}
+
+			state.clipboard = { mode: "copy", items: [] };
+		} else {
+			for (const item of topItems) {
+				lastCreated = await copyItemIntoParent(item, targetParent);
+			}
+		}
+
+		await loadSessionFiles(false);
+		if (lastCreated && isScriptItem(lastCreated)) await openFile(lastCreated);
+		showToast("Pasted " + topItems.length + (topItems.length === 1 ? " item." : " items."), "success");
+		return true;
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+		return false;
+	}
+}
+
+function getParentForItem(item) {
+	const parentRelativePath = item.parentRelativePath || getParentPath(item.relativePath);
+	return {
+		root: item.root,
+		relativePath: parentRelativePath,
+		itemId: item.parentItemId || "",
+		label: item.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+	};
+}
+
+async function duplicateSelectedItems() {
+	if (!hasConnection()) return false;
+	const items = getTopLevelItems(getSelectedItems(true)).filter(isClipboardItem);
+
+	if (items.length === 0) {
+		showToast("Select one or more scripts or folders first.", "warning");
+		return false;
+	}
+
+	try {
+		setStatus("Duplicating " + items.length + " item(s)...", "warning");
+		let lastCreated = null;
+
+		for (const item of items) {
+			lastCreated = await copyItemIntoParent(item, getParentForItem(item));
+		}
+
+		await loadSessionFiles(false);
+		if (lastCreated && isScriptItem(lastCreated)) await openFile(lastCreated);
+		showToast("Duplicated " + items.length + (items.length === 1 ? " item." : " items."), "success");
+		return true;
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+		return false;
+	}
+}
+
 
 function openSettings() {
 	populateLanguageSelect(refs.languageInput, state.language);
@@ -2199,6 +2579,35 @@ function closeBetaWarning() {
 }
 
 
+function openLearnModal() {
+	if (!refs.learnModal) return;
+	refs.learnModal.classList.add("open");
+}
+
+function closeLearnModal() {
+	if (!refs.learnModal) return;
+	refs.learnModal.classList.remove("open");
+}
+
+function bootEntryPhrases() {
+	if (!refs.entryPhraseText) return;
+	const phrases = [
+		"Welcome to Cloud, ready to build?",
+		"Connect once. Code with focus.",
+		"Your scripts, floating in one clean workspace.",
+		"Save fast, stay synced, keep building.",
+	];
+	let index = 0;
+	setInterval(() => {
+		index = (index + 1) % phrases.length;
+		refs.entryPhraseText.classList.add("changing");
+		setTimeout(() => {
+			refs.entryPhraseText.textContent = phrases[index];
+			refs.entryPhraseText.classList.remove("changing");
+		}, 180);
+	}, 3600);
+}
+
 function setupResizer() {
 	const saved = Number(localStorage.getItem(STORAGE.sidebar));
 	if (saved) {
@@ -2273,6 +2682,10 @@ function bindEvents() {
 	if (refs.gateConnectButton) refs.gateConnectButton.addEventListener("click", () => connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value));
 	if (refs.gateSessionInput) refs.gateSessionInput.addEventListener("keydown", event => { if (event.key === "Enter") connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value); });
 	if (refs.gateSecretInput) refs.gateSecretInput.addEventListener("keydown", event => { if (event.key === "Enter") connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value); });
+	document.querySelectorAll(".open-learn-button").forEach(button => button.addEventListener("click", openLearnModal));
+	if (refs.openLearnButton) refs.openLearnButton.addEventListener("click", openLearnModal);
+	if (refs.closeLearnButton) refs.closeLearnButton.addEventListener("click", closeLearnModal);
+	if (refs.learnModal) refs.learnModal.addEventListener("click", event => { if (event.target === refs.learnModal) closeLearnModal(); });
 	refs.connectionButton.addEventListener("click", openConnectionModal);
 	refs.closeConnectionButton.addEventListener("click", closeConnectionModal);
 	refs.cancelConnectionButton.addEventListener("click", closeConnectionModal);
@@ -2368,6 +2781,14 @@ function bindEvents() {
 	if (refs.betaContinueButton) refs.betaContinueButton.addEventListener("click", closeBetaWarning);
 
 	window.addEventListener("keydown", event => {
+		if (event.key === "Delete" && !isInputLike(event.target) && !isEditorEventTarget(event.target) && getDeleteTargets().length > 0) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			deleteSelectedItem();
+			return;
+		}
+
 		if (event.key === "F2" && !isInputLike(event.target)) {
 			event.preventDefault();
 			event.stopPropagation();
@@ -2410,13 +2831,14 @@ function bindEvents() {
 			startRenameSelected();
 		}
 
-		if (event.key === "Delete" && !isInputLike(event.target) && getDeleteTarget()) {
+		if (event.key === "Delete" && !isInputLike(event.target) && !isEditorEventTarget(event.target) && getDeleteTargets().length > 0) {
 			event.preventDefault();
 			deleteSelectedItem();
 		}
 
 		if (event.key === "Escape") {
 			closeProjectSearch();
+			closeLearnModal();
 			closeCreatePanel();
 			closeSettings();
 			closeConfirm(false);
@@ -2439,7 +2861,7 @@ function bootEditor() {
 		onCursor(position, group) {
 			state.activeGroup = group || state.activeGroup;
 			if (Date.now() >= state.suppressViewStateSaveUntil) saveEditorViewForGroup(group);
-			refs.footerRight.textContent = "Ln " + position.lineNumber + ", Col " + position.column + " · Ctrl+S save · Ctrl+D duplicate · Ctrl+1-9 tabs";
+			refs.footerRight.textContent = "Ln " + position.lineNumber + ", Col " + position.column + " · Ctrl+S save · Ctrl+D duplicate · Ctrl+C/X/V scripts";
 			updateEditorHeader();
 		},
 		onActiveGroup: setActiveGroup,
@@ -2465,6 +2887,7 @@ function boot() {
 	state.secret = savedSecret;
 
 	applyInterfaceTheme(state.settings.interfaceTheme || DEFAULT_SETTINGS.interfaceTheme);
+	bootEntryPhrases();
 	setupResizer();
 	bootEditor();
 	bindEvents();

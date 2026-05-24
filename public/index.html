@@ -14,6 +14,7 @@
 			<span class="entry-cloud cloud-one"></span>
 			<span class="entry-cloud cloud-two"></span>
 			<span class="entry-cloud cloud-three"></span>
+			<span class="entry-cloud cloud-four"></span>
 			<span class="entry-line line-one"></span>
 			<span class="entry-line line-two"></span>
 		</div>
@@ -21,7 +22,7 @@
 			<header class="entry-nav">
 				<a class="entry-brand" href="#" aria-label="Cloud home">
 					<img src="/assets/cloud-logo.png" alt="Cloud" />
-					<span><strong>Cloud</strong><em>Luau workspace</em></span>
+					<span><strong>Cloud</strong><em>Game scripting workspace</em></span>
 				</a>
 				<div class="entry-nav-actions">
 					<select id="gateAppearanceSelect" class="appearance-select" aria-label="Appearance">
@@ -29,33 +30,39 @@
 						<option value="dark">Dark</option>
 						<option value="light">Light</option>
 					</select>
-					<a href="#cloudLearnPanel">Learn</a>
+					<button type="button" class="open-learn-button">Learn</button>
 					<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
 				</div>
 			</header>
 
 			<main class="entry-content">
 				<section class="entry-left-card">
-					<div class="entry-badge"><i></i>Private workspace</div>
-					<h1>Your scripts, closer to the sky.</h1>
-					<p>Open Cloud, connect the plugin, and keep your Roblox project synced while you work in a clean editor built for long scripting sessions.</p>
+					<div class="entry-hero-copy">
+						<div class="entry-badge"><i></i>Private workspace</div>
+						<h1>Code lighter. Ship cleaner.</h1>
+						<div class="entry-welcome" aria-live="polite"><span id="entryPhraseText">Welcome to Cloud, ready to build?</span></div>
+						<p>Connect your session, open your project tree, and write scripts in a focused editor made for long building sessions.</p>
+					</div>
+
 					<div class="entry-code-orbit" aria-hidden="true">
 						<div class="entry-code-window">
-							<div class="entry-code-top"><span></span><span></span><span></span></div>
+							<div class="entry-code-top"><span></span><span></span><span></span><strong>Cloud Workspace</strong></div>
 							<div class="entry-code-body">
-								<code><b>local</b> Players = game:GetService(<em>"Players"</em>)</code>
-								<code>Players.PlayerAdded:<b>Connect</b>(function(player)</code>
-								<code>&nbsp;&nbsp;print(player.Name)</code>
-								<code>end)</code>
+								<code><b>local</b> Controller = {}</code>
+								<code><b>function</b> Controller:Start()</code>
+								<code>&nbsp;&nbsp;self.State = <em>"Ready"</em></code>
+								<code><b>end</b></code>
+								<code><b>return</b> Controller</code>
 							</div>
 						</div>
 						<span class="entry-mini-cloud mini-a"></span>
 						<span class="entry-mini-cloud mini-b"></span>
 					</div>
+
 					<div class="entry-metrics">
-						<div><strong>Local-first</strong><span>Desktop app before cloud fallback.</span></div>
-						<div><strong>Private</strong><span>Session ID and secret are required.</span></div>
-						<div><strong>Focused</strong><span>Tabs, search and sync in one place.</span></div>
+						<div><strong>Fast flow</strong><span>Open, edit, save and keep moving without noisy panels.</span></div>
+						<div><strong>Session safe</strong><span>Session ID and Hidden Secret stay required before loading files.</span></div>
+						<div><strong>Cloud feel</strong><span>Soft motion, clean spacing and calmer visuals for coding.</span></div>
 					</div>
 				</section>
 
@@ -63,32 +70,38 @@
 					<div class="entry-connect-head">
 						<span>Connect</span>
 						<strong>Enter your session</strong>
-						<p>Paste the Session ID and Secret created by the Cloud plugin.</p>
+						<p>Paste the credentials created by the Cloud plugin to enter your private workspace.</p>
 					</div>
 					<div class="entry-connect-visual" aria-hidden="true">
 						<div><i></i><span>Plugin</span></div>
 						<b></b>
 						<div><i></i><span>Cloud</span></div>
 						<b></b>
-						<div><i></i><span>Project</span></div>
+						<div><i></i><span>Workspace</span></div>
 					</div>
-					<label for="gateSessionInput">Session ID</label>
-					<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
-					<label for="gateSecretInput">Session Secret</label>
-					<input id="gateSecretInput" type="password" placeholder="Paste session secret" autocomplete="off" />
-					<button id="gateConnectButton" class="gate-connect-button">Enter Cloud</button>
+					<div class="entry-fields-card">
+						<label for="gateSessionInput">Session ID</label>
+						<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
+						<label for="gateSecretInput">Hidden Secret</label>
+						<input id="gateSecretInput" type="password" placeholder="Paste hidden secret" autocomplete="off" />
+						<button id="gateConnectButton" class="gate-connect-button">Enter Cloud</button>
+					</div>
+					<div class="entry-shortcuts">
+						<span>Ctrl + S Save</span>
+						<span>Shift + Click Multi-select</span>
+						<span>Del Delete</span>
+					</div>
 					<div class="session-gate-actions">
 						<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download app</a>
-						<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
-						<a href="#cloudLearnPanel">Learn</a>
+						<button type="button" class="open-learn-button">How it works</button>
 					</div>
 				</aside>
 			</main>
 
-			<section id="cloudLearnPanel" class="entry-learn-strip">
-				<div><strong>How to connect</strong><span>Open the Cloud plugin in Roblox Studio, create a session, copy the Session ID and Secret, then paste them into Cloud.</span></div>
-				<div><strong>Update notes</strong><span>v1.2.2 · New entry screen, fixed tab menu, script duplication shortcut and improved creation panel.</span></div>
-				<div><strong>Shortcut</strong><span>Ctrl + S saves the current script. Ctrl + D duplicates it with the same source.</span></div>
+			<section class="entry-learn-strip">
+				<div><strong>1 · Create session</strong><span>Open the plugin in your controlled game editor and generate a private Session ID with a Hidden Secret.</span></div>
+				<div><strong>2 · Paste credentials</strong><span>Enter both values here. Cloud loads the project tree only after the session is validated.</span></div>
+				<div><strong>3 · Build faster</strong><span>Save with Ctrl + S, multi-select with Shift, and copy, cut, paste or delete selected scripts.</span></div>
 			</section>
 		</div>
 	</div>
@@ -99,7 +112,7 @@
 				<img class="brand-logo" src="/assets/cloud-logo.png" alt="Cloud" />
 				<div class="brand-copy">
 					<strong>Cloud</strong>
-					<span>A clean workspace for Roblox development.</span>
+					<span>A clean workspace for game development.</span>
 				</div>
 			</div>
 
@@ -109,6 +122,7 @@
 			</div>
 
 			<div class="title-actions">
+				<button id="openLearnButton" class="secondary-button learn-top-button">Learn</button>
 				<a id="downloadAppButton" class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download Cloud App</a>
 				<a id="robloxPluginButton" class="roblox-plugin-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
 				<button id="connectionButton" class="icon-button" title="Connection" aria-label="Connection">
@@ -189,7 +203,7 @@
 
 		<footer class="footer">
 			<span id="footerLeft">Ready</span>
-			<span id="footerRight">Ctrl+W close tab · Ctrl+Shift+E fold script · Ctrl+E unfold script</span>
+			<span id="footerRight">Ctrl+S save · Shift+Click select · Ctrl+C/X/V copy cut paste · Delete remove</span>
 		</footer>
 	</div>
 
@@ -421,6 +435,38 @@
 			</div>
 		</div>
 	</div>
+	<div id="learnModal" class="modal-backdrop">
+		<div class="modal learn-modal">
+			<div class="modal-head learn-head">
+				<div>
+					<div class="modal-title">Learn Cloud</div>
+					<div class="modal-subtitle">A simple flow for connecting and coding inside your game development workspace.</div>
+				</div>
+				<button id="closeLearnButton" class="icon-button" aria-label="Close learn modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body learn-body">
+				<section class="learn-hero-panel">
+					<strong>Cloud keeps your scripting flow clean.</strong>
+					<span>The plugin creates a private session, the app reads the workspace tree, and every save is sent back through the same controlled connection.</span>
+				</section>
+				<div class="learn-steps">
+					<div><b>01</b><strong>Install Cloud</strong><span>Use the desktop app for the smoothest experience, or open the web version when you need a quick fallback.</span></div>
+					<div><b>02</b><strong>Open the plugin</strong><span>Inside your controlled game editor, open the Cloud plugin and create a fresh session.</span></div>
+					<div><b>03</b><strong>Copy credentials</strong><span>Copy the Session ID and Hidden Secret. They are required together so the workspace stays private.</span></div>
+					<div><b>04</b><strong>Enter Cloud</strong><span>Paste both values in the start panel. After validation, the Explorer loads your scripts and folders.</span></div>
+					<div><b>05</b><strong>Edit scripts</strong><span>Open scripts, use tabs, search the project, split the editor, and keep your flow focused.</span></div>
+					<div><b>06</b><strong>Sync changes</strong><span>Press Ctrl + S to save. Use Shift + Click for multi-selection, Delete to remove, and Ctrl + C / X / V for script operations.</span></div>
+				</div>
+				<div class="learn-actions-row">
+					<a class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download app</a>
+					<a class="secondary-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Open plugin page</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div id="toastStack" class="toast-stack"></div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>

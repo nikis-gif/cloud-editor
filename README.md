@@ -1,6 +1,6 @@
 # Cloud Editor Server
 
-Cloud is an integrated development environment for Roblox with a web version, a desktop Electron app, and a Roblox plugin connection.
+Cloud is an integrated development environment for game scripting with a web version, a desktop Electron app, and a plugin connection.
 
 Repository:
 
@@ -68,8 +68,8 @@ git push origin main
 Create the first tag:
 
 ```bash
-git tag v1.2.2
-git push origin v1.2.2
+git tag v1.2.3
+git push origin v1.2.3
 ```
 
 The GitHub Action builds the Windows installer and uploads it to GitHub Releases.
@@ -80,7 +80,7 @@ The GitHub Action builds the Windows installer and uploads it to GitHub Releases
 https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe
 ```
 
-## Roblox plugin
+## Game editor plugin
 
 The plugin file is:
 
@@ -129,5 +129,5 @@ cloud_logo
 ## Version
 
 ```txt
-1.2.2
+1.2.3
 ```

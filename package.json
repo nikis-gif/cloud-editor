@@ -1,7 +1,7 @@
 {
 	"name": "cloud-editor",
-	"version": "1.2.2",
-	"description": "Cloud - an integrated development environment for Roblox.",
+	"version": "1.2.3",
+	"description": "Cloud - an integrated development environment for game scripting.",
 	"private": true,
 	"main": "electron/main.js",
 	"author": "Niki",

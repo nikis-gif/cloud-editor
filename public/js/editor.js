@@ -136,8 +136,8 @@ function registerCompletions(monaco) {
 		return {
 			label: item[0],
 			kind,
-			detail: item[2] || "Roblox API",
-			documentation: { value: item[3] || item[2] || "Roblox API completion." },
+			detail: item[2] || "Game API",
+			documentation: { value: item[3] || item[2] || "Game API completion." },
 			insertText: item[1],
 			insertTextRules: snippetRule,
 			sortText: sortPrefix + item[0],
@@ -243,7 +243,7 @@ function registerCompletions(monaco) {
 			}
 
 			if (/game[:.]\w*$/.test(linePrefix)) {
-				pushUnique(suggestions, seen, ["GetService", "GetService(\"${1:Players}\")", "DataModel method", "Returns a Roblox service by name."], methodKind, "000", itemRange);
+				pushUnique(suggestions, seen, ["GetService", "GetService(\"${1:Players}\")", "DataModel method", "Returns a game service by name."], methodKind, "000", itemRange);
 			}
 
 			for (const serviceName of SERVICE_NAMES) {
