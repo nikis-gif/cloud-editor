@@ -145,6 +145,8 @@ const state = {
 	isLoadingFiles: false,
 	draggingItemId: "",
 	draggingTabId: "",
+	tabContextCloseHandler: null,
+	tabContextKeyHandler: null,
 	renamingItemId: "",
 	pendingCreateParent: null,
 	selectedCreateClass: "Script",
@@ -370,11 +372,16 @@ function getNodeClass(node) {
 	return node.item ? node.item.className : "Instance";
 }
 
+function isContainerClass(className) {
+	return className === "Folder" || className === "Configuration";
+}
+
 function getNodeIcon(node) {
 	const className = getNodeClass(node);
 
 	if (!node.relativePath) return { icon: "root", cls: "root" };
 	if (className === "Folder") return { icon: "folder", cls: "folder" };
+	if (className === "Configuration") return { icon: "configuration", cls: "folder configuration" };
 	if (className === "ModuleScript") return { icon: "module", cls: "module" };
 	if (className === "LocalScript") return { icon: "localScript", cls: "script" };
 	if (className === "Script") return { icon: "script", cls: "script" };
@@ -401,8 +408,8 @@ function sortNodes(nodes) {
 			return ROOT_ORDER.indexOf(a.root) - ROOT_ORDER.indexOf(b.root);
 		}
 
-		if (aClass === "Folder" && bClass !== "Folder") return -1;
-		if (aClass !== "Folder" && bClass === "Folder") return 1;
+		if (isContainerClass(aClass) && !isContainerClass(bClass)) return -1;
+		if (!isContainerClass(aClass) && isContainerClass(bClass)) return 1;
 		if (!aScript && bScript) return -1;
 		if (aScript && !bScript) return 1;
 		return a.name.localeCompare(b.name);
@@ -664,6 +671,14 @@ function handleGlobalShortcut(event) {
 		}
 	}
 
+	if (!event.shiftKey && (key === "d" || code === "KeyD")) {
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		duplicateCurrentScript(state.activeGroup || "primary");
+		return true;
+	}
+
 	if (key === "w" || code === "KeyW") {
 		const fileId = getClosableFileId();
 		if (!fileId) return false;
@@ -847,7 +862,7 @@ function renderNode(parent, node, depth, query) {
 		renderTree();
 	});
 
-	if (node.item && (isScriptClass(node.item.className) || node.item.className === "Folder")) {
+	if (node.item && (isScriptClass(node.item.className) || isContainerClass(node.item.className))) {
 		row.draggable = true;
 		row.addEventListener("dragstart", event => {
 			event.stopPropagation();
@@ -940,6 +955,14 @@ function reorderTab(sourceId, targetId, placeAfter) {
 function closeTabContextMenu() {
 	const existing = document.querySelector(".tab-context-menu");
 	if (existing) existing.remove();
+	if (state.tabContextCloseHandler) {
+		document.removeEventListener("pointerdown", state.tabContextCloseHandler, true);
+		state.tabContextCloseHandler = null;
+	}
+	if (state.tabContextKeyHandler) {
+		document.removeEventListener("keydown", state.tabContextKeyHandler, true);
+		state.tabContextKeyHandler = null;
+	}
 }
 
 async function closeAllTabs(force = false) {
@@ -1036,9 +1059,16 @@ function openTabContextMenu(event, tab) {
 		if (action === "close-others") await closeOtherTabs(tab.fileId);
 		if (action === "reveal") revealTabInExplorer(tab.fileId);
 	});
+	state.tabContextCloseHandler = pointerEvent => {
+		if (menu.contains(pointerEvent.target)) return;
+		closeTabContextMenu();
+	};
+	state.tabContextKeyHandler = keyEvent => {
+		if (keyEvent.key === "Escape") closeTabContextMenu();
+	};
 	setTimeout(() => {
-		document.addEventListener("pointerdown", closeTabContextMenu, { once: true });
-		document.addEventListener("keydown", event => { if (event.key === "Escape") closeTabContextMenu(); }, { once: true });
+		document.addEventListener("pointerdown", state.tabContextCloseHandler, true);
+		document.addEventListener("keydown", state.tabContextKeyHandler, true);
 	}, 0);
 }
 
@@ -1686,7 +1716,7 @@ function renderCreateTypes() {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.className = "type-card" + (type.className === state.selectedCreateClass ? " active" : "");
-		button.innerHTML = `<div class="type-icon">${svgIcon(type.icon)}</div><div class="type-copy"><strong>${escapeHtml(type.label)}</strong></div><span class="type-short">${escapeHtml(type.description || "")}</span>`;
+		button.innerHTML = `<span class="type-icon">${svgIcon(type.icon)}</span><span class="type-copy"><strong>${escapeHtml(type.label)}</strong><span>${escapeHtml(type.description)}</span></span><span class="type-short">${escapeHtml(type.badge || type.className)}</span>`;
 		button.addEventListener("click", () => {
 			state.selectedCreateClass = type.className;
 			refs.createNameInput.value = getDefaultCreateName(type.className);
@@ -1700,6 +1730,66 @@ function renderCreateTypes() {
 function getDefaultCreateName(className) {
 	const type = CREATE_TYPES.find(item => item.className === className);
 	return type ? type.defaultName : "Script";
+}
+
+function getSiblingItems(parent) {
+	if (!parent || !parent.root) return [];
+	const parentPath = parent.relativePath || "";
+	const parentId = parent.itemId || "";
+	return state.files.filter(item => {
+		if (item.root !== parent.root) return false;
+		if (parentId) return (item.parentItemId || "") === parentId;
+		return (item.parentRelativePath || "") === parentPath;
+	});
+}
+
+function getUniqueChildName(parent, baseName) {
+	const cleanBase = sanitizeName(baseName) || "Script";
+	const existing = new Set(getSiblingItems(parent).map(item => item.name));
+	if (!existing.has(cleanBase)) return cleanBase;
+	for (let index = 2; index < 500; index++) {
+		const candidate = cleanBase + " " + index;
+		if (!existing.has(candidate)) return candidate;
+	}
+	return cleanBase + " " + Date.now();
+}
+
+async function duplicateCurrentScript(group = state.activeGroup) {
+	if (!hasConnection()) return;
+	const fileId = getActiveFileId(group);
+	const tab = fileId ? state.openTabs.get(fileId) : null;
+	if (!tab || !isScriptClass(tab.className)) {
+		showToast("Open a script before duplicating it.", "warning");
+		return;
+	}
+
+	tab.source = state.editor.getValue(group);
+	const parentRelativePath = tab.parentRelativePath || getParentPath(tab.relativePath);
+	const parent = {
+		root: tab.root,
+		relativePath: parentRelativePath,
+		itemId: tab.parentItemId || "",
+		label: tab.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+	};
+	const name = getUniqueChildName(parent, tab.name + " Copy");
+
+	try {
+		setStatus("Duplicating " + tab.name + "...", "warning");
+		const data = await createRemoteItem(getAuth(), {
+			root: tab.root,
+			parentRelativePath,
+			parentItemId: tab.parentItemId || "",
+			className: tab.className,
+			name,
+			source: tab.source,
+		});
+		await loadSessionFiles(false);
+		if (data.item && isScriptItem(data.item)) await openFile(data.item);
+		showToast("Duplicated " + tab.name + ".", "success");
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+	}
 }
 
 async function createItem() {
@@ -1941,7 +2031,7 @@ function closeSettings() {
 
 function applySettings() {
 	state.language = applyLanguage(refs.languageInput ? refs.languageInput.value : state.language);
-	populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	updateEditorHeader();
 	state.settings = {
 		interfaceTheme: applyInterfaceTheme(refs.appearanceInput ? refs.appearanceInput.value : state.settings.interfaceTheme),
@@ -2092,7 +2182,7 @@ function openBetaWarning(onContinue) {
 		return;
 	}
 
-	populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	applyLanguage(state.language);
 	refs.betaWarningModal.classList.add("open");
 	refs.betaWarningModal.dataset.waiting = "true";
@@ -2144,6 +2234,12 @@ function handleEditorKeys(event, group = state.activeGroup) {
 		event.preventDefault();
 		event.stopPropagation();
 		saveCurrentFile(false, getActiveFileId(group));
+	}
+
+	if ((event.ctrlKey || event.metaKey) && key === "d") {
+		event.preventDefault();
+		event.stopPropagation();
+		duplicateCurrentScript(group);
 	}
 
 	if ((event.ctrlKey || event.metaKey) && key === "w") {
@@ -2246,7 +2342,7 @@ function bindEvents() {
 	if (refs.languageInput) {
 		refs.languageInput.addEventListener("change", () => {
 			state.language = applyLanguage(refs.languageInput.value);
-			populateLanguageSelect(refs.betaLanguageSelect, state.language);
+			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 			updateEditorHeader();
 		});
 	}
@@ -2343,7 +2439,7 @@ function bootEditor() {
 		onCursor(position, group) {
 			state.activeGroup = group || state.activeGroup;
 			if (Date.now() >= state.suppressViewStateSaveUntil) saveEditorViewForGroup(group);
-			refs.footerRight.textContent = "Ln " + position.lineNumber + ", Col " + position.column + " · Ctrl+1-9 tabs · Ctrl+W close tab · Ctrl+Shift+E fold · Ctrl+E unfold";
+			refs.footerRight.textContent = "Ln " + position.lineNumber + ", Col " + position.column + " · Ctrl+S save · Ctrl+D duplicate · Ctrl+1-9 tabs";
 			updateEditorHeader();
 		},
 		onActiveGroup: setActiveGroup,
@@ -2353,6 +2449,7 @@ function bootEditor() {
 			if (fileId) closeTab(fileId);
 		},
 		onCreate: () => openCreatePanel(getBestCreationParent(), "Script"),
+		onDuplicate: group => duplicateCurrentScript(group),
 		onRename: startRenameSelected,
 		onProjectSearch: openProjectSearch,
 		onFoldAll: foldActiveScript,
@@ -2372,7 +2469,7 @@ function boot() {
 	bootEditor();
 	bindEvents();
 	populateLanguageSelect(refs.languageInput, state.language);
-	populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	applyLanguage(state.language);
 	renderTree();
 	updateEditorHeader();

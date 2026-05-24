@@ -87,7 +87,7 @@ export function getDefaultSourceForClass(className, name) {
 	}
 
 	if (className === "Script") {
-		return `-- ${name || "Script"}\n\n`;
+		return "";
 	}
 
 	return "";

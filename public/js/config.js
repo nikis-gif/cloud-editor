@@ -20,10 +20,11 @@ export const ROOT_ORDER = [
 export const SCRIPT_CLASSES = ["Script", "LocalScript", "ModuleScript"];
 
 export const CREATE_TYPES = [
-	{ className: "Folder", icon: "folder", label: "Folder", defaultName: "Folder", description: "Group" },
-	{ className: "Script", icon: "script", label: "Script", defaultName: "Script", description: "Server" },
-	{ className: "LocalScript", icon: "localScript", label: "LocalScript", defaultName: "LocalScript", description: "Client" },
-	{ className: "ModuleScript", icon: "module", label: "ModuleScript", defaultName: "Module", description: "Module" },
+	{ className: "Script", icon: "script", label: "Script", defaultName: "Script", description: "Server script", badge: "Server" },
+	{ className: "LocalScript", icon: "localScript", label: "LocalScript", defaultName: "LocalScript", description: "Client script", badge: "Client" },
+	{ className: "ModuleScript", icon: "module", label: "ModuleScript", defaultName: "Module", description: "Reusable module", badge: "Module" },
+	{ className: "Folder", icon: "folder", label: "Folder", defaultName: "Folder", description: "Simple container", badge: "Folder" },
+	{ className: "Configuration", icon: "configuration", label: "Configuration", defaultName: "Configuration", description: "Configuration container", badge: "Config" },
 ];
 
 export const STORAGE = {

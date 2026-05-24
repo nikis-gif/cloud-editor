@@ -134,6 +134,7 @@ local allowedScriptClasses = {
 
 local allowedCreatableClasses = {
 	Folder = true,
+	Configuration = true,
 	Script = true,
 	LocalScript = true,
 	ModuleScript = true,
@@ -882,7 +883,7 @@ local function scanProject(silent)
 					return
 				end
 
-				if descendant.ClassName == "Folder" then
+				if descendant.ClassName == "Folder" or descendant.ClassName == "Configuration" then
 					visible[descendant] = true
 				elseif isScriptClass(descendant.ClassName) then
 					local current = descendant
@@ -946,7 +947,7 @@ local function scanProject(silent)
 							parentItemId = assignedItemIds[instance.Parent] or readItemId(instance.Parent) or ""
 						end
 
-						local kind = isScriptClass(instance.ClassName) and "script" or (instance.ClassName == "Folder" and "folder" or "instance")
+						local kind = isScriptClass(instance.ClassName) and "script" or ((instance.ClassName == "Folder" or instance.ClassName == "Configuration") and "folder" or "instance")
 
 						table.insert(scannedItems, {
 							FileId = itemId,
@@ -1160,7 +1161,7 @@ local function applyCreateInstance(change)
 	local itemId = tostring(change.itemId or change.fileId or "")
 
 	if not allowedCreatableClasses[className] then
-		return false, "Cloud only creates Folder, Script, LocalScript and ModuleScript. Unsupported: " .. className
+		return false, "Cloud only creates Folder, Configuration, Script, LocalScript and ModuleScript. Unsupported: " .. className
 	end
 
 	if name == "" then
@@ -1302,8 +1303,8 @@ local function applyMoveInstance(change)
 		return false, "Moved script not found."
 	end
 
-	if not isScriptClass(instance.ClassName) and instance.ClassName ~= "Folder" then
-		return false, "Cloud only moves Folder, Script, LocalScript and ModuleScript."
+	if not isScriptClass(instance.ClassName) and instance.ClassName ~= "Folder" and instance.ClassName ~= "Configuration" then
+		return false, "Cloud only moves Folder, Configuration, Script, LocalScript and ModuleScript."
 	end
 
 	for _, rootData in ipairs(allowedRoots) do

@@ -240,7 +240,7 @@ function createLocalItem({ className, name, root, parentRelativePath, parentItem
 		parentItemId,
 		name,
 		className,
-		kind: isScriptClass(className) ? "script" : "folder",
+		kind: isScriptClass(className) ? "script" : (isFolderClass(className) ? "folder" : "instance"),
 		root,
 		relativePath,
 		parentRelativePath,

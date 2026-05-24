@@ -68,8 +68,8 @@ git push origin main
 Create the first tag:
 
 ```bash
-git tag v1.2.1
-git push origin v1.2.1
+git tag v1.2.2
+git push origin v1.2.2
 ```
 
 The GitHub Action builds the Windows installer and uploads it to GitHub Releases.
@@ -129,5 +129,5 @@ cloud_logo
 ## Version
 
 ```txt
-1.2.1
+1.2.2
 ```

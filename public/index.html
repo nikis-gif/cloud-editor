@@ -10,77 +10,67 @@
 </head>
 <body class="no-session">
 	<div id="sessionGate" class="session-gate">
-		<div class="session-sky" aria-hidden="true">
-			<span class="cloud-float cloud-float-a"></span>
-			<span class="cloud-float cloud-float-b"></span>
-			<span class="cloud-float cloud-float-c"></span>
+		<div class="entry-atmosphere" aria-hidden="true">
+			<span class="entry-cloud cloud-one"></span>
+			<span class="entry-cloud cloud-two"></span>
+			<span class="entry-cloud cloud-three"></span>
+			<span class="entry-line line-one"></span>
+			<span class="entry-line line-two"></span>
 		</div>
-		<div class="session-gate-shell">
-			<div class="session-gate-top">
-				<div class="session-gate-brand">
-					<img class="session-gate-logo" src="/assets/cloud-logo.png" alt="Cloud" />
-					<div>
-						<strong>Cloud</strong>
-						<span>A clean workspace for Roblox development.</span>
-					</div>
-				</div>
-				<div class="session-top-actions">
+		<div class="entry-shell">
+			<header class="entry-nav">
+				<a class="entry-brand" href="#" aria-label="Cloud home">
+					<img src="/assets/cloud-logo.png" alt="Cloud" />
+					<span><strong>Cloud</strong><em>Luau workspace</em></span>
+				</a>
+				<div class="entry-nav-actions">
 					<select id="gateAppearanceSelect" class="appearance-select" aria-label="Appearance">
 						<option value="system">System</option>
 						<option value="dark">Dark</option>
 						<option value="light">Light</option>
 					</select>
-					<a class="top-plugin-link" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
+					<a href="#cloudLearnPanel">Learn</a>
+					<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
 				</div>
-			</div>
-			<div class="session-gate-content cloud-entry-layout">
-				<section class="session-hero-card cloud-hero-card">
-					<div class="cloud-status-row">
-						<span class="session-pill">Private Cloud</span>
-						<span class="cloud-live-pill"><i></i> Ready</span>
-					</div>
-					<h1>Build scripts without leaving your flow.</h1>
-					<p>Connect the Cloud plugin, open your project, edit Luau scripts, and keep the workspace synced without visual noise.</p>
-					<div class="cloud-window-preview" aria-hidden="true">
-						<div class="cloud-window-top"><span></span><span></span><span></span></div>
-						<div class="cloud-window-body">
-							<div class="cloud-window-tree"><b></b><b></b><b></b><b></b></div>
-							<div class="cloud-window-code animated-code"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+			</header>
+
+			<main class="entry-content">
+				<section class="entry-left-card">
+					<div class="entry-badge"><i></i>Private workspace</div>
+					<h1>Your scripts, closer to the sky.</h1>
+					<p>Open Cloud, connect the plugin, and keep your Roblox project synced while you work in a clean editor built for long scripting sessions.</p>
+					<div class="entry-code-orbit" aria-hidden="true">
+						<div class="entry-code-window">
+							<div class="entry-code-top"><span></span><span></span><span></span></div>
+							<div class="entry-code-body">
+								<code><b>local</b> Players = game:GetService(<em>"Players"</em>)</code>
+								<code>Players.PlayerAdded:<b>Connect</b>(function(player)</code>
+								<code>&nbsp;&nbsp;print(player.Name)</code>
+								<code>end)</code>
+							</div>
 						</div>
+						<span class="entry-mini-cloud mini-a"></span>
+						<span class="entry-mini-cloud mini-b"></span>
 					</div>
-					<div class="session-feature-grid cloud-feature-grid">
-						<div><strong>Live workspace</strong><span>Edit, save and keep your project in sync.</span></div>
-						<div><strong>Focused tabs</strong><span>Your scripts stay organized without visual noise.</span></div>
-						<div><strong>Private access</strong><span>Your session only opens with the correct secret.</span></div>
-					</div>
-					<div class="gate-info-grid">
-						<section id="cloudLearnPanel" class="gate-info-card">
-							<strong>How to connect</strong>
-							<span>Open the Cloud plugin in Roblox Studio, create a session, copy the Session ID and Secret, then paste them here.</span>
-						</section>
-						<section class="gate-info-card release-card">
-							<strong>Update notes</strong>
-							<code>v1.2.1 · New endpoint, tab actions, themes, languages and autocomplete cleanup.</code>
-						</section>
+					<div class="entry-metrics">
+						<div><strong>Local-first</strong><span>Desktop app before cloud fallback.</span></div>
+						<div><strong>Private</strong><span>Session ID and secret are required.</span></div>
+						<div><strong>Focused</strong><span>Tabs, search and sync in one place.</span></div>
 					</div>
 				</section>
-				<section class="session-login-card cloud-login-card">
-					<div class="session-login-head">
-						<span class="login-eyebrow">Workspace access</span>
+
+				<aside class="entry-connect-card">
+					<div class="entry-connect-head">
+						<span>Connect</span>
 						<strong>Enter your session</strong>
-						<span>Paste the ID and secret from the Cloud plugin.</span>
+						<p>Paste the Session ID and Secret created by the Cloud plugin.</p>
 					</div>
-					<div class="login-cloud-panel" aria-hidden="true">
-						<div class="login-cloud-orb"><img src="/assets/cloud-logo.png" alt="" /></div>
-						<div class="login-cloud-copy">
-							<strong>Private workspace</strong>
-							<span>Local-first sync, cloud fallback and a locked session.</span>
-						</div>
-					</div>
-					<div class="login-sync-steps" aria-hidden="true">
-						<span><i></i>Local app</span>
-						<span><i></i>Cloud fallback</span>
-						<span><i></i>Private session</span>
+					<div class="entry-connect-visual" aria-hidden="true">
+						<div><i></i><span>Plugin</span></div>
+						<b></b>
+						<div><i></i><span>Cloud</span></div>
+						<b></b>
+						<div><i></i><span>Project</span></div>
 					</div>
 					<label for="gateSessionInput">Session ID</label>
 					<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
@@ -92,9 +82,14 @@
 						<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
 						<a href="#cloudLearnPanel">Learn</a>
 					</div>
-					<div class="cloud-login-note">Local app is used first. Cloud service is used when the app is closed.</div>
-				</section>
-			</div>
+				</aside>
+			</main>
+
+			<section id="cloudLearnPanel" class="entry-learn-strip">
+				<div><strong>How to connect</strong><span>Open the Cloud plugin in Roblox Studio, create a session, copy the Session ID and Secret, then paste them into Cloud.</span></div>
+				<div><strong>Update notes</strong><span>v1.2.2 · New entry screen, fixed tab menu, script duplication shortcut and improved creation panel.</span></div>
+				<div><strong>Shortcut</strong><span>Ctrl + S saves the current script. Ctrl + D duplicates it with the same source.</span></div>
+			</section>
 		</div>
 	</div>
 
@@ -238,22 +233,26 @@
 
 	<div id="createModal" class="modal-backdrop popover-backdrop">
 		<div class="modal create-modal">
-			<div class="modal-head compact-head">
+			<div class="modal-head compact-head create-panel-head">
 				<div>
-					<div class="modal-title">New Instance</div>
+					<div class="modal-title">Create</div>
 					<div id="createLocation" class="modal-subtitle">Parent: none</div>
 				</div>
 				<button id="closeCreateButton" class="icon-button" aria-label="Close create modal">
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
 				</button>
 			</div>
-			<div class="modal-body create-body">
+			<div class="modal-body create-body compact-create-body">
+				<div class="create-intro">
+					<strong>Choose what to create</strong>
+					<span>Small, fast and synced with your project.</span>
+				</div>
 				<div id="typeGrid" class="create-list"></div>
 				<div class="create-name-row">
 					<label class="field-label" for="createNameInput">Name</label>
 					<input id="createNameInput" placeholder="Instance name" autocomplete="off" />
 				</div>
-				<div class="modal-actions">
+				<div class="modal-actions create-actions">
 					<button id="cancelCreateButton" class="secondary-button">Cancel</button>
 					<button id="confirmCreateButton" class="primary-button">Create</button>
 				</div>
@@ -422,51 +421,6 @@
 			</div>
 		</div>
 	</div>
-
-	
-	<div id="betaWarningModal" class="modal-backdrop beta-backdrop">
-		<div class="modal beta-modal">
-			<div class="beta-mark">!</div>
-			<div class="beta-copy">
-				<div id="betaEyebrow" class="beta-eyebrow">Cloud Beta Access</div>
-				<h2 id="betaTitle">ATTENTION</h2>
-				<p id="betaWarningText">Cloud is currently in beta and is available only to a limited number of computers involved in the project. If you have access, you may use it freely, test it, and use it in your own Roblox projects.</p>
-				<p id="betaWarningNote" class="beta-note">Only the interface language changes. Your code is never translated.</p>
-				<div class="beta-controls">
-					<label for="betaLanguageSelect">Language</label>
-					<select id="betaLanguageSelect"></select>
-				</div>
-				<div class="modal-actions beta-actions">
-					<button id="betaContinueButton" class="primary-button">Continue to Cloud</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<div id="updateModal" class="modal-backdrop update-backdrop">
-		<div class="modal update-modal">
-			<div class="modal-head">
-				<div>
-					<div class="modal-title">Cloud update</div>
-					<div id="updateModalSubtitle" class="modal-subtitle">A new version is available.</div>
-				</div>
-				<button id="closeUpdateModalButton" class="icon-button" aria-label="Close update modal">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
-				</button>
-			</div>
-			<div class="modal-body">
-				<div id="updateProgressBox" class="update-progress-box">
-					<strong id="updateStatusText">Preparing update...</strong>
-					<span id="updateStatusDescription">Cloud will download the installer and install it when ready.</span>
-					<div class="update-progress-track"><i id="updateProgressBar"></i></div>
-				</div>
-				<pre class="update-code-note"><code>release: v1.2.1
-status: ready_for_download
-channel: stable</code></pre>
-			</div>
-		</div>
-	</div>
-
 	<div id="toastStack" class="toast-stack"></div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>

@@ -535,6 +535,7 @@ export function createEditorController(options) {
 				target.editor.onDidChangeCursorPosition(event => options.onCursor(event.position, groupName));
 				target.editor.onDidFocusEditorText(() => { controller.activeGroup = groupName; options.onActiveGroup?.(groupName); });
 				target.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => options.onSave(groupName));
+				target.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => options.onDuplicate?.(groupName));
 				target.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyW, () => options.onClose(groupName));
 				target.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyE, () => options.onFoldAll?.(groupName));
 				target.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyE, () => options.onUnfoldAll?.(groupName));
