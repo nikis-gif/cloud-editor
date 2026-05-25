@@ -277,11 +277,11 @@ function registerCompletions(monaco) {
 					if (!seen.has(snippetKey)) {
 						seen.add(snippetKey);
 						suggestions.push({
-							label: "game:GetService("" + serviceName + "")",
+							label: "game:GetService(\"" + serviceName + "\")",
 							kind: functionKind,
 							detail: "Insert GetService for " + serviceName,
 							documentation: serviceDocumentation(serviceName),
-							insertText: "game:GetService("" + serviceName + "")",
+							insertText: "game:GetService(\"" + serviceName + "\")",
 							insertTextRules: snippetRule,
 							sortText: "000" + serviceName,
 							range: itemRange,
