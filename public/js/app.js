@@ -136,6 +136,7 @@ const refs = {
 	outputRefreshButton: document.getElementById("outputRefreshButton"),
 	outputClearButton: document.getElementById("outputClearButton"),
 	outputCloseButton: document.getElementById("outputCloseButton"),
+	outputResizeHandle: document.getElementById("outputResizeHandle"),
 };
 
 setupUi(refs);
@@ -186,6 +187,7 @@ const state = {
 	lastOutputId: 0,
 	outputPollTimer: null,
 	outputOpen: false,
+	outputHeight: Number(localStorage.getItem("Cloud.OutputHeight")) || 260,
 };
 
 function getAuth() {
@@ -1761,7 +1763,10 @@ async function restoreWorkspaceState() {
 	saveWorkspaceState(false);
 	setTimeout(() => saveWorkspaceState(true), 25);
 	setStatus("Restored " + restoredIds.length + " open script(s).", "success");
-	if (state.outputOpen) pollOutputLogs(true);
+	if (state.outputOpen) {
+		applyOutputHeight();
+		pollOutputLogs(true);
+	}
 	return true;
 }
 
@@ -1776,6 +1781,50 @@ function getOutputLevel(entry) {
 	const level = String(entry && entry.level || "info").toLowerCase();
 	if (level === "warning") return "warn";
 	return ["error", "warn", "print", "output", "info"].includes(level) ? level : "info";
+}
+
+
+function applyOutputHeight() {
+	if (!refs.outputPanel) return;
+	const height = Math.max(150, Math.min(window.innerHeight * 0.6, Number(state.outputHeight) || 260));
+	state.outputHeight = height;
+	refs.outputPanel.style.setProperty("--output-height", height + "px");
+}
+
+function bindOutputResize() {
+	if (!refs.outputResizeHandle || !refs.outputPanel) return;
+	applyOutputHeight();
+	let startY = 0;
+	let startHeight = 0;
+	let dragging = false;
+
+	const onMove = event => {
+		if (!dragging) return;
+		const delta = startY - event.clientY;
+		state.outputHeight = Math.max(150, Math.min(window.innerHeight * 0.6, startHeight + delta));
+		applyOutputHeight();
+	};
+
+	const onUp = () => {
+		if (!dragging) return;
+		dragging = false;
+		document.body.classList.remove("resizing-output");
+		localStorage.setItem("Cloud.OutputHeight", String(Math.round(state.outputHeight)));
+		window.removeEventListener("pointermove", onMove);
+		window.removeEventListener("pointerup", onUp);
+	};
+
+	refs.outputResizeHandle.addEventListener("pointerdown", event => {
+		dragging = true;
+		startY = event.clientY;
+		startHeight = refs.outputPanel.getBoundingClientRect().height || state.outputHeight;
+		document.body.classList.add("resizing-output");
+		window.addEventListener("pointermove", onMove);
+		window.addEventListener("pointerup", onUp);
+		event.preventDefault();
+	});
+
+	window.addEventListener("resize", applyOutputHeight);
 }
 
 function renderOutputEntries() {
@@ -1831,7 +1880,10 @@ function setOutputOpen(open) {
 	if (refs.outputPanel) refs.outputPanel.classList.toggle("open", state.outputOpen);
 	if (refs.outputToggleButton) refs.outputToggleButton.classList.toggle("active", state.outputOpen);
 	if (refs.editorShell) refs.editorShell.closest(".main")?.classList.toggle("output-open", state.outputOpen);
-	if (state.outputOpen) pollOutputLogs(true);
+	if (state.outputOpen) {
+		applyOutputHeight();
+		pollOutputLogs(true);
+	}
 }
 
 function startOutputPolling() {
@@ -2839,6 +2891,7 @@ function bindEvents() {
 	if (refs.outputCloseButton) refs.outputCloseButton.addEventListener("click", () => setOutputOpen(false));
 	if (refs.outputRefreshButton) refs.outputRefreshButton.addEventListener("click", () => pollOutputLogs(true));
 	if (refs.outputClearButton) refs.outputClearButton.addEventListener("click", clearOutputPanel);
+	bindOutputResize();
 	refs.saveButton.addEventListener("click", () => saveCurrentFile(false));
 	if (refs.splitButton) refs.splitButton.addEventListener("click", () => splitTab(state.currentFileId));
 	refs.closeSplitButton.addEventListener("click", closeSplit);

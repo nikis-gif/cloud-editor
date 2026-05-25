@@ -75,6 +75,8 @@ local playPaused = false
 local resolvingBaseUrl = false
 local outputBuffer = {}
 local outputConnections = {}
+local outputHistorySeen = {}
+local outputHistoryWorkerRunning = false
 local outputFlushBusy = false
 local lastOutputFlushAt = 0
 
@@ -87,13 +89,13 @@ local theme = {
 	PanelDark = Color3.fromRGB(30, 30, 30),
 	PanelSoft = Color3.fromRGB(45, 45, 45),
 	PanelHover = Color3.fromRGB(51, 51, 51),
-	Text = Color3.fromRGB(235, 235, 235),
-	MutedText = Color3.fromRGB(190, 190, 190),
-	SubtleText = Color3.fromRGB(145, 145, 145),
+	Text = Color3.fromRGB(204, 204, 204),
+	MutedText = Color3.fromRGB(157, 157, 157),
+	SubtleText = Color3.fromRGB(117, 117, 117),
 	AccentStrong = Color3.fromRGB(14, 99, 156),
 	AccentSoft = Color3.fromRGB(0, 122, 204),
 	AccentCyan = Color3.fromRGB(55, 148, 255),
-	AccentViolet = Color3.fromRGB(14, 99, 156),
+	AccentViolet = Color3.fromRGB(55, 148, 255),
 	Success = Color3.fromRGB(137, 209, 133),
 	Danger = Color3.fromRGB(244, 135, 113),
 	Warning = Color3.fromRGB(204, 167, 0),
@@ -191,7 +193,7 @@ end
 
 local function createCorner(radius)
 	return createInstance("UICorner", {
-		CornerRadius = UDim.new(0, radius),
+		CornerRadius = UDim.new(0, math.min(radius or 0, 4)),
 	})
 end
 
@@ -213,11 +215,9 @@ local function createPadding(left, right, top, bottom)
 end
 
 local function createGradient(colorA, colorB, rotation)
+	local color = colorA or colorB or theme.Panel
 	return createInstance("UIGradient", {
-		Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, colorA),
-			ColorSequenceKeypoint.new(1, colorB),
-		}),
+		Color = ColorSequence.new(color, color),
 		Rotation = rotation or 0,
 	})
 end
@@ -578,6 +578,47 @@ local function buildSourcePreview(scriptInstance, lineNumber)
 	return table.concat(preview, "\n")
 end
 
+local function getOutputLevelFromType(messageType)
+	local typeName = typeof(messageType) == "EnumItem" and messageType.Name or tostring(messageType or "")
+	local lower = string.lower(typeName)
+
+	if string.find(lower, "error") then
+		return "error"
+	elseif string.find(lower, "warning") or string.find(lower, "warn") then
+		return "warn"
+	elseif string.find(lower, "output") or string.find(lower, "message") then
+		return "print"
+	end
+
+	return "info"
+end
+
+local function rememberOutputSignature(message, messageType)
+	local key = tostring(messageType or "") .. "|" .. tostring(message or "")
+
+	if outputHistorySeen[key] then
+		return false
+	end
+
+	outputHistorySeen[key] = os.clock()
+	return true
+end
+
+local function normalizeLogRecord(record)
+	if typeof(record) ~= "table" then
+		return nil, nil
+	end
+
+	local message = record.message or record.Message or record.text or record.Text
+	local messageType = record.messageType or record.MessageType or record.type or record.Type
+
+	if typeof(message) ~= "string" or message == "" then
+		return nil, nil
+	end
+
+	return message, messageType
+end
+
 local function queueOutputEntry(level, message, stackTrace, scriptInstance)
 	if not session.Active then
 		return
@@ -641,18 +682,9 @@ local function startOutputCapture()
 	end
 
 	table.insert(outputConnections, LogService.MessageOut:Connect(function(message, messageType)
-		local level = "info"
-		local typeName = typeof(messageType) == "EnumItem" and messageType.Name or tostring(messageType or "")
-
-		if string.find(string.lower(typeName), "error") then
-			level = "error"
-		elseif string.find(string.lower(typeName), "warning") then
-			level = "warn"
-		elseif string.find(string.lower(typeName), "output") then
-			level = "print"
+		if rememberOutputSignature(message, messageType) then
+			queueOutputEntry(getOutputLevelFromType(messageType), message, "", nil)
 		end
-
-		queueOutputEntry(level, message, "", nil)
 	end))
 
 	table.insert(outputConnections, ScriptContext.Error:Connect(function(...)
@@ -677,6 +709,36 @@ local function startOutputCapture()
 
 		queueOutputEntry("error", message, stackTrace, scriptInstance)
 	end))
+
+	if not outputHistoryWorkerRunning then
+		outputHistoryWorkerRunning = true
+
+		task.spawn(function()
+			while #outputConnections > 0 do
+				local success, history = pcall(function()
+					return LogService:GetLogHistory()
+				end)
+
+				if success and typeof(history) == "table" then
+					for _, record in ipairs(history) do
+						local message, messageType = normalizeLogRecord(record)
+
+						if message and rememberOutputSignature(message, messageType) then
+							queueOutputEntry(getOutputLevelFromType(messageType), message, "", nil)
+						end
+					end
+				end
+
+				if session.Active and #outputBuffer > 0 then
+					flushOutputEntries()
+				end
+
+				task.wait(0.75)
+			end
+
+			outputHistoryWorkerRunning = false
+		end)
+	end
 end
 
 local function stopOutputCapture()
@@ -688,6 +750,7 @@ local function stopOutputCapture()
 
 	table.clear(outputConnections)
 	table.clear(outputBuffer)
+	table.clear(outputHistorySeen)
 	outputFlushBusy = false
 end
 
@@ -2319,16 +2382,17 @@ local function buildWidget()
 
 	local function createActionButton(text, backgroundColor, textColor)
 		return createInstance("TextButton", {
-			Size = UDim2.new(1, 0, 0, 40),
+			Size = UDim2.new(1, 0, 0, 34),
 			BackgroundColor3 = backgroundColor,
 			BorderSizePixel = 0,
 			Text = text,
-			TextColor3 = textColor or theme.Text,
-			TextSize = 13,
+			TextColor3 = textColor or Color3.fromRGB(255, 255, 255),
+			TextSize = 12,
 			Font = Enum.Font.GothamMedium,
+			TextStrokeTransparency = 1,
 			AutoButtonColor = true,
 		}, {
-			createCorner(14),
+			createCorner(4),
 			createStroke(theme.BorderSoft, 1, 0),
 		})
 	end
@@ -2342,11 +2406,12 @@ local function buildWidget()
 			TextColor3 = textColor or theme.Text,
 			TextSize = 12,
 			Font = Enum.Font.GothamMedium,
+			TextStrokeTransparency = 1,
 			TextWrapped = false,
 			TextTruncate = Enum.TextTruncate.AtEnd,
 			AutoButtonColor = true,
 		}, {
-			createCorner(13),
+			createCorner(4),
 			createStroke(theme.BorderSoft, 1, 0),
 		})
 	end
@@ -2468,7 +2533,7 @@ local function buildWidget()
 	ui.copyLoginButton.Parent = secondButtons
 
 	local endButtons = createRow(sessionCard, 36, 9, 8)
-	ui.endSessionButton = createHalfButton("End Session", theme.Danger)
+	ui.endSessionButton = createHalfButton("End Session", Color3.fromRGB(64, 37, 35), theme.Danger)
 	ui.endSessionButton.LayoutOrder = 1
 	ui.endSessionButton.Parent = endButtons
 
@@ -2491,7 +2556,7 @@ local function buildWidget()
 	ui.testApiButton.LayoutOrder = 1
 	ui.testApiButton.Parent = apiButtons
 
-	ui.manualRefreshButton = createHalfButton("Sync Now", theme.Warning, Color3.fromRGB(24, 24, 30))
+	ui.manualRefreshButton = createHalfButton("Sync Now", theme.AccentStrong, Color3.fromRGB(255, 255, 255))
 	ui.manualRefreshButton.LayoutOrder = 2
 	ui.manualRefreshButton.Parent = apiButtons
 

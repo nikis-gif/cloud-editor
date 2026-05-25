@@ -4843,3 +4843,294 @@ html[data-interface-theme="light"] .tree-row.multi-selected {
 .theme-preset {
 	border-radius: 4px !important;
 }
+
+/* v1.2.12 polish: VS Code sizing, themes, output */
+html[data-interface-theme="dark"],
+html[data-interface-theme="cloud-dark"] {
+	color-scheme: dark;
+	--bg: #1e1e1e;
+	--bg-soft: #181818;
+	--panel: #252526;
+	--panel-2: #2d2d2d;
+	--panel-3: #333333;
+	--editor-bg: #1e1e1e;
+	--border: #2b2b2b;
+	--border-strong: #3c3c3c;
+	--text: #cccccc;
+	--text-strong: #f2f2f2;
+	--muted: #9d9d9d;
+	--muted-2: #777777;
+	--accent: #007acc;
+	--accent-2: #3794ff;
+	--accent-soft: rgba(0, 122, 204, 0.18);
+}
+
+html[data-interface-theme="light"] {
+	color-scheme: light;
+	--bg: #f3f3f3;
+	--bg-soft: #f8f8f8;
+	--panel: #f3f3f3;
+	--panel-2: #ffffff;
+	--panel-3: #e8e8e8;
+	--editor-bg: #ffffff;
+	--border: #d6d6d6;
+	--border-strong: #c6c6c6;
+	--text: #333333;
+	--text-strong: #1f1f1f;
+	--muted: #5f6368;
+	--muted-2: #747474;
+	--accent: #007acc;
+	--accent-2: #006ab1;
+	--accent-soft: rgba(0, 122, 204, 0.14);
+}
+
+html[data-interface-theme="light"] body,
+html[data-interface-theme="light"] .app,
+html[data-interface-theme="light"] .vscode-gate,
+html[data-interface-theme="light"] .vscode-gate-editor,
+html[data-interface-theme="light"] .vscode-editor-content,
+html[data-interface-theme="light"] .main,
+html[data-interface-theme="light"] .editor-shell,
+html[data-interface-theme="light"] .editor-pane,
+html[data-interface-theme="light"] #monacoEditor,
+html[data-interface-theme="light"] #monacoEditorSecondary,
+html[data-interface-theme="light"] #fallbackEditor,
+html[data-interface-theme="light"] #fallbackEditorSecondary {
+	background: #ffffff !important;
+	color: #333333 !important;
+}
+
+html[data-interface-theme="light"] .titlebar,
+html[data-interface-theme="light"] .vscode-gate-titlebar,
+html[data-interface-theme="light"] .tabs,
+html[data-interface-theme="light"] .vscode-editor-tabs,
+html[data-interface-theme="light"] .modal-head,
+html[data-interface-theme="light"] .minimal-learn-header {
+	background: #f3f3f3 !important;
+	border-color: #d4d4d4 !important;
+}
+
+html[data-interface-theme="light"] .sidebar,
+html[data-interface-theme="light"] .vscode-gate-explorer,
+html[data-interface-theme="light"] .vscode-welcome-card,
+html[data-interface-theme="light"] .vscode-login-card,
+html[data-interface-theme="light"] .connection-card,
+html[data-interface-theme="light"] .search-wrap,
+html[data-interface-theme="light"] .modal,
+html[data-interface-theme="light"] .settings-section,
+html[data-interface-theme="light"] .minimal-learn-panel,
+html[data-interface-theme="light"] .minimal-learn-section,
+html[data-interface-theme="light"] .output-panel,
+html[data-interface-theme="light"] .output-entry {
+	background: #f8f8f8 !important;
+	border-color: #d4d4d4 !important;
+}
+
+html[data-interface-theme="light"] .tab,
+html[data-interface-theme="light"] .vscode-editor-tab,
+html[data-interface-theme="light"] .secondary-button,
+html[data-interface-theme="light"] .icon-button,
+html[data-interface-theme="light"] .download-app-button,
+html[data-interface-theme="light"] .roblox-plugin-button,
+html[data-interface-theme="light"] .appearance-select,
+html[data-interface-theme="light"] input,
+html[data-interface-theme="light"] select,
+html[data-interface-theme="light"] textarea,
+html[data-interface-theme="light"] .vscode-rotator,
+html[data-interface-theme="light"] .vscode-learn-inline,
+html[data-interface-theme="light"] .minimal-learn-keys div,
+html[data-interface-theme="light"] .output-empty,
+html[data-interface-theme="light"] .output-stack,
+html[data-interface-theme="light"] .output-preview {
+	background: #ffffff !important;
+	border-color: #d4d4d4 !important;
+	color: #333333 !important;
+}
+
+html[data-interface-theme="light"] .tab.active,
+html[data-interface-theme="light"] .vscode-editor-tab.active,
+html[data-interface-theme="light"] .tree-row.selected,
+html[data-interface-theme="light"] .tree-row.multi-selected {
+	background: #e8e8e8 !important;
+	color: #1f1f1f !important;
+}
+
+.vscode-editor-content {
+	grid-template-columns: minmax(0, 1fr) minmax(320px, 380px) !important;
+	width: 100% !important;
+	max-width: none !important;
+	margin: 0 !important;
+	padding: clamp(18px, 2.2vw, 34px) !important;
+	align-content: stretch !important;
+	align-items: stretch !important;
+}
+
+.vscode-welcome-card,
+.vscode-login-card {
+	min-height: clamp(360px, 56vh, 620px) !important;
+	align-self: stretch !important;
+}
+
+.vscode-welcome-card {
+	align-content: start !important;
+	padding: clamp(24px, 3vw, 44px) !important;
+}
+
+.vscode-login-card {
+	align-content: start !important;
+	padding: clamp(20px, 2vw, 28px) !important;
+}
+
+.vscode-flow-strip {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+	margin-bottom: clamp(12px, 2vh, 26px);
+}
+
+.vscode-flow-strip span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 30px;
+	border: 1px solid #3c3c3c;
+	background: #1e1e1e;
+	color: #cccccc;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.vscode-flow-strip i {
+	display: none;
+}
+
+.vscode-login-status {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	height: 34px;
+	padding: 0 10px;
+	margin-bottom: 8px;
+	border: 1px solid #3c3c3c;
+	background: #1e1e1e;
+	color: #cccccc;
+}
+
+.vscode-login-status span,
+.vscode-login-status strong {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.output-panel {
+	height: var(--output-height, 260px);
+	min-height: 150px;
+	max-height: 60vh;
+	position: relative;
+	border-top: 1px solid #2b2b2b;
+}
+
+.output-resize-handle {
+	position: absolute;
+	top: -4px;
+	left: 0;
+	right: 0;
+	height: 8px;
+	cursor: ns-resize;
+	z-index: 4;
+	background: transparent;
+}
+
+.output-resize-handle:hover {
+	background: rgba(0, 122, 204, 0.2);
+}
+
+.output-entry {
+	padding: 0;
+	margin: 0 0 6px;
+	border: 1px solid #2b2b2b;
+	border-left-width: 3px;
+	background: #181818;
+}
+
+.output-entry-head {
+	min-height: 26px;
+	padding: 0 9px;
+	border-bottom: 1px solid #2b2b2b;
+	background: rgba(255, 255, 255, 0.015);
+}
+
+.output-level {
+	min-width: 46px;
+	font-size: 10px;
+	letter-spacing: .05em;
+}
+
+.output-message {
+	margin: 0;
+	padding: 8px 10px;
+	font-size: 12px;
+}
+
+.output-stack,
+.output-preview {
+	margin: 0 10px 10px;
+	border-radius: 0;
+	font-size: 11px;
+}
+
+.minimal-learn-panel {
+	width: min(1120px, calc(100vw - 40px)) !important;
+	max-height: min(820px, calc(100vh - 40px)) !important;
+}
+
+.minimal-learn-body {
+	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.shortcuts-full {
+	grid-column: 1 / -1;
+}
+
+.compact-keys {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.settings-modal,
+.settings-cloud-body,
+.settings-section,
+.editor-preview-card,
+.preview-editor-shell,
+.theme-preset {
+	border-radius: 4px !important;
+}
+
+.settings-section,
+.editor-preview-card,
+.preview-editor-shell,
+.theme-preset {
+	background: #1e1e1e !important;
+	border: 1px solid #2b2b2b !important;
+	box-shadow: none !important;
+}
+
+.theme-preset.active {
+	outline: 1px solid #007acc;
+	outline-offset: -1px;
+}
+
+@media (max-width: 980px) {
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+
+	.vscode-welcome-card,
+	.vscode-login-card {
+		min-height: auto !important;
+	}
+
+	.compact-keys {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
