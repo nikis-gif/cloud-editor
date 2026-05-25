@@ -42,12 +42,24 @@
 					<div class="vscode-file">workspace.tree</div>
 					<div class="vscode-file">scripts.editor</div>
 				</div>
-				<div class="vscode-section compact">
+				<div class="vscode-section compact vscode-shortcuts-panel">
 					<div class="vscode-section-head">SHORTCUTS</div>
 					<div class="vscode-shortcut-row"><span>Ctrl + S</span><em>Save</em></div>
-					<div class="vscode-shortcut-row"><span>Shift + Click</span><em>Select</em></div>
-					<div class="vscode-shortcut-row"><span>Ctrl + C / X / V</span><em>Manage</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + W</span><em>Close tab</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + 1-9</span><em>Switch tab</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + I</span><em>Create</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + D</span><em>Duplicate</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + C</span><em>Copy</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + X</span><em>Cut</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + V</span><em>Paste</em></div>
+					<div class="vscode-shortcut-row"><span>Shift + Click</span><em>Range select</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + Click</span><em>Toggle select</em></div>
 					<div class="vscode-shortcut-row"><span>Delete</span><em>Remove</em></div>
+					<div class="vscode-shortcut-row"><span>F2</span><em>Rename</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + Shift + E</span><em>Fold</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + E</span><em>Unfold</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + +/-/0</span><em>Zoom</em></div>
+					<div class="vscode-shortcut-row"><span>Esc</span><em>Close panels</em></div>
 				</div>
 			</aside>
 
@@ -59,6 +71,12 @@
 
 				<div class="vscode-editor-content">
 					<section class="vscode-welcome-card">
+						<div class="vscode-workspace-meta" aria-label="Cloud workflow summary">
+							<span>Private session</span>
+							<span>Live explorer</span>
+							<span>Script editor</span>
+							<span>File actions</span>
+						</div>
 						<div class="entry-badge vscode-badge"><i></i><span data-i18n="entryHeroBadge">Private workspace</span></div>
 						<h1 data-i18n="entryHeroTitle">Cloud Workspace</h1>
 						<p data-i18n="entryHeroBody">Connect your private session, open your project tree, and edit scripts in a clean professional workspace.</p>
@@ -108,7 +126,7 @@
 				<a id="downloadAppButton" class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download Cloud App</a>
 				<a id="robloxPluginButton" class="roblox-plugin-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
 				<button id="connectionButton" class="icon-button" title="Connection" aria-label="Connection">
-					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><path d="M6 11h12v9H6z"/><path d="M12 15v2"/></svg>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10.7 5.23"/><path d="M14 11a5 5 0 0 0-7.07 0l-1.41 1.41a5 5 0 0 0 7.07 7.07l.71-.71"/></svg>
 				</button>
 				<button id="settingsButton" class="icon-button" title="Settings" aria-label="Settings">
 					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.04.04a2 2 0 1 1-2.83 2.83l-.04-.04A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.42 1.12V21a2 2 0 1 1-4 0v-.08A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.04.04a2 2 0 1 1-2.83-2.83l.04-.04A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.12-.42H2.8a2 2 0 1 1 0-4h.08A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.04-.04a2 2 0 1 1 2.83-2.83l.04.04A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .42-1.12V2.8a2 2 0 1 1 4 0v.08A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.04-.04a2 2 0 1 1 2.83 2.83l-.04.04A1.7 1.7 0 0 0 19.4 9c.38.16.73.37 1 .6.33.28.72.42 1.12.42h.08a2 2 0 1 1 0 4h-.08A1.7 1.7 0 0 0 19.4 15z"/></svg>
@@ -430,25 +448,67 @@
 				</button>
 			</header>
 
-			<div class="minimal-learn-body">
+			<div class="minimal-learn-body vscode-learn-body">
 				<section class="minimal-learn-section">
-					<h3 data-i18n="learnSidebarQuickTitle">Connect</h3>
+					<h3>Connection flow</h3>
 					<ol>
-						<li data-i18n="learnSidebarQuickOne">Open the plugin inside your game development environment.</li>
-						<li data-i18n="learnSidebarQuickTwo">Create a private session.</li>
-						<li data-i18n="learnSidebarQuickThree">Copy the Session ID and Hidden Secret.</li>
-						<li data-i18n="learnStepFourBody">Paste both values on the start screen and enter Cloud.</li>
+						<li>Open the plugin inside your controlled game development environment.</li>
+						<li>Create a private session and copy both generated values.</li>
+						<li>Paste the Session ID and Hidden Secret on the Cloud start screen.</li>
+						<li>After connecting, Cloud loads the project tree and keeps the workspace available for editing.</li>
 					</ol>
 				</section>
 
 				<section class="minimal-learn-section">
-					<h3 data-i18n="learnSidebarKeysTitle">Shortcuts</h3>
-					<div class="minimal-learn-keys">
-						<div><b>Ctrl + S</b><span data-i18n="learnKeyOne">Save the active script.</span></div>
-						<div><b>Shift + Click</b><span data-i18n="learnKeyTwo">Select multiple scripts in the explorer.</span></div>
-						<div><b>Ctrl + C / X / V</b><span data-i18n="learnKeyFour">Copy, cut, and paste selected scripts or folders.</span></div>
-						<div><b>Delete</b><span data-i18n="learnKeyThree">Remove selected scripts or folders.</span></div>
+					<h3>Daily workflow</h3>
+					<ol>
+						<li>Use the Explorer to open scripts and keep folders organized.</li>
+						<li>Use tabs when jumping between multiple scripts.</li>
+						<li>Use split view when comparing or editing two scripts at the same time.</li>
+						<li>Save often with Ctrl + S and use the footer status to confirm the editor state.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section shortcut-section wide">
+					<h3>All shortcuts</h3>
+					<div class="shortcut-grid-full">
+						<div><b>Ctrl + S</b><span>Save the active script.</span></div>
+						<div><b>Ctrl + W</b><span>Close the active tab.</span></div>
+						<div><b>Ctrl + 1-9</b><span>Switch to a tab by position.</span></div>
+						<div><b>Ctrl + I</b><span>Create a new item from the selected parent.</span></div>
+						<div><b>Ctrl + D</b><span>Duplicate selected Explorer items or the active script.</span></div>
+						<div><b>Ctrl + C</b><span>Copy selected Explorer items.</span></div>
+						<div><b>Ctrl + X</b><span>Cut selected Explorer items.</span></div>
+						<div><b>Ctrl + V</b><span>Paste copied or cut items into the selected parent.</span></div>
+						<div><b>Shift + Click</b><span>Select a range of scripts in the Explorer.</span></div>
+						<div><b>Ctrl + Click</b><span>Toggle one item in the current selection.</span></div>
+						<div><b>Delete</b><span>Remove selected scripts or folders.</span></div>
+						<div><b>F2</b><span>Rename the selected item.</span></div>
+						<div><b>Ctrl + Shift + E</b><span>Fold the active script.</span></div>
+						<div><b>Ctrl + E</b><span>Unfold the active script.</span></div>
+						<div><b>Ctrl + +</b><span>Increase the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + -</b><span>Decrease the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + 0</b><span>Reset the Cloud UI zoom.</span></div>
+						<div><b>Esc</b><span>Close modals, panels, Learn, search, or create dialogs.</span></div>
 					</div>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3>Explorer actions</h3>
+					<ol>
+						<li>Create scripts, local scripts, module scripts, and folders from valid parents.</li>
+						<li>Copy, cut, paste, duplicate, rename, and delete directly from the Explorer.</li>
+						<li>Use multi-select before copy, cut, duplicate, or delete actions.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3>Editor behavior</h3>
+					<ol>
+						<li>Cloud keeps editor shortcuts separate from Explorer shortcuts when focus is inside code.</li>
+						<li>Copy and cut text still work normally inside the editor.</li>
+						<li>Explorer copy, cut, paste, and delete run when focus is outside the code editor.</li>
+					</ol>
 				</section>
 			</div>
 		</div>

@@ -109,6 +109,8 @@ local function getServiceSafe(serviceName)
 end
 
 local StarterPlayer = getServiceSafe("StarterPlayer")
+local StarterPlayerScripts = StarterPlayer and StarterPlayer:FindFirstChild("StarterPlayerScripts")
+local StarterCharacterScripts = StarterPlayer and StarterPlayer:FindFirstChild("StarterCharacterScripts")
 
 local allowedRoots = {
 	{ Name = "Workspace", Instance = workspace },
@@ -121,6 +123,8 @@ local allowedRoots = {
 	{ Name = "StarterGui", Instance = getServiceSafe("StarterGui") },
 	{ Name = "StarterPack", Instance = getServiceSafe("StarterPack") },
 	{ Name = "StarterPlayer", Instance = StarterPlayer },
+	{ Name = "StarterPlayerScripts", Instance = StarterPlayerScripts },
+	{ Name = "StarterCharacterScripts", Instance = StarterCharacterScripts },
 	{ Name = "Teams", Instance = getServiceSafe("Teams") },
 	{ Name = "SoundService", Instance = getServiceSafe("SoundService") },
 	{ Name = "TextChatService", Instance = getServiceSafe("TextChatService") },
