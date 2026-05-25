@@ -2058,6 +2058,11 @@ async function clearOutputPanel() {
 }
 
 function hideBootSplash() {
+	if (typeof window.__cloudHideBootSplash === "function") {
+		window.__cloudHideBootSplash();
+		return;
+	}
+
 	document.body.classList.remove("booting");
 	if (!refs.bootSplash) return;
 	refs.bootSplash.classList.add("hidden");
@@ -3301,4 +3306,12 @@ function boot() {
 	}
 }
 
-boot();
+try {
+	boot();
+} catch (error) {
+	console.error("[Cloud] Boot failed:", error);
+	hideBootSplash();
+	try {
+		showToast("Cloud recovered from a boot error. Check the console for details.", "error");
+	} catch (_) {}
+}

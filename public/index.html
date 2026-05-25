@@ -9,7 +9,37 @@
 	<link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="no-session booting">
-	<div id="bootSplash" class="boot-splash"><div class="boot-splash-card"><img src="/assets/cloud-logo.png" alt="Cloud" /><strong>Cloud</strong><span>Loading workspace...</span></div></div>
+	<div id="bootSplash" class="boot-splash"><div class="boot-splash-card"><img src="/assets/cloud-logo.png" alt="Cloud" /><strong>Cloud</strong><span id="bootSplashText">Loading workspace...</span></div></div>
+	<script>
+		(function () {
+			var closed = false;
+			function closeSplash() {
+				if (closed) return;
+				closed = true;
+				document.body.classList.remove("booting");
+				var splash = document.getElementById("bootSplash");
+				if (!splash) return;
+				splash.classList.add("hidden");
+				setTimeout(function () {
+					if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+				}, 240);
+			}
+			function showRecoveredState(error) {
+				var text = document.getElementById("bootSplashText");
+				if (text) text.textContent = "Recovering interface...";
+				if (window.console && error) console.error("[Cloud] Boot recovered:", error);
+				setTimeout(closeSplash, 700);
+			}
+			window.__cloudHideBootSplash = closeSplash;
+			window.addEventListener("error", function (event) {
+				showRecoveredState(event && (event.error || event.message));
+			});
+			window.addEventListener("unhandledrejection", function (event) {
+				showRecoveredState(event && event.reason);
+			});
+			setTimeout(closeSplash, 3200);
+		})();
+	</script>
 	<div id="sessionGate" class="session-gate vscode-gate">
 		<header class="vscode-gate-titlebar">
 			<a class="vscode-gate-brand" href="#" aria-label="Cloud home">
