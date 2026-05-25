@@ -602,8 +602,8 @@ export function createEditorController(options) {
 					quickSuggestions: { other: true, comments: false, strings: true },
 					acceptSuggestionOnEnter: "on",
 					suggestSelection: "first",
-					wordBasedSuggestions: "matchingDocuments",
-					suggest: { showIcons: true, preview: true, previewMode: "prefix", showSnippets: true, showStatusBar: true, showInlineDetails: true, showMethods: true, showFunctions: true, showClasses: true, showWords: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
+					wordBasedSuggestions: "off",
+					suggest: { showIcons: true, preview: true, previewMode: "prefix", showSnippets: true, showStatusBar: true, showInlineDetails: false, showMethods: true, showFunctions: true, showClasses: true, showWords: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
 				});
 
 				target.editor.onDidChangeModelContent(() => options.onChange(groupName));
