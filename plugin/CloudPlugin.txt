@@ -11,7 +11,7 @@ local LOCAL_BASE_URL = "http://localhost:3000"
 local CLOUD_BASE_URL = "https://cloud-editor-03s5.onrender.com"
 
 local AUTO_PULL_INTERVAL = 1
-local AUTO_UPLOAD_INTERVAL = 5
+local AUTO_UPLOAD_INTERVAL = 12
 local MAX_REQUEST_ATTEMPTS = 2
 local REQUEST_RETRY_DELAY = 0.35
 local REQUEST_TIMEOUT_TEXT = "Check if the Cloud server is running and reachable."
@@ -19,8 +19,8 @@ local ITEM_ID_ATTRIBUTE = "CloudItemId"
 local LEGACY_ITEM_ID_ATTRIBUTE = "ForgeItemId"
 local OLD_LEGACY_ITEM_ID_ATTRIBUTE = "StudioBridgeItemId"
 local SECRET_HIDDEN_TEXT = "Hidden - click Copy Secret"
-local OUTPUT_BATCH_INTERVAL = 0.4
-local OUTPUT_MAX_BATCH = 60
+local OUTPUT_BATCH_INTERVAL = 1.0
+local OUTPUT_MAX_BATCH = 120
 local CLOUD_BRIDGE_ATTRIBUTE = "CloudManagedRuntimeBridge"
 local RUNTIME_REMOTE_NAME = "__CloudOutputRemote"
 local RUNTIME_SERVER_SCRIPT_NAME = "__CloudOutputServerBridge"
@@ -80,9 +80,10 @@ local resolvingBaseUrl = false
 local outputBuffer = {}
 local outputConnections = {}
 local outputHistorySeen = {}
-local outputHistoryWorkerRunning = false
 local outputFlushBusy = false
 local lastOutputFlushAt = 0
+local outputHistoryWorkerRunning = false
+local lastOutputHistoryReadAt = 0
 
 local theme = {
 	Background = Color3.fromRGB(30, 30, 30),
@@ -742,30 +743,36 @@ local function startOutputCapture()
 
 		task.spawn(function()
 			while #outputConnections > 0 do
-				local success, history = pcall(function()
-					return LogService:GetLogHistory()
-				end)
+				if session.Active and isPlayModeActive() and os.clock() - lastOutputHistoryReadAt >= 2.0 then
+					lastOutputHistoryReadAt = os.clock()
+					local success, history = pcall(function()
+						return LogService:GetLogHistory()
+					end)
 
-				if success and typeof(history) == "table" then
-					for _, record in ipairs(history) do
-						local message, messageType = normalizeLogRecord(record)
+					if success and typeof(history) == "table" then
+						local firstIndex = math.max(1, #history - 90)
+						for index = firstIndex, #history do
+							local record = history[index]
+							local message, messageType = normalizeLogRecord(record)
 
-						if message and rememberOutputSignature(message, messageType) then
-							queueOutputEntry(getOutputLevelFromType(messageType), message, "", nil)
+							if message and rememberOutputSignature(message, messageType) then
+								queueOutputEntry(getOutputLevelFromType(messageType), message, "", nil)
+							end
 						end
 					end
 				end
 
-				if session.Active and #outputBuffer > 0 then
+				if session.Active and #outputBuffer > 0 and os.clock() - lastOutputFlushAt >= OUTPUT_BATCH_INTERVAL then
 					flushOutputEntries()
 				end
 
-				task.wait(0.75)
+				task.wait(0.5)
 			end
 
 			outputHistoryWorkerRunning = false
 		end)
 	end
+
 end
 
 local function stopOutputCapture()
@@ -1171,8 +1178,8 @@ local BASE_URL = __BASE_URL__
 local SESSION_ID = __SESSION_ID__
 local SECRET = __SECRET__
 local REMOTE_NAME = __REMOTE_NAME__
-local FLUSH_INTERVAL = 0.35
-local MAX_BATCH = 80
+local FLUSH_INTERVAL = 0.9
+local MAX_BATCH = 120
 
 local buffer = {}
 local seen = {}
@@ -1305,7 +1312,7 @@ task.spawn(function()
 		if #buffer >= MAX_BATCH or (#buffer > 0 and os.clock() - lastFlush >= FLUSH_INTERVAL) then
 			flush()
 		end
-		task.wait(0.15)
+		task.wait(0.35)
 	end
 end)
 ]==]

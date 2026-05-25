@@ -138,6 +138,15 @@ const refs = {
 	outputClearButton: document.getElementById("outputClearButton"),
 	outputCloseButton: document.getElementById("outputCloseButton"),
 	outputResizeHandle: document.getElementById("outputResizeHandle"),
+	outputLevelFilter: document.getElementById("outputLevelFilter"),
+	outputContextFilter: document.getElementById("outputContextFilter"),
+	outputTextFilter: document.getElementById("outputTextFilter"),
+	outputDetailButton: document.getElementById("outputDetailButton"),
+	outputDetailMenu: document.getElementById("outputDetailMenu"),
+	outputShowTimestamp: document.getElementById("outputShowTimestamp"),
+	outputShowContext: document.getElementById("outputShowContext"),
+	outputShowSource: document.getElementById("outputShowSource"),
+	outputShowPreview: document.getElementById("outputShowPreview"),
 };
 
 setupUi(refs);
@@ -189,6 +198,8 @@ const state = {
 	outputPollTimer: null,
 	outputOpen: false,
 	outputHeight: Number(localStorage.getItem("Cloud.OutputHeight")) || 260,
+	outputFilters: { level: "all", context: "all", text: "" },
+	outputView: { timestamp: true, context: true, source: true, preview: true },
 };
 
 function getAuth() {
@@ -1904,6 +1915,39 @@ async function openOutputEntry(entryIndex) {
 	}
 }
 
+function getOutputContext(entry) {
+	const source = String(entry.source || entry.context || "Runtime").trim();
+	if (/client/i.test(source)) return "Client";
+	if (/server/i.test(source)) return "Server";
+	if (/plugin/i.test(source)) return "Plugin";
+	return source || "Runtime";
+}
+
+function getOutputFilteredEntries() {
+	const levelFilter = String(state.outputFilters.level || "all");
+	const contextFilter = String(state.outputFilters.context || "all");
+	const textFilter = String(state.outputFilters.text || "").trim().toLowerCase();
+	return state.outputEntries.filter(entry => {
+		const level = getOutputLevel(entry);
+		const context = getOutputContext(entry);
+		if (levelFilter !== "all" && level !== levelFilter) return false;
+		if (contextFilter !== "all" && context !== contextFilter) return false;
+		if (textFilter) {
+			const content = [entry.message, entry.scriptPath, entry.scriptName, entry.stackTrace, entry.sourcePreview, context, entry.player].filter(Boolean).join("\n").toLowerCase();
+			if (!content.includes(textFilter)) return false;
+		}
+		return true;
+	});
+}
+
+function outputLineNumber(entry) {
+	const line = Number(entry.line || 0);
+	const column = Number(entry.column || 0);
+	if (line > 0 && column > 0) return ":" + line + ":" + column;
+	if (line > 0) return ":" + line;
+	return "";
+}
+
 function renderOutputEntries() {
 	if (!refs.outputList) return;
 
@@ -1913,21 +1957,32 @@ function renderOutputEntries() {
 		return;
 	}
 
-	const visibleEntries = state.outputEntries.slice(-350);
-	const offset = state.outputEntries.length - visibleEntries.length;
-	const html = visibleEntries.map((entry, localIndex) => {
-		const entryIndex = offset + localIndex;
+	const filtered = getOutputFilteredEntries();
+	if (filtered.length === 0) {
+		refs.outputList.innerHTML = '<div class="output-empty">' + escapeHtml(tx("outputNoMatches")) + '</div>';
+		if (refs.outputStatus) refs.outputStatus.textContent = state.outputEntries.length + " captured, 0 visible.";
+		return;
+	}
+
+	const visibleEntries = filtered.slice(-350);
+	const html = visibleEntries.map(entry => {
+		const entryIndex = state.outputEntries.indexOf(entry);
 		const level = getOutputLevel(entry);
-		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || entry.source || "Runtime";
-		const line = entry.line ? ":" + escapeHtml(String(entry.line)) : "";
+		const context = getOutputContext(entry);
+		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || context || "Runtime";
+		const line = outputLineNumber(entry);
 		const stack = entry.stackTrace ? '<pre class="output-stack">' + escapeHtml(entry.stackTrace) + '</pre>' : "";
-		const preview = entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
+		const preview = state.outputView.preview && entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
 		const canOpen = findScriptForOutputEntry(entry) ? " can-open" : "";
+		const timestamp = state.outputView.timestamp ? '<span class="output-time">' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span>' : "";
+		const contextHtml = state.outputView.context ? '<span class="output-context">' + escapeHtml(context) + '</span>' : "";
+		const sourceHtml = state.outputView.source ? '<button type="button" class="output-source" title="Open script at line">' + escapeHtml(path + line) + '</button>' : "";
 		return '<article class="output-line ' + level + canOpen + '" data-output-index="' + entryIndex + '">' +
 			'<div class="output-line-main">' +
-				'<span class="output-time">' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span>' +
+				timestamp +
 				'<span class="output-tag">[' + escapeHtml(level) + ']</span>' +
-				'<button type="button" class="output-source" title="Open script at line">' + escapeHtml(path + line) + '</button>' +
+				contextHtml +
+				sourceHtml +
 				'<span class="output-text">' + escapeHtml(entry.message || "") + '</span>' +
 			'</div>' + stack + preview +
 		'</article>';
@@ -1936,12 +1991,15 @@ function renderOutputEntries() {
 	refs.outputList.innerHTML = html;
 	for (const line of refs.outputList.querySelectorAll(".output-line[data-output-index]")) {
 		line.addEventListener("click", event => {
-			if (event.target.closest("pre")) return;
+			if (event.target.closest("pre") || event.target.closest("input") || event.target.closest("select")) return;
 			openOutputEntry(Number(line.dataset.outputIndex));
 		});
 	}
 	refs.outputList.scrollTop = refs.outputList.scrollHeight;
-	if (refs.outputStatus) refs.outputStatus.textContent = state.outputEntries.length + " output entr" + (state.outputEntries.length === 1 ? "y" : "ies") + " captured.";
+	if (refs.outputStatus) {
+		const total = state.outputEntries.length;
+		refs.outputStatus.textContent = filtered.length === total ? total + " output entr" + (total === 1 ? "y" : "ies") + " captured." : filtered.length + " visible / " + total + " captured.";
+	}
 }
 
 async function pollOutputLogs(force = false) {
@@ -2983,6 +3041,27 @@ function bindEvents() {
 	if (refs.outputCloseButton) refs.outputCloseButton.addEventListener("click", () => setOutputOpen(false));
 	if (refs.outputRefreshButton) refs.outputRefreshButton.addEventListener("click", () => pollOutputLogs(true));
 	if (refs.outputClearButton) refs.outputClearButton.addEventListener("click", clearOutputPanel);
+	if (refs.outputLevelFilter) refs.outputLevelFilter.addEventListener("change", () => { state.outputFilters.level = refs.outputLevelFilter.value || "all"; renderOutputEntries(); });
+	if (refs.outputContextFilter) refs.outputContextFilter.addEventListener("change", () => { state.outputFilters.context = refs.outputContextFilter.value || "all"; renderOutputEntries(); });
+	if (refs.outputTextFilter) refs.outputTextFilter.addEventListener("input", () => { state.outputFilters.text = refs.outputTextFilter.value || ""; renderOutputEntries(); });
+	if (refs.outputDetailButton && refs.outputDetailMenu) {
+		refs.outputDetailButton.addEventListener("click", event => {
+			event.stopPropagation();
+			refs.outputDetailMenu.classList.toggle("open");
+			refs.outputDetailMenu.setAttribute("aria-hidden", refs.outputDetailMenu.classList.contains("open") ? "false" : "true");
+		});
+		document.addEventListener("click", event => {
+			if (!refs.outputDetailMenu.contains(event.target) && event.target !== refs.outputDetailButton && !refs.outputDetailButton.contains(event.target)) {
+				refs.outputDetailMenu.classList.remove("open");
+				refs.outputDetailMenu.setAttribute("aria-hidden", "true");
+			}
+		});
+	}
+	for (const [refName, key] of [["outputShowTimestamp", "timestamp"], ["outputShowContext", "context"], ["outputShowSource", "source"], ["outputShowPreview", "preview"]]) {
+		const input = refs[refName];
+		if (!input) continue;
+		input.addEventListener("change", () => { state.outputView[key] = !!input.checked; renderOutputEntries(); });
+	}
 	bindOutputResize();
 	refs.saveButton.addEventListener("click", () => saveCurrentFile(false));
 	if (refs.splitButton) refs.splitButton.addEventListener("click", () => splitTab(state.currentFileId));

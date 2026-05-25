@@ -145,6 +145,17 @@ function registerCompletions(monaco) {
 		};
 	}
 
+	function serviceDocumentation(serviceName) {
+		return {
+			value: "**" + serviceName + "** service\n\n```lua\nlocal " + serviceName + " = game:GetService(\"" + serviceName + "\")\n```\nUse this completion when you need direct access to the " + serviceName + " service.",
+		};
+	}
+
+	function shouldSuggestGetServiceSnippet(linePrefix) {
+		const text = String(linePrefix || "");
+		return /=\s*[A-Za-z_]*$/.test(text) || /game\s*[:.]\s*GetService\s*\(\s*["']?[^"']*$/.test(text) || /game\s*[:.]?\s*\w*$/.test(text);
+	}
+
 	function pushUnique(target, seen, item, kind, sortPrefix, itemRange) {
 		const key = item[0] + "|" + item[1];
 		if (seen.has(key)) return;
@@ -246,11 +257,37 @@ function registerCompletions(monaco) {
 				pushUnique(suggestions, seen, ["GetService", "GetService(\"${1:Players}\")", "DataModel method", "Returns a game service by name."], methodKind, "000", itemRange);
 			}
 
+			const getServiceSnippetMode = shouldSuggestGetServiceSnippet(linePrefix);
 			for (const serviceName of SERVICE_NAMES) {
 				const key = "service|" + serviceName;
-				if (seen.has(key)) continue;
-				seen.add(key);
-				suggestions.push({ label: serviceName, kind: classKind, detail: "Service", insertText: serviceName, sortText: "210" + serviceName, range: itemRange });
+				if (!seen.has(key)) {
+					seen.add(key);
+					suggestions.push({
+						label: serviceName,
+						kind: classKind,
+						detail: "Roblox service",
+						documentation: serviceDocumentation(serviceName),
+						insertText: serviceName,
+						sortText: "210" + serviceName,
+						range: itemRange,
+					});
+				}
+				if (getServiceSnippetMode) {
+					const snippetKey = "serviceSnippet|" + serviceName;
+					if (!seen.has(snippetKey)) {
+						seen.add(snippetKey);
+						suggestions.push({
+							label: "game:GetService("" + serviceName + "")",
+							kind: functionKind,
+							detail: "Insert GetService for " + serviceName,
+							documentation: serviceDocumentation(serviceName),
+							insertText: "game:GetService("" + serviceName + "")",
+							insertTextRules: snippetRule,
+							sortText: "000" + serviceName,
+							range: itemRange,
+						});
+					}
+				}
 			}
 
 			for (const globalName of GLOBALS) {
@@ -528,7 +565,7 @@ export function createEditorController(options) {
 					acceptSuggestionOnEnter: "on",
 					suggestSelection: "first",
 					wordBasedSuggestions: "matchingDocuments",
-					suggest: { showIcons: true, preview: true, showSnippets: true, showStatusBar: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
+					suggest: { showIcons: true, preview: true, showSnippets: true, showStatusBar: true, showInlineDetails: true, showMethods: true, showFunctions: true, showClasses: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
 				});
 
 				target.editor.onDidChangeModelContent(() => options.onChange(groupName));

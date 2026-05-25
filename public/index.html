@@ -207,7 +207,7 @@
 			<section id="outputPanel" class="output-panel" aria-label="Output panel">
 				<div id="outputResizeHandle" class="output-resize-handle" title="Drag to resize Output"></div>
 				<header class="output-head">
-					<div>
+					<div class="output-title-area">
 						<strong data-i18n="outputTitle">Output</strong>
 						<span id="outputStatus" data-i18n="outputWaiting">Waiting for play session logs.</span>
 					</div>
@@ -217,6 +217,32 @@
 						<button id="outputCloseButton" class="icon-button" aria-label="Close Output"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
 					</div>
 				</header>
+				<div class="output-toolbar">
+					<select id="outputLevelFilter" aria-label="Output type filter">
+						<option value="all" data-i18n="outputAllMessages">All Messages</option>
+						<option value="error" data-i18n="outputErrors">Errors</option>
+						<option value="warn" data-i18n="outputWarnings">Warnings</option>
+						<option value="print" data-i18n="outputPrints">Prints</option>
+						<option value="info" data-i18n="outputInfo">Info</option>
+					</select>
+					<select id="outputContextFilter" aria-label="Output context filter">
+						<option value="all" data-i18n="outputAllContexts">All Contexts</option>
+						<option value="Server">Server</option>
+						<option value="Client">Client</option>
+						<option value="Plugin">Plugin</option>
+						<option value="Runtime">Runtime</option>
+					</select>
+					<div class="output-filter-wrap">
+						<input id="outputTextFilter" type="search" autocomplete="off" data-i18n-placeholder="outputFilterPlaceholder" placeholder="Filter..." />
+					</div>
+					<button id="outputDetailButton" class="icon-button output-detail-button" title="Output detail options" aria-label="Output detail options"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M5 12h14"/><path d="M5 17h14"/></svg></button>
+				</div>
+				<div id="outputDetailMenu" class="output-detail-menu" aria-hidden="true">
+					<label><input id="outputShowTimestamp" type="checkbox" checked /> <span data-i18n="outputShowTimestamp">Show timestamp</span></label>
+					<label><input id="outputShowContext" type="checkbox" checked /> <span data-i18n="outputShowContext">Show context</span></label>
+					<label><input id="outputShowSource" type="checkbox" checked /> <span data-i18n="outputShowSource">Show source</span></label>
+					<label><input id="outputShowPreview" type="checkbox" checked /> <span data-i18n="outputShowPreview">Show script preview</span></label>
+				</div>
 				<div id="outputList" class="output-list">
 					<div class="output-empty" data-i18n="outputEmpty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>
 				</div>
