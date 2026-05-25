@@ -150,9 +150,6 @@ local function markCloudManaged(instance)
 end
 
 local StarterPlayer = getServiceSafe("StarterPlayer")
-local StarterPlayerScripts = StarterPlayer and StarterPlayer:FindFirstChild("StarterPlayerScripts")
-local StarterCharacterScripts = StarterPlayer and StarterPlayer:FindFirstChild("StarterCharacterScripts")
-
 local allowedRoots = {
 	{ Name = "Workspace", Instance = workspace },
 	{ Name = "Lighting", Instance = getServiceSafe("Lighting") },
@@ -164,8 +161,6 @@ local allowedRoots = {
 	{ Name = "StarterGui", Instance = getServiceSafe("StarterGui") },
 	{ Name = "StarterPack", Instance = getServiceSafe("StarterPack") },
 	{ Name = "StarterPlayer", Instance = StarterPlayer },
-	{ Name = "StarterPlayerScripts", Instance = StarterPlayerScripts },
-	{ Name = "StarterCharacterScripts", Instance = StarterCharacterScripts },
 	{ Name = "Teams", Instance = getServiceSafe("Teams") },
 	{ Name = "SoundService", Instance = getServiceSafe("SoundService") },
 	{ Name = "TextChatService", Instance = getServiceSafe("TextChatService") },
@@ -279,7 +274,7 @@ local function createButton(text, backgroundColor)
 		Font = Enum.Font.GothamMedium,
 		AutoButtonColor = true,
 	}, {
-		createCorner(13),
+		createCorner(4),
 		createStroke(theme.BorderSoft, 1, 0),
 	})
 end
@@ -296,7 +291,7 @@ local function createSmallButton(text, backgroundColor)
 		TextWrapped = true,
 		AutoButtonColor = true,
 	}, {
-		createCorner(12),
+		createCorner(4),
 		createStroke(theme.BorderSoft, 1, 0),
 	})
 end
@@ -1205,6 +1200,14 @@ local function levelFromType(messageType)
 	return "info"
 end
 
+local function parseScriptReference(message, stackTrace)
+	local text = tostring(message or "") .. "\n" .. tostring(stackTrace or "")
+	local path, line = text:match("Script ['\"]([^'\"]+)['\"], Line (%d+)")
+	if not path then path, line = text:match("([%w_%.]+%.%w+):(%d+):") end
+	if not path then path, line = text:match("([%w_%.]+), line (%d+)") end
+	return path, tonumber(line)
+end
+
 local function trimSeen()
 	local count = 0
 	for _ in pairs(seen) do count += 1 end
@@ -1259,10 +1262,12 @@ local function flush()
 end
 
 LogService.MessageOut:Connect(function(message, messageType)
+	local scriptPath, line = parseScriptReference(message, "")
 	queue({
 		level = levelFromType(messageType),
 		message = message,
-		scriptPath = "Runtime",
+		scriptPath = scriptPath or "Runtime",
+		line = line,
 		source = "Server",
 	})
 end)
@@ -1273,11 +1278,13 @@ pcall(function()
 		if typeof(scriptInstance) == "Instance" then
 			scriptPath = scriptInstance:GetFullName()
 		end
+		local parsedPath, parsedLine = parseScriptReference(message, stackTrace)
 		queue({
 			level = "error",
 			message = tostring(message or ""),
 			stackTrace = tostring(stackTrace or ""),
-			scriptPath = scriptPath,
+			scriptPath = parsedPath or scriptPath,
+			line = parsedLine,
 			source = "Server",
 		})
 	end)
@@ -1336,6 +1343,14 @@ local function levelFromType(messageType)
 	return "info"
 end
 
+local function parseScriptReference(message, stackTrace)
+	local text = tostring(message or "") .. "\n" .. tostring(stackTrace or "")
+	local path, line = text:match("Script ['\"]([^'\"]+)['\"], Line (%d+)")
+	if not path then path, line = text:match("([%w_%.]+%.%w+):(%d+):") end
+	if not path then path, line = text:match("([%w_%.]+), line (%d+)") end
+	return path, tonumber(line)
+end
+
 local function send(entry)
 	local message = tostring(entry.message or "")
 	if message == "" then return end
@@ -1348,11 +1363,13 @@ local function send(entry)
 end
 
 LogService.MessageOut:Connect(function(message, messageType)
+	local scriptPath, line = parseScriptReference(message, "")
 	send({
 		level = levelFromType(messageType),
 		message = message,
 		source = "Client",
-		scriptPath = "Client",
+		scriptPath = scriptPath or "Client",
+		line = line,
 	})
 end)
 
@@ -1362,12 +1379,14 @@ pcall(function()
 		if typeof(scriptInstance) == "Instance" then
 			scriptPath = scriptInstance:GetFullName()
 		end
+		local parsedPath, parsedLine = parseScriptReference(message, stackTrace)
 		send({
 			level = "error",
 			message = tostring(message or ""),
 			stackTrace = tostring(stackTrace or ""),
 			source = "Client",
-			scriptPath = scriptPath,
+			scriptPath = parsedPath or scriptPath,
+			line = parsedLine,
 		})
 	end)
 end)
@@ -1506,15 +1525,8 @@ local function scanProject(silent)
 					return
 				end
 
-				if descendant.ClassName == "Folder" or descendant.ClassName == "Configuration" then
+				if not isCloudManagedInstance(descendant) then
 					visible[descendant] = true
-				elseif isScriptClass(descendant.ClassName) then
-					local current = descendant
-
-					while current and current ~= root do
-						visible[current] = true
-						current = current.Parent
-					end
 				end
 			end
 
@@ -1923,11 +1935,7 @@ local function applyMoveInstance(change)
 	end
 
 	if not instance then
-		return false, "Moved script not found."
-	end
-
-	if not isScriptClass(instance.ClassName) and instance.ClassName ~= "Folder" and instance.ClassName ~= "Configuration" then
-		return false, "Cloud only moves Folder, Configuration, Script, LocalScript and ModuleScript."
+		return false, "Moved instance not found."
 	end
 
 	for _, rootData in ipairs(allowedRoots) do
@@ -1949,7 +1957,7 @@ local function applyMoveInstance(change)
 
 	while current do
 		if current == instance then
-			return false, "A script cannot be moved inside itself or one of its descendants."
+			return false, "An instance cannot be moved inside itself or one of its descendants."
 		end
 
 		current = current.Parent

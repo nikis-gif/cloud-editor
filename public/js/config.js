@@ -11,8 +11,6 @@ export const ROOT_ORDER = [
 	"StarterGui",
 	"StarterPack",
 	"StarterPlayer",
-	"StarterPlayerScripts",
-	"StarterCharacterScripts",
 	"Teams",
 	"SoundService",
 	"TextChatService",

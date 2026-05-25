@@ -5398,3 +5398,141 @@ html[data-interface-theme="light"] .output-source {
 html[data-interface-theme="light"] .output-text {
 	color: #333333 !important;
 }
+
+/* v1.2.14 - full-tree output navigation refinements */
+.vscode-gate-workbench {
+	grid-template-columns: 48px 280px minmax(0, 1fr) !important;
+}
+
+.vscode-editor-content {
+	width: 100% !important;
+	max-width: none !important;
+	grid-template-columns: minmax(0, 1fr) minmax(320px, 420px) !important;
+	justify-content: stretch !important;
+	align-content: stretch !important;
+	padding: clamp(18px, 2vw, 30px) !important;
+}
+
+.vscode-welcome-card,
+.vscode-login-card {
+	min-height: 100% !important;
+}
+
+.output-panel {
+	background: #1e1e1e !important;
+	border-top: 1px solid #2b2b2b !important;
+	box-shadow: none !important;
+}
+
+.output-head {
+	height: 38px !important;
+	background: #181818 !important;
+	border-bottom: 1px solid #2b2b2b !important;
+}
+
+.output-list {
+	padding: 0 !important;
+	font-family: Consolas, "Cascadia Code", monospace !important;
+	font-size: 12px !important;
+	line-height: 1.42 !important;
+	background: #1e1e1e !important;
+}
+
+.output-line {
+	border-bottom: 1px solid #252526 !important;
+	background: transparent !important;
+}
+
+.output-line:hover {
+	background: #252526 !important;
+}
+
+.output-line.can-open {
+	cursor: pointer;
+}
+
+.output-line-main {
+	grid-template-columns: 138px 78px minmax(220px, 440px) minmax(0, 1fr) !important;
+	min-height: 27px !important;
+	padding: 0 12px !important;
+	border-left-width: 3px !important;
+}
+
+.output-source {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	padding: 0;
+	margin: 0;
+	text-align: left;
+	font: inherit;
+	cursor: inherit;
+	color: #dcdcaa !important;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.output-line.can-open .output-source {
+	color: #4ec9b0 !important;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.output-text {
+	color: #d4d4d4 !important;
+}
+
+.output-stack,
+.output-preview {
+	margin: 0 12px 8px 219px !important;
+	border: 1px solid #333333 !important;
+	background: #111111 !important;
+	color: #cccccc !important;
+	border-radius: 0 !important;
+}
+
+.output-preview {
+	color: #dcdcaa !important;
+}
+
+.node-icon.instance {
+	color: #c5c5c5;
+}
+
+.tree-row .node-actions {
+	align-items: center !important;
+}
+
+.node-action,
+.chevron,
+.tab-close,
+.icon-button {
+	display: inline-grid !important;
+	place-items: center !important;
+}
+
+@media (max-width: 1080px) {
+	.vscode-gate-workbench {
+		grid-template-columns: 42px 250px minmax(0, 1fr) !important;
+	}
+
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+
+	.output-line-main {
+		grid-template-columns: 116px 64px minmax(0, 1fr) !important;
+	}
+
+	.output-text {
+		grid-column: 1 / -1;
+		padding: 0 0 5px 0;
+	}
+
+	.output-stack,
+	.output-preview {
+		margin-left: 12px !important;
+	}
+}

@@ -399,7 +399,7 @@ function getNodeClass(node) {
 }
 
 function isContainerClass(className) {
-	return className === "Folder" || className === "Configuration";
+	return !!className && className !== "Root" && !isScriptClass(className);
 }
 
 function getNodeIcon(node) {
@@ -411,6 +411,13 @@ function getNodeIcon(node) {
 	if (className === "ModuleScript") return { icon: "module", cls: "module" };
 	if (className === "LocalScript") return { icon: "localScript", cls: "script" };
 	if (className === "Script") return { icon: "script", cls: "script" };
+	if (className === "Model" || className === "WorldModel" || className === "Actor") return { icon: "model", cls: "instance model" };
+	if (className === "Part" || className === "MeshPart" || className === "UnionOperation" || className === "WedgePart" || className === "CornerWedgePart" || className === "BasePart") return { icon: "part", cls: "instance part" };
+	if (className.endsWith("Gui") || className === "Frame" || className === "TextLabel" || className === "TextButton" || className === "ImageLabel" || className === "ImageButton") return { icon: "gui", cls: "instance gui" };
+	if (className === "RemoteEvent" || className === "RemoteFunction" || className === "BindableEvent" || className === "BindableFunction") return { icon: "remote", cls: "instance remote" };
+	if (className.endsWith("Value")) return { icon: "value", cls: "instance value" };
+	if (className === "Sound") return { icon: "sound", cls: "instance sound" };
+	if (className.includes("Light") || className === "Beam" || className === "ParticleEmitter" || className === "Trail") return { icon: "light", cls: "instance light" };
 	return { icon: "instance", cls: "instance" };
 }
 
@@ -1828,6 +1835,75 @@ function bindOutputResize() {
 	window.addEventListener("resize", applyOutputHeight);
 }
 
+function normalizeOutputPath(path) {
+	return String(path || "")
+		.replace(/^game[./]/i, "")
+		.replace(/\[/g, ".")
+		.replace(/\]/g, "")
+		.replace(/["']/g, "")
+		.replace(/\\/g, "/")
+		.replace(/\./g, "/")
+		.replace(/\/+/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
+function findScriptForOutputEntry(entry) {
+	const scripts = state.files.filter(isScriptItem);
+	if (!scripts.length) return null;
+
+	const root = String(entry.root || "");
+	const relative = String(entry.relativePath || "");
+	if (root && relative) {
+		const exact = scripts.find(file => file.root === root && file.relativePath === relative);
+		if (exact) return exact;
+	}
+
+	const rawPath = entry.scriptPath || entry.scriptName || "";
+	const normalized = normalizeOutputPath(rawPath).toLowerCase();
+	if (!normalized) return null;
+
+	const playerScriptsMatch = normalized.match(/players\/[^/]+\/playerscripts\/(.+)$/);
+	if (playerScriptsMatch) {
+		const wanted = "starterplayerscripts/" + playerScriptsMatch[1];
+		const found = scripts.find(file => file.root === "StarterPlayer" && normalizeOutputPath(file.relativePath).toLowerCase() === wanted);
+		if (found) return found;
+	}
+
+	const characterScriptsMatch = normalized.match(/players\/[^/]+\/character\/(.+)$/) || normalized.match(/workspace\/[^/]+\/(.+)$/);
+	if (characterScriptsMatch) {
+		const wanted = "startercharacterscripts/" + characterScriptsMatch[1];
+		const found = scripts.find(file => file.root === "StarterPlayer" && normalizeOutputPath(file.relativePath).toLowerCase() === wanted);
+		if (found) return found;
+	}
+
+	for (const file of scripts) {
+		const full = normalizeOutputPath(file.root + "/" + file.relativePath).toLowerCase();
+		const rel = normalizeOutputPath(file.relativePath).toLowerCase();
+		const name = normalizeOutputPath(file.name).toLowerCase();
+		if (normalized === full || normalized.endsWith("/" + full) || normalized.includes("/" + full)) return file;
+		if (normalized === rel || normalized.endsWith("/" + rel) || normalized.includes("/" + rel)) return file;
+		if (name && normalized.endsWith("/" + name)) return file;
+	}
+
+	return null;
+}
+
+async function openOutputEntry(entryIndex) {
+	const entry = state.outputEntries[entryIndex];
+	if (!entry) return;
+	const file = findScriptForOutputEntry(entry);
+	if (!file) {
+		showToast("Could not map this output line to a Cloud script yet.", "warning");
+		return;
+	}
+	await openFile(file, { focusEditor: true });
+	revealTabInExplorer(file.fileId);
+	const line = Number(entry.line || 0);
+	if (line > 0) {
+		requestAnimationFrame(() => state.editor.focusLine(line, "primary"));
+	}
+}
+
 function renderOutputEntries() {
 	if (!refs.outputList) return;
 
@@ -1837,23 +1913,33 @@ function renderOutputEntries() {
 		return;
 	}
 
-	const html = state.outputEntries.slice(-350).map(entry => {
+	const visibleEntries = state.outputEntries.slice(-350);
+	const offset = state.outputEntries.length - visibleEntries.length;
+	const html = visibleEntries.map((entry, localIndex) => {
+		const entryIndex = offset + localIndex;
 		const level = getOutputLevel(entry);
 		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || entry.source || "Runtime";
 		const line = entry.line ? ":" + escapeHtml(String(entry.line)) : "";
 		const stack = entry.stackTrace ? '<pre class="output-stack">' + escapeHtml(entry.stackTrace) + '</pre>' : "";
 		const preview = entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
-		return '<article class="output-line ' + level + '">' +
+		const canOpen = findScriptForOutputEntry(entry) ? " can-open" : "";
+		return '<article class="output-line ' + level + canOpen + '" data-output-index="' + entryIndex + '">' +
 			'<div class="output-line-main">' +
 				'<span class="output-time">' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span>' +
 				'<span class="output-tag">[' + escapeHtml(level) + ']</span>' +
-				'<strong class="output-source">' + escapeHtml(path + line) + '</strong>' +
+				'<button type="button" class="output-source" title="Open script at line">' + escapeHtml(path + line) + '</button>' +
 				'<span class="output-text">' + escapeHtml(entry.message || "") + '</span>' +
 			'</div>' + stack + preview +
 		'</article>';
 	}).join("");
 
 	refs.outputList.innerHTML = html;
+	for (const line of refs.outputList.querySelectorAll(".output-line[data-output-index]")) {
+		line.addEventListener("click", event => {
+			if (event.target.closest("pre")) return;
+			openOutputEntry(Number(line.dataset.outputIndex));
+		});
+	}
 	refs.outputList.scrollTop = refs.outputList.scrollHeight;
 	if (refs.outputStatus) refs.outputStatus.textContent = state.outputEntries.length + " output entr" + (state.outputEntries.length === 1 ? "y" : "ies") + " captured.";
 }
