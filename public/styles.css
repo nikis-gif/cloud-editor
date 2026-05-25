@@ -5134,3 +5134,267 @@ html[data-interface-theme="light"] .tree-row.multi-selected {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
+
+/* v1.2.13 layout/output polish */
+:root {
+	--side-width: clamp(250px, 18vw, 330px);
+	--title-height: 40px;
+	--footer-height: 22px;
+}
+
+body {
+	min-width: 0 !important;
+}
+
+.vscode-gate {
+	width: 100vw !important;
+	height: 100vh !important;
+}
+
+.vscode-gate-titlebar {
+	width: 100% !important;
+}
+
+.vscode-gate-actions {
+	min-width: 0;
+}
+
+.vscode-gate-actions .appearance-select,
+#gateLanguageSelect,
+#gateAppearanceSelect {
+	width: 178px;
+	max-width: 18vw;
+}
+
+.vscode-gate-workbench {
+	width: 100vw !important;
+	grid-template-columns: 48px minmax(220px, 18vw) minmax(0, 1fr) !important;
+}
+
+.vscode-gate-editor {
+	width: 100% !important;
+	min-width: 0 !important;
+}
+
+.vscode-editor-content {
+	width: 100% !important;
+	max-width: none !important;
+	margin: 0 !important;
+	padding: clamp(14px, 1.5vw, 28px) !important;
+	grid-template-columns: minmax(0, 1fr) minmax(330px, 390px) !important;
+	gap: clamp(14px, 1.2vw, 22px) !important;
+	align-content: stretch !important;
+	align-items: stretch !important;
+	justify-content: stretch !important;
+}
+
+.vscode-welcome-card,
+.vscode-login-card {
+	min-height: min(680px, calc(100vh - 112px)) !important;
+	height: 100% !important;
+	align-self: stretch !important;
+	box-sizing: border-box;
+}
+
+.vscode-welcome-card {
+	align-content: start !important;
+	padding: clamp(24px, 2.4vw, 42px) !important;
+}
+
+.vscode-login-card {
+	align-content: start !important;
+	padding: clamp(20px, 1.8vw, 28px) !important;
+}
+
+.vscode-workspace-meta {
+	width: 100%;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+	margin-bottom: clamp(16px, 3vh, 34px);
+}
+
+.vscode-workspace-meta span,
+.vscode-login-status {
+	border-radius: 3px !important;
+	background: #1e1e1e !important;
+	border: 1px solid #3c3c3c !important;
+}
+
+.vscode-welcome-card h1 {
+	font-size: clamp(38px, 4.4vw, 72px) !important;
+	line-height: .98 !important;
+}
+
+.vscode-welcome-card p {
+	max-width: 760px !important;
+	font-size: clamp(14px, 1vw, 17px) !important;
+}
+
+.vscode-rotator {
+	max-width: 100%;
+}
+
+.main.output-open .placeholder {
+	display: none !important;
+}
+
+.output-panel {
+	z-index: 5;
+	background: #1e1e1e !important;
+	border-top: 1px solid #2b2b2b !important;
+	font-family: Consolas, "Cascadia Code", monospace;
+}
+
+.output-head {
+	height: 36px;
+	background: #181818 !important;
+	border-bottom: 1px solid #2b2b2b !important;
+}
+
+.output-list {
+	padding: 6px 0 10px !important;
+	font-size: 12px !important;
+	line-height: 1.45 !important;
+}
+
+.output-empty {
+	margin: 8px 10px;
+	padding: 14px 16px !important;
+	border-radius: 0 !important;
+	background: #1e1e1e !important;
+	border: 1px dashed #3c3c3c !important;
+	color: #cccccc !important;
+}
+
+.output-line {
+	border: 0;
+	border-left: 0;
+	background: transparent;
+	margin: 0;
+	padding: 0;
+}
+
+.output-line-main {
+	display: grid;
+	grid-template-columns: 155px 76px minmax(210px, 420px) minmax(0, 1fr);
+	gap: 8px;
+	min-height: 24px;
+	align-items: center;
+	padding: 0 14px;
+	border-left: 3px solid transparent;
+	white-space: pre-wrap;
+}
+
+.output-line.error .output-line-main { border-left-color: #f48771; }
+.output-line.warn .output-line-main { border-left-color: #cca700; }
+.output-line.print .output-line-main,
+.output-line.info .output-line-main,
+.output-line.output .output-line-main { border-left-color: #3794ff; }
+
+.output-time {
+	color: #858585;
+}
+
+.output-tag {
+	font-weight: 700;
+	color: #cccccc;
+}
+
+.output-line.error .output-tag { color: #f48771; }
+.output-line.warn .output-tag { color: #cca700; }
+.output-line.print .output-tag,
+.output-line.info .output-tag,
+.output-line.output .output-tag { color: #4ec9b0; }
+
+.output-source {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #dcdcaa;
+	font-weight: 600;
+}
+
+.output-text {
+	min-width: 0;
+	color: #d4d4d4;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.output-stack,
+.output-preview {
+	margin: 2px 14px 8px 93px !important;
+	padding: 8px 10px !important;
+	border-radius: 0 !important;
+	border: 1px solid #2b2b2b !important;
+	background: #111111 !important;
+	font-size: 12px !important;
+	line-height: 1.45 !important;
+}
+
+.output-preview {
+	color: #dcdcaa !important;
+}
+
+@media (min-width: 1600px) {
+	.vscode-gate-workbench {
+		grid-template-columns: 48px 300px minmax(0, 1fr) !important;
+	}
+
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) 430px !important;
+		padding: 32px !important;
+	}
+}
+
+@media (max-width: 1080px) {
+	.vscode-gate-workbench {
+		grid-template-columns: 42px 230px minmax(0, 1fr) !important;
+	}
+
+	.vscode-editor-content {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+
+	.vscode-login-card {
+		min-height: auto !important;
+	}
+
+	.output-line-main {
+		grid-template-columns: 120px 64px minmax(120px, 1fr);
+	}
+
+	.output-text {
+		grid-column: 1 / -1;
+		padding-left: 0;
+	}
+}
+
+html[data-interface-theme="light"] .vscode-workspace-meta span,
+html[data-interface-theme="light"] .vscode-login-status,
+html[data-interface-theme="light"] .output-panel,
+html[data-interface-theme="light"] .output-head,
+html[data-interface-theme="light"] .output-empty,
+html[data-interface-theme="light"] .output-stack,
+html[data-interface-theme="light"] .output-preview {
+	background: #ffffff !important;
+	border-color: #d4d4d4 !important;
+	color: #333333 !important;
+}
+
+html[data-interface-theme="light"] .output-line-main {
+	color: #333333 !important;
+}
+
+html[data-interface-theme="light"] .output-time {
+	color: #767676 !important;
+}
+
+html[data-interface-theme="light"] .output-source {
+	color: #795e26 !important;
+}
+
+html[data-interface-theme="light"] .output-text {
+	color: #333333 !important;
+}

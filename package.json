@@ -1,6 +1,6 @@
 {
 	"name": "cloud-editor",
-	"version": "1.2.12",
+	"version": "1.2.13",
 	"description": "Cloud - an integrated development environment for game scripting.",
 	"private": true,
 	"main": "electron/main.js",

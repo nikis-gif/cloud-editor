@@ -18,6 +18,7 @@
 			</a>
 
 			<div class="vscode-gate-actions">
+				<select id="gateLanguageSelect" class="appearance-select" aria-label="Language"></select>
 				<select id="gateAppearanceSelect" class="appearance-select" aria-label="Appearance">
 					<option value="system">System</option>
 					<option value="dark">Dark</option>
@@ -207,17 +208,17 @@
 				<div id="outputResizeHandle" class="output-resize-handle" title="Drag to resize Output"></div>
 				<header class="output-head">
 					<div>
-						<strong>Output</strong>
-						<span id="outputStatus">Waiting for play session logs.</span>
+						<strong data-i18n="outputTitle">Output</strong>
+						<span id="outputStatus" data-i18n="outputWaiting">Waiting for play session logs.</span>
 					</div>
 					<div class="output-actions">
-						<button id="outputRefreshButton" class="secondary-button">Refresh</button>
-						<button id="outputClearButton" class="secondary-button">Clear</button>
+						<button id="outputRefreshButton" class="secondary-button" data-i18n="refresh">Refresh</button>
+						<button id="outputClearButton" class="secondary-button" data-i18n="clear">Clear</button>
 						<button id="outputCloseButton" class="icon-button" aria-label="Close Output"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
 					</div>
 				</header>
 				<div id="outputList" class="output-list">
-					<div class="output-empty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>
+					<div class="output-empty" data-i18n="outputEmpty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>
 				</div>
 			</section>
 		</main>
@@ -471,66 +472,77 @@
 
 			<div class="minimal-learn-body vscode-learn-body">
 				<section class="minimal-learn-section">
-					<h3>Connection flow</h3>
+					<h3 data-i18n="learnConnectionFlowTitle">Connection flow</h3>
 					<ol>
-						<li>Open the plugin inside your controlled game development environment.</li>
-						<li>Create a private session and copy both generated values.</li>
-						<li>Paste the Session ID and Hidden Secret on the Cloud start screen.</li>
-						<li>After connecting, Cloud loads the project tree and keeps the workspace available for editing.</li>
+						<li data-i18n="learnConnectionOne">Open the plugin inside your controlled game development environment.</li>
+						<li data-i18n="learnConnectionTwo">Create a private session and copy both generated values.</li>
+						<li data-i18n="learnConnectionThree">Paste the Session ID and Hidden Secret on the Cloud start screen.</li>
+						<li data-i18n="learnConnectionFour">After connecting, Cloud loads the project tree and keeps the workspace available for editing.</li>
 					</ol>
 				</section>
 
 				<section class="minimal-learn-section">
-					<h3>Daily workflow</h3>
+					<h3 data-i18n="learnDailyFlowTitle">Daily workflow</h3>
 					<ol>
-						<li>Use the Explorer to open scripts and keep folders organized.</li>
-						<li>Use tabs when jumping between multiple scripts.</li>
-						<li>Use split view when comparing or editing two scripts at the same time.</li>
-						<li>Save often with Ctrl + S and use the footer status to confirm the editor state.</li>
+						<li data-i18n="learnDailyOne">Use the Explorer to open scripts and keep folders organized.</li>
+						<li data-i18n="learnDailyTwo">Use tabs when jumping between multiple scripts.</li>
+						<li data-i18n="learnDailyThree">Use split view when comparing or editing two scripts at the same time.</li>
+						<li data-i18n="learnDailyFour">Save often with Ctrl + S and use the footer status to confirm the editor state.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnOutputTitle">Output mirror</h3>
+					<ol>
+						<li data-i18n="learnOutputOne">Run the game while the Cloud session is active.</li>
+						<li data-i18n="learnOutputTwo">Prints, warnings, and runtime errors are mirrored to the Output panel.</li>
+						<li data-i18n="learnOutputThree">Errors show the runtime source path and stack details when available.</li>
+						<li data-i18n="learnOutputFour">Drag the top edge of Output to resize the panel.</li>
 					</ol>
 				</section>
 
 				<section class="minimal-learn-section shortcut-section wide">
-					<h3>All shortcuts</h3>
+					<h3 data-i18n="learnAllShortcutsTitle">All shortcuts</h3>
 					<div class="shortcut-grid-full">
-						<div><b>Ctrl + S</b><span>Save the active script.</span></div>
-						<div><b>Ctrl + W</b><span>Close the active tab.</span></div>
-						<div><b>Ctrl + 1-9</b><span>Switch to a tab by position.</span></div>
-						<div><b>Ctrl + I</b><span>Create a new item from the selected parent.</span></div>
-						<div><b>Ctrl + D</b><span>Duplicate selected Explorer items or the active script.</span></div>
-						<div><b>Ctrl + C</b><span>Copy selected Explorer items.</span></div>
-						<div><b>Ctrl + X</b><span>Cut selected Explorer items.</span></div>
-						<div><b>Ctrl + V</b><span>Paste copied or cut items into the selected parent.</span></div>
-						<div><b>Shift + Click</b><span>Select a range of scripts in the Explorer.</span></div>
-						<div><b>Ctrl + Click</b><span>Toggle one item in the current selection.</span></div>
-						<div><b>Delete</b><span>Remove selected scripts or folders.</span></div>
-						<div><b>F2</b><span>Rename the selected item.</span></div>
-						<div><b>Ctrl + Shift + E</b><span>Fold the active script.</span></div>
-						<div><b>Ctrl + E</b><span>Unfold the active script.</span></div>
-						<div><b>Ctrl + +</b><span>Increase the Cloud UI zoom.</span></div>
-						<div><b>Ctrl + -</b><span>Decrease the Cloud UI zoom.</span></div>
-						<div><b>Ctrl + 0</b><span>Reset the Cloud UI zoom.</span></div>
-						<div><b>Esc</b><span>Close modals, panels, Learn, search, or create dialogs.</span></div>
+						<div><b>Ctrl + S</b><span data-i18n="shortcutSave">Save the active script.</span></div>
+						<div><b>Ctrl + W</b><span data-i18n="shortcutCloseTab">Close the active tab.</span></div>
+						<div><b>Ctrl + 1-9</b><span data-i18n="shortcutSwitchTab">Switch to a tab by position.</span></div>
+						<div><b>Ctrl + I</b><span data-i18n="shortcutCreate">Create a new item from the selected parent.</span></div>
+						<div><b>Ctrl + D</b><span data-i18n="shortcutDuplicate">Duplicate selected Explorer items or the active script.</span></div>
+						<div><b>Ctrl + C</b><span data-i18n="shortcutCopy">Copy selected Explorer items.</span></div>
+						<div><b>Ctrl + X</b><span data-i18n="shortcutCut">Cut selected Explorer items.</span></div>
+						<div><b>Ctrl + V</b><span data-i18n="shortcutPaste">Paste copied or cut items into the selected parent.</span></div>
+						<div><b>Shift + Click</b><span data-i18n="shortcutRangeSelect">Select a range of scripts in the Explorer.</span></div>
+						<div><b>Ctrl + Click</b><span data-i18n="shortcutToggleSelect">Toggle one item in the current selection.</span></div>
+						<div><b>Delete</b><span data-i18n="shortcutDelete">Remove selected scripts or folders.</span></div>
+						<div><b>F2</b><span data-i18n="shortcutRename">Rename the selected item.</span></div>
+						<div><b>Ctrl + Shift + E</b><span data-i18n="shortcutFold">Fold the active script.</span></div>
+						<div><b>Ctrl + E</b><span data-i18n="shortcutUnfold">Unfold the active script.</span></div>
+						<div><b>Ctrl + +</b><span data-i18n="shortcutZoomIn">Increase the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + -</b><span data-i18n="shortcutZoomOut">Decrease the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + 0</b><span data-i18n="shortcutZoomReset">Reset the Cloud UI zoom.</span></div>
+						<div><b>Esc</b><span data-i18n="shortcutEsc">Close modals, panels, Learn, search, or create dialogs.</span></div>
 					</div>
 				</section>
 
 				<section class="minimal-learn-section">
-					<h3>Explorer actions</h3>
+					<h3 data-i18n="learnExplorerActionsTitle">Explorer actions</h3>
 					<ol>
-						<li>Create scripts, local scripts, module scripts, and folders from valid parents.</li>
-						<li>Copy, cut, paste, duplicate, rename, and delete directly from the Explorer.</li>
-						<li>Use multi-select before copy, cut, duplicate, or delete actions.</li>
+						<li data-i18n="learnExplorerOne">Create scripts, local scripts, module scripts, and folders from valid parents.</li>
+						<li data-i18n="learnExplorerTwo">Copy, cut, paste, duplicate, rename, and delete directly from the Explorer.</li>
+						<li data-i18n="learnExplorerThree">Use multi-select before copy, cut, duplicate, or delete actions.</li>
 					</ol>
 				</section>
 
 				<section class="minimal-learn-section">
-					<h3>Editor behavior</h3>
+					<h3 data-i18n="learnEditorBehaviorTitle">Editor behavior</h3>
 					<ol>
-						<li>Cloud keeps editor shortcuts separate from Explorer shortcuts when focus is inside code.</li>
-						<li>Copy and cut text still work normally inside the editor.</li>
-						<li>Explorer copy, cut, paste, and delete run when focus is outside the code editor.</li>
+						<li data-i18n="learnEditorOne">Cloud keeps editor shortcuts separate from Explorer shortcuts when focus is inside code.</li>
+						<li data-i18n="learnEditorTwo">Copy and cut text still work normally inside the editor.</li>
+						<li data-i18n="learnEditorThree">Explorer copy, cut, paste, and delete run when focus is outside the code editor.</li>
 					</ol>
 				</section>
+			</div>
 			</div>
 		</div>
 	</div>

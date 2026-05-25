@@ -103,6 +103,7 @@ const refs = {
 	languageInput: document.getElementById("languageInput"),
 	appearanceInput: document.getElementById("appearanceInput"),
 	gateAppearanceSelect: document.getElementById("gateAppearanceSelect"),
+	gateLanguageSelect: document.getElementById("gateLanguageSelect"),
 	fontFamilyInput: document.getElementById("fontFamilyInput"),
 	fontSizeInput: document.getElementById("fontSizeInput"),
 	autosaveInput: document.getElementById("autosaveInput"),
@@ -1831,20 +1832,24 @@ function renderOutputEntries() {
 	if (!refs.outputList) return;
 
 	if (state.outputEntries.length === 0) {
-		refs.outputList.innerHTML = '<div class="output-empty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>';
-		if (refs.outputStatus) refs.outputStatus.textContent = "Waiting for play session logs.";
+		refs.outputList.innerHTML = '<div class="output-empty">' + escapeHtml(tx("outputEmpty")) + '</div>';
+		if (refs.outputStatus) refs.outputStatus.textContent = tx("outputWaiting");
 		return;
 	}
 
-	const html = state.outputEntries.slice(-250).map(entry => {
+	const html = state.outputEntries.slice(-350).map(entry => {
 		const level = getOutputLevel(entry);
-		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || "Runtime";
+		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || entry.source || "Runtime";
 		const line = entry.line ? ":" + escapeHtml(String(entry.line)) : "";
 		const stack = entry.stackTrace ? '<pre class="output-stack">' + escapeHtml(entry.stackTrace) + '</pre>' : "";
 		const preview = entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
-		return '<article class="output-entry ' + level + '">' +
-			'<div class="output-entry-head"><span class="output-level">' + escapeHtml(level.toUpperCase()) + '</span><span>' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span><strong>' + escapeHtml(path + line) + '</strong></div>' +
-			'<div class="output-message">' + escapeHtml(entry.message || "") + '</div>' + stack + preview +
+		return '<article class="output-line ' + level + '">' +
+			'<div class="output-line-main">' +
+				'<span class="output-time">' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span>' +
+				'<span class="output-tag">[' + escapeHtml(level) + ']</span>' +
+				'<strong class="output-source">' + escapeHtml(path + line) + '</strong>' +
+				'<span class="output-text">' + escapeHtml(entry.message || "") + '</span>' +
+			'</div>' + stack + preview +
 		'</article>';
 	}).join("");
 
@@ -2600,6 +2605,7 @@ function closeSettings() {
 
 function applySettings() {
 	state.language = applyLanguage(refs.languageInput ? refs.languageInput.value : state.language);
+	if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
 	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	updateEntryPhrase(false);
 	updateEditorHeader();
@@ -2956,6 +2962,16 @@ function bindEvents() {
 	if (refs.languageInput) {
 		refs.languageInput.addEventListener("change", () => {
 			state.language = applyLanguage(refs.languageInput.value);
+			if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
+			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.gateLanguageSelect) {
+		refs.gateLanguageSelect.addEventListener("change", () => {
+			state.language = applyLanguage(refs.gateLanguageSelect.value);
+			if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
 			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 			updateEntryPhrase(false);
 			updateEditorHeader();
@@ -2965,6 +2981,7 @@ function bindEvents() {
 		refs.betaLanguageSelect.addEventListener("change", () => {
 			state.language = applyLanguage(refs.betaLanguageSelect.value);
 			populateLanguageSelect(refs.languageInput, state.language);
+			if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
 			updateEntryPhrase(false);
 			updateEditorHeader();
 		});
@@ -3096,6 +3113,7 @@ function boot() {
 	bootEditor();
 	bindEvents();
 	populateLanguageSelect(refs.languageInput, state.language);
+	if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
 	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	applyLanguage(state.language);
 	updateEntryPhrase(false);

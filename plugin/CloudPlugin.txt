@@ -21,6 +21,10 @@ local OLD_LEGACY_ITEM_ID_ATTRIBUTE = "StudioBridgeItemId"
 local SECRET_HIDDEN_TEXT = "Hidden - click Copy Secret"
 local OUTPUT_BATCH_INTERVAL = 0.4
 local OUTPUT_MAX_BATCH = 60
+local CLOUD_BRIDGE_ATTRIBUTE = "CloudManagedRuntimeBridge"
+local RUNTIME_REMOTE_NAME = "__CloudOutputRemote"
+local RUNTIME_SERVER_SCRIPT_NAME = "__CloudOutputServerBridge"
+local RUNTIME_CLIENT_SCRIPT_NAME = "__CloudOutputClientBridge"
 
 local toolbar = plugin:CreateToolbar(PLUGIN_NAME)
 local button = toolbar:CreateButton("Cloud_Open", "Open Cloud", "rbxassetid://136661669872868", "Cloud")
@@ -115,6 +119,34 @@ local function getServiceSafe(serviceName)
 	end
 
 	return nil
+end
+
+local function isCloudManagedInstance(instance)
+	local current = instance
+
+	while current and current ~= game do
+		local success, value = pcall(function()
+			return current:GetAttribute(CLOUD_BRIDGE_ATTRIBUTE)
+		end)
+
+		if success and value == true then
+			return true
+		end
+
+		current = current.Parent
+	end
+
+	return false
+end
+
+local function markCloudManaged(instance)
+	if not instance then
+		return
+	end
+
+	pcall(function()
+		instance:SetAttribute(CLOUD_BRIDGE_ATTRIBUTE, true)
+	end)
 end
 
 local StarterPlayer = getServiceSafe("StarterPlayer")
@@ -1129,6 +1161,310 @@ function requestOutputJson(method, path, body)
 	return true, nil
 end
 
+local function quoteLuaString(value)
+	return string.format("%q", tostring(value or ""))
+end
+
+local function runtimeServerSource()
+	local source = [==[
+local HttpService = game:GetService("HttpService")
+local LogService = game:GetService("LogService")
+local ScriptContext = game:GetService("ScriptContext")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local BASE_URL = __BASE_URL__
+local SESSION_ID = __SESSION_ID__
+local SECRET = __SECRET__
+local REMOTE_NAME = __REMOTE_NAME__
+local FLUSH_INTERVAL = 0.35
+local MAX_BATCH = 80
+
+local buffer = {}
+local seen = {}
+local busy = false
+local lastFlush = 0
+
+local remote = ReplicatedStorage:FindFirstChild(REMOTE_NAME)
+if not remote or not remote:IsA("RemoteEvent") then
+	if remote then remote:Destroy() end
+	remote = Instance.new("RemoteEvent")
+	remote.Name = REMOTE_NAME
+	remote.Parent = ReplicatedStorage
+end
+
+local function now()
+	return DateTime.now().UnixTimestampMillis
+end
+
+local function levelFromType(messageType)
+	local name = typeof(messageType) == "EnumItem" and messageType.Name or tostring(messageType or "")
+	local lower = string.lower(name)
+	if string.find(lower, "error") then return "error" end
+	if string.find(lower, "warning") or string.find(lower, "warn") then return "warn" end
+	if string.find(lower, "output") or string.find(lower, "message") then return "print" end
+	return "info"
+end
+
+local function trimSeen()
+	local count = 0
+	for _ in pairs(seen) do count += 1 end
+	if count < 500 then return end
+	seen = {}
+end
+
+local function queue(entry)
+	if typeof(entry) ~= "table" then return end
+	local message = tostring(entry.message or "")
+	if message == "" then return end
+	local level = tostring(entry.level or "info")
+	local stackTrace = tostring(entry.stackTrace or "")
+	local key = level .. "|" .. message .. "|" .. stackTrace
+	if seen[key] then return end
+	seen[key] = true
+	trimSeen()
+	entry.createdAt = tonumber(entry.createdAt) or now()
+	entry.level = level
+	entry.message = message
+	entry.stackTrace = stackTrace
+	entry.source = tostring(entry.source or "Runtime")
+	table.insert(buffer, entry)
+end
+
+local function flush()
+	if busy or #buffer == 0 then return end
+	busy = true
+	lastFlush = os.clock()
+	local entries = table.clone(buffer)
+	table.clear(buffer)
+	task.spawn(function()
+		local ok = pcall(function()
+			HttpService:RequestAsync({
+				Url = BASE_URL .. "/sessions/" .. SESSION_ID .. "/output",
+				Method = "POST",
+				Headers = {
+					["Content-Type"] = "application/json",
+					["X-Cloud-Session"] = SESSION_ID,
+					["X-Cloud-Secret"] = SECRET,
+				},
+				Body = HttpService:JSONEncode({ entries = entries }),
+			})
+		end)
+		if not ok then
+			for _, entry in ipairs(entries) do
+				table.insert(buffer, entry)
+			end
+		end
+		busy = false
+	end)
+end
+
+LogService.MessageOut:Connect(function(message, messageType)
+	queue({
+		level = levelFromType(messageType),
+		message = message,
+		scriptPath = "Runtime",
+		source = "Server",
+	})
+end)
+
+pcall(function()
+	ScriptContext.Error:Connect(function(message, stackTrace, scriptInstance)
+		local scriptPath = "Runtime"
+		if typeof(scriptInstance) == "Instance" then
+			scriptPath = scriptInstance:GetFullName()
+		end
+		queue({
+			level = "error",
+			message = tostring(message or ""),
+			stackTrace = tostring(stackTrace or ""),
+			scriptPath = scriptPath,
+			source = "Server",
+		})
+	end)
+end)
+
+remote.OnServerEvent:Connect(function(player, entry)
+	if typeof(entry) ~= "table" then return end
+	entry.source = "Client"
+	entry.player = player and player.Name or "Player"
+	if not entry.scriptPath or entry.scriptPath == "" then
+		entry.scriptPath = "Client/" .. tostring(entry.player)
+	end
+	queue(entry)
+end)
+
+task.spawn(function()
+	while script.Parent do
+		if #buffer >= MAX_BATCH or (#buffer > 0 and os.clock() - lastFlush >= FLUSH_INTERVAL) then
+			flush()
+		end
+		task.wait(0.15)
+	end
+end)
+]==]
+
+	source = source:gsub("__BASE_URL__", quoteLuaString(normalizeBaseUrl(apiConfig.BaseUrl)))
+	source = source:gsub("__SESSION_ID__", quoteLuaString(session.Id))
+	source = source:gsub("__SECRET__", quoteLuaString(session.Secret))
+	source = source:gsub("__REMOTE_NAME__", quoteLuaString(RUNTIME_REMOTE_NAME))
+	return source
+end
+
+local function runtimeClientSource()
+	local source = [==[
+local LogService = game:GetService("LogService")
+local ScriptContext = game:GetService("ScriptContext")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local REMOTE_NAME = __REMOTE_NAME__
+local remote = ReplicatedStorage:WaitForChild(REMOTE_NAME, 15)
+if not remote or not remote:IsA("RemoteEvent") then return end
+
+local seen = {}
+
+local function now()
+	return DateTime.now().UnixTimestampMillis
+end
+
+local function levelFromType(messageType)
+	local name = typeof(messageType) == "EnumItem" and messageType.Name or tostring(messageType or "")
+	local lower = string.lower(name)
+	if string.find(lower, "error") then return "error" end
+	if string.find(lower, "warning") or string.find(lower, "warn") then return "warn" end
+	if string.find(lower, "output") or string.find(lower, "message") then return "print" end
+	return "info"
+end
+
+local function send(entry)
+	local message = tostring(entry.message or "")
+	if message == "" then return end
+	local key = tostring(entry.level) .. "|" .. message .. "|" .. tostring(entry.stackTrace or "")
+	if seen[key] then return end
+	seen[key] = true
+	entry.createdAt = tonumber(entry.createdAt) or now()
+	entry.player = Players.LocalPlayer and Players.LocalPlayer.Name or "Player"
+	remote:FireServer(entry)
+end
+
+LogService.MessageOut:Connect(function(message, messageType)
+	send({
+		level = levelFromType(messageType),
+		message = message,
+		source = "Client",
+		scriptPath = "Client",
+	})
+end)
+
+pcall(function()
+	ScriptContext.Error:Connect(function(message, stackTrace, scriptInstance)
+		local scriptPath = "Client"
+		if typeof(scriptInstance) == "Instance" then
+			scriptPath = scriptInstance:GetFullName()
+		end
+		send({
+			level = "error",
+			message = tostring(message or ""),
+			stackTrace = tostring(stackTrace or ""),
+			source = "Client",
+			scriptPath = scriptPath,
+		})
+	end)
+end)
+]==]
+
+	source = source:gsub("__REMOTE_NAME__", quoteLuaString(RUNTIME_REMOTE_NAME))
+	return source
+end
+
+local function setScriptSourceNow(scriptInstance, source)
+	local success = pcall(function()
+		ScriptEditorService:UpdateSourceAsync(scriptInstance, function()
+			return source
+		end)
+	end)
+
+	if not success then
+		pcall(function()
+			scriptInstance.Source = source
+		end)
+	end
+end
+
+local function installOutputRuntimeBridge()
+	if not session.Active or not canSync() then
+		return
+	end
+
+	local replicatedStorage = getServiceSafe("ReplicatedStorage")
+	local serverScriptService = getServiceSafe("ServerScriptService")
+	local starterPlayer = getServiceSafe("StarterPlayer")
+	local starterPlayerScripts = starterPlayer and starterPlayer:FindFirstChild("StarterPlayerScripts")
+
+	if not replicatedStorage or not serverScriptService or not starterPlayerScripts then
+		setLastAction("Runtime output bridge unavailable")
+		return
+	end
+
+	local remote = replicatedStorage:FindFirstChild(RUNTIME_REMOTE_NAME)
+	if remote and not remote:IsA("RemoteEvent") then
+		remote:Destroy()
+		remote = nil
+	end
+	if not remote then
+		remote = Instance.new("RemoteEvent")
+		remote.Name = RUNTIME_REMOTE_NAME
+		remote.Parent = replicatedStorage
+	end
+	markCloudManaged(remote)
+
+	local serverScript = serverScriptService:FindFirstChild(RUNTIME_SERVER_SCRIPT_NAME)
+	if serverScript and not serverScript:IsA("Script") then
+		serverScript:Destroy()
+		serverScript = nil
+	end
+	if not serverScript then
+		serverScript = Instance.new("Script")
+		serverScript.Name = RUNTIME_SERVER_SCRIPT_NAME
+		serverScript.Parent = serverScriptService
+	end
+	markCloudManaged(serverScript)
+	setScriptSourceNow(serverScript, runtimeServerSource())
+
+	local clientScript = starterPlayerScripts:FindFirstChild(RUNTIME_CLIENT_SCRIPT_NAME)
+	if clientScript and not clientScript:IsA("LocalScript") then
+		clientScript:Destroy()
+		clientScript = nil
+	end
+	if not clientScript then
+		clientScript = Instance.new("LocalScript")
+		clientScript.Name = RUNTIME_CLIENT_SCRIPT_NAME
+		clientScript.Parent = starterPlayerScripts
+	end
+	markCloudManaged(clientScript)
+	setScriptSourceNow(clientScript, runtimeClientSource())
+
+	setLastAction("Runtime output bridge installed")
+end
+
+local function removeOutputRuntimeBridge()
+	local replicatedStorage = getServiceSafe("ReplicatedStorage")
+	local serverScriptService = getServiceSafe("ServerScriptService")
+	local starterPlayer = getServiceSafe("StarterPlayer")
+	local starterPlayerScripts = starterPlayer and starterPlayer:FindFirstChild("StarterPlayerScripts")
+
+	local targets = {}
+	if replicatedStorage then table.insert(targets, replicatedStorage:FindFirstChild(RUNTIME_REMOTE_NAME)) end
+	if serverScriptService then table.insert(targets, serverScriptService:FindFirstChild(RUNTIME_SERVER_SCRIPT_NAME)) end
+	if starterPlayerScripts then table.insert(targets, starterPlayerScripts:FindFirstChild(RUNTIME_CLIENT_SCRIPT_NAME)) end
+
+	for _, target in ipairs(targets) do
+		if target and isCloudManagedInstance(target) then
+			target:Destroy()
+		end
+	end
+end
+
 local function getInstanceDepth(root, instance)
 	local depth = 0
 	local current = instance
@@ -1990,6 +2326,8 @@ local function createSession()
 	session.Secret = generateSecret()
 	session.CreatedAt = os.time()
 
+	installOutputRuntimeBridge()
+
 	table.clear(scannedItems)
 	currentSourcePayload = nil
 	lastAppliedApiRevision = 0
@@ -2018,6 +2356,7 @@ local function createSession()
 end
 
 local function endSession()
+	removeOutputRuntimeBridge()
 	autoSync.Enabled = false
 	autoSync.WasEnabledBeforePlay = false
 	session.Active = false

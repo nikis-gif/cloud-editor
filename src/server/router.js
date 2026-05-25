@@ -428,6 +428,8 @@ function normalizeOutputEntry(raw, fallbackId) {
 		stackTrace,
 		scriptName,
 		scriptPath,
+		source: normalizeText(value.source, "").slice(0, 80),
+		player: normalizeText(value.player, "").slice(0, 120),
 		root: normalizeText(value.root, ""),
 		relativePath: normalizeText(value.relativePath, ""),
 		line,
