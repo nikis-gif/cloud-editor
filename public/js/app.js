@@ -1422,7 +1422,15 @@ function switchTab(fileId, group = "primary", options = {}) {
 	renderTabs();
 	renderTree();
 	updateEditorHeader();
-	if (options.focusEditor !== false) setTimeout(() => state.editor.focus(targetGroup), 0);
+	if (Number(options.lineNumber) > 0) {
+		const targetLine = Number(options.lineNumber);
+		const focusTargetLine = () => state.editor.focusLine(targetLine, targetGroup);
+		requestAnimationFrame(focusTargetLine);
+		setTimeout(focusTargetLine, 60);
+		setTimeout(focusTargetLine, 180);
+	} else if (options.focusEditor !== false) {
+		setTimeout(() => state.editor.focus(targetGroup), 0);
+	}
 	setTimeout(() => {
 		state.suppressViewStateSaveUntil = 0;
 		saveWorkspaceState(false);
@@ -1899,6 +1907,36 @@ function findScriptForOutputEntry(entry) {
 	return null;
 }
 
+function extractOutputLineNumber(entry) {
+	const directLine = Number(entry && entry.line);
+	if (Number.isFinite(directLine) && directLine > 0) return directLine;
+
+	const text = [
+		entry && entry.message,
+		entry && entry.stackTrace,
+		entry && entry.scriptPath,
+		entry && entry.sourcePreview,
+	].filter(Boolean).join("\n");
+
+	const patterns = [
+		/line\s+(\d+)/i,
+		/Line\s+(\d+)/,
+		/:(\d+):\d+/,
+		/:(\d+)\b/,
+		/,\s*(?:line|Line)\s+(\d+)/,
+	];
+
+	for (const pattern of patterns) {
+		const match = text.match(pattern);
+		if (match) {
+			const line = Number(match[1]);
+			if (Number.isFinite(line) && line > 0) return line;
+		}
+	}
+
+	return 0;
+}
+
 async function openOutputEntry(entryIndex) {
 	const entry = state.outputEntries[entryIndex];
 	if (!entry) return;
@@ -1907,11 +1945,14 @@ async function openOutputEntry(entryIndex) {
 		showToast("Could not map this output line to a Cloud script yet.", "warning");
 		return;
 	}
-	await openFile(file, { focusEditor: true });
+	const line = extractOutputLineNumber(entry);
+	await openFile(file, { focusEditor: true, lineNumber: line });
 	revealTabInExplorer(file.fileId);
-	const line = Number(entry.line || 0);
 	if (line > 0) {
-		requestAnimationFrame(() => state.editor.focusLine(line, "primary"));
+		const focusTargetLine = () => state.editor && state.editor.focusLine(line, "primary");
+		requestAnimationFrame(focusTargetLine);
+		setTimeout(focusTargetLine, 60);
+		setTimeout(focusTargetLine, 180);
 	}
 }
 
@@ -1964,6 +2005,8 @@ function renderOutputEntries() {
 		return;
 	}
 
+	const previousScrollTop = refs.outputList.scrollTop;
+	const wasNearBottom = refs.outputList.scrollHeight <= refs.outputList.clientHeight + 8 || refs.outputList.scrollTop + refs.outputList.clientHeight >= refs.outputList.scrollHeight - 32;
 	const visibleEntries = filtered.slice(-350);
 	const html = visibleEntries.map(entry => {
 		const entryIndex = state.outputEntries.indexOf(entry);
@@ -1981,9 +2024,9 @@ function renderOutputEntries() {
 			'<div class="output-line-main">' +
 				timestamp +
 				'<span class="output-tag">[' + escapeHtml(level) + ']</span>' +
-				contextHtml +
-				sourceHtml +
 				'<span class="output-text">' + escapeHtml(entry.message || "") + '</span>' +
+				sourceHtml +
+				contextHtml +
 			'</div>' + stack + preview +
 		'</article>';
 	}).join("");
@@ -1995,7 +2038,11 @@ function renderOutputEntries() {
 			openOutputEntry(Number(line.dataset.outputIndex));
 		});
 	}
-	refs.outputList.scrollTop = refs.outputList.scrollHeight;
+	if (wasNearBottom) {
+		refs.outputList.scrollTop = refs.outputList.scrollHeight;
+	} else {
+		refs.outputList.scrollTop = previousScrollTop;
+	}
 	if (refs.outputStatus) {
 		const total = state.outputEntries.length;
 		refs.outputStatus.textContent = filtered.length === total ? total + " output entr" + (total === 1 ? "y" : "ies") + " captured." : filtered.length + " visible / " + total + " captured.";

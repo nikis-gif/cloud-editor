@@ -498,14 +498,26 @@ export function createEditorController(options) {
 		},
 		focusLine(lineNumber, group = this.activeGroup) {
 			const target = groups[group] || groups.primary;
-			const line = Math.max(1, Number(lineNumber) || 1);
+			const requestedLine = Math.max(1, Number(lineNumber) || 1);
 			if (this.ready && target.editor) {
-				target.editor.revealLineInCenter(line);
-				target.editor.setPosition({ lineNumber: line, column: 1 });
+				const model = target.editor.getModel();
+				const maxLine = model ? model.getLineCount() : requestedLine;
+				const line = Math.max(1, Math.min(maxLine, requestedLine));
+				const column = 1;
+				const position = { lineNumber: line, column };
+				target.editor.setPosition(position);
+				target.editor.setSelection({ startLineNumber: line, startColumn: column, endLineNumber: line, endColumn: model ? model.getLineMaxColumn(line) : column });
+				target.editor.revealLineInCenter(line, 1);
 				target.editor.focus();
-			} else {
-				target.fallback.focus();
+				return;
 			}
+
+			const lines = target.fallback.value.split("\n");
+			let offset = 0;
+			for (let index = 0; index < Math.min(requestedLine - 1, lines.length); index += 1) offset += lines[index].length + 1;
+			target.fallback.selectionStart = offset;
+			target.fallback.selectionEnd = Math.min(target.fallback.value.length, offset + (lines[requestedLine - 1] || "").length);
+			target.fallback.focus();
 		},
 		foldAll(group = this.activeGroup) {
 			const target = groups[group] || groups.primary;

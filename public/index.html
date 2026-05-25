@@ -103,6 +103,12 @@
 
 				<div class="vscode-editor-content">
 					<section class="vscode-welcome-card">
+						<div class="vscode-start-preview" aria-label="Cloud workspace preview">
+							<div class="vscode-start-preview-head"><span>cloud/session.boot.lua</span><em>ready</em></div>
+							<pre><code><span>local</span> Workspace = Cloud:OpenWorkspace()
+Workspace:SyncExplorer()
+Output:MirrorRuntime()</code></pre>
+						</div>
 						<div class="vscode-workspace-meta" aria-label="Cloud workflow summary">
 							<span>Private session</span>
 							<span>Live explorer</span>

@@ -6467,3 +6467,193 @@ html[data-interface-theme="light"] .output-toolbar input {
 		min-width: 420px !important;
 	}
 }
+
+/* v1.2.21 welcome fill, output scroll, autocomplete readability */
+.vscode-welcome-card {
+	align-content: start !important;
+	justify-content: stretch !important;
+	gap: 14px !important;
+}
+
+.vscode-start-preview {
+	display: grid !important;
+	grid-template-rows: 30px minmax(0, 1fr) !important;
+	min-height: 132px !important;
+	margin-bottom: 6px !important;
+	border: 1px solid #3c3c3c !important;
+	background: #1e1e1e !important;
+	box-sizing: border-box !important;
+	overflow: hidden !important;
+}
+
+.vscode-start-preview-head {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 10px !important;
+	height: 30px !important;
+	padding: 0 10px !important;
+	background: #181818 !important;
+	border-bottom: 1px solid #2b2b2b !important;
+	font-family: Consolas, "Cascadia Code", monospace !important;
+	font-size: 12px !important;
+	color: #cccccc !important;
+}
+
+.vscode-start-preview-head span,
+.vscode-start-preview-head em {
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+}
+
+.vscode-start-preview-head em {
+	font-style: normal !important;
+	color: #89d185 !important;
+}
+
+.vscode-start-preview pre {
+	margin: 0 !important;
+	padding: 12px 14px !important;
+	font-family: Consolas, "Cascadia Code", monospace !important;
+	font-size: 13px !important;
+	line-height: 1.55 !important;
+	color: #d4d4d4 !important;
+	white-space: pre-wrap !important;
+}
+
+.vscode-start-preview code {
+	font-family: inherit !important;
+	color: inherit !important;
+}
+
+.vscode-start-preview code span {
+	color: #569cd6 !important;
+}
+
+.vscode-workspace-meta {
+	margin-top: 0 !important;
+	margin-bottom: 16px !important;
+}
+
+.output-list {
+	display: block !important;
+	align-items: start !important;
+	justify-content: start !important;
+	align-content: start !important;
+	padding-top: 0 !important;
+	scroll-behavior: auto !important;
+}
+
+.output-line-main {
+	grid-template-columns: minmax(74px, 88px) minmax(68px, 78px) minmax(280px, 1fr) minmax(160px, 300px) minmax(84px, 110px) !important;
+}
+
+.output-text {
+	justify-self: stretch !important;
+	text-align: left !important;
+	color: #d4d4d4 !important;
+}
+
+.output-source {
+	justify-self: stretch !important;
+	text-align: left !important;
+}
+
+.output-context {
+	justify-self: end !important;
+	text-align: right !important;
+}
+
+.output-stack,
+.output-preview {
+	margin-left: 14px !important;
+	margin-right: 14px !important;
+}
+
+.monaco-editor .suggest-widget {
+	min-width: 560px !important;
+	max-width: min(820px, calc(100vw - 90px)) !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row,
+.monaco-editor .suggest-widget .monaco-list-row .contents,
+.monaco-editor .suggest-widget .monaco-list-row .contents .main {
+	text-align: left !important;
+	direction: ltr !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row .contents {
+	display: flex !important;
+	align-items: center !important;
+	width: 100% !important;
+	min-width: 0 !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row .contents .main {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: flex-start !important;
+	width: 100% !important;
+	min-width: 0 !important;
+	max-width: none !important;
+	overflow: hidden !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row .contents .main .left,
+.monaco-editor .suggest-widget .monaco-list-row .contents .monaco-icon-label,
+.monaco-editor .suggest-widget .monaco-list-row .contents .monaco-icon-label-container,
+.monaco-editor .suggest-widget .monaco-list-row .monaco-highlighted-label {
+	flex: 1 1 auto !important;
+	width: auto !important;
+	min-width: 0 !important;
+	max-width: none !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: flex-start !important;
+	overflow: hidden !important;
+	text-align: left !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row .label-name,
+.monaco-editor .suggest-widget .monaco-list-row .monaco-highlighted-label,
+.monaco-editor .suggest-widget .monaco-list-row .monaco-highlighted-label span {
+	display: inline-block !important;
+	max-width: 100% !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+	text-align: left !important;
+	color: #d4d4d4 !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row .contents .main .right,
+.monaco-editor .suggest-widget .monaco-list-row .details-label,
+.monaco-editor .suggest-widget .monaco-list-row .readMore {
+	display: none !important;
+}
+
+.monaco-editor .suggest-details {
+	min-width: 360px !important;
+	max-width: 560px !important;
+}
+
+.monaco-editor .suggest-details .body,
+.monaco-editor .suggest-details .docs,
+.monaco-editor .suggest-details .markdown-docs {
+	text-align: left !important;
+	font-size: 13px !important;
+	line-height: 1.55 !important;
+}
+
+@media (max-width: 1150px) {
+	.output-line-main {
+		grid-template-columns: minmax(64px, 74px) minmax(58px, 68px) minmax(180px, 1fr) minmax(110px, 190px) minmax(70px, 90px) !important;
+	}
+
+	.vscode-start-preview {
+		min-height: 112px !important;
+	}
+}
