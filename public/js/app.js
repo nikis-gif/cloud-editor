@@ -1190,8 +1190,8 @@ async function closeAllTabs(force = false) {
 	state.currentFileId = "";
 	state.secondaryFileId = "";
 	state.activeGroup = "primary";
-	state.editor.setSplit(false);
-	state.editor.setValue("", "primary");
+	if (state.editor) state.editor.setSplit(false);
+	if (state.editor) state.editor.setValue("", "primary");
 	renderTabs();
 	updateEditorHeader();
 	saveWorkspaceState();
@@ -1214,7 +1214,7 @@ async function closeOtherTabs(fileId) {
 	state.currentFileId = fileId;
 	if (state.secondaryFileId && state.secondaryFileId !== fileId) {
 		state.secondaryFileId = "";
-		state.editor.setSplit(false);
+		if (state.editor) state.editor.setSplit(false);
 	}
 	switchTab(fileId, "primary");
 	saveWorkspaceState();
@@ -1449,7 +1449,7 @@ function splitTab(fileId = state.currentFileId) {
 function closeSplit() {
 	state.secondaryFileId = "";
 	state.activeGroup = "primary";
-	state.editor.setSplit(false);
+	if (state.editor) state.editor.setSplit(false);
 	renderTabs();
 	updateEditorHeader();
 	state.editor.focus("primary");
@@ -1508,7 +1508,7 @@ async function closeTab(fileId, force = false) {
 
 	if (state.secondaryFileId === fileId) {
 		state.secondaryFileId = "";
-		state.editor.setSplit(false);
+		if (state.editor) state.editor.setSplit(false);
 	}
 
 	if (state.currentFileId === fileId) {
@@ -1518,7 +1518,7 @@ async function closeTab(fileId, force = false) {
 		if (state.currentFileId) {
 			switchTab(state.currentFileId, "primary");
 		} else {
-			state.editor.setValue("", "primary");
+			if (state.editor) state.editor.setValue("", "primary");
 		}
 	}
 
@@ -1657,7 +1657,7 @@ async function loadSessionFiles(showStatus = true) {
 			const next = state.openTabs.keys().next();
 			state.currentFileId = next.done ? "" : next.value;
 			if (state.currentFileId) switchTab(state.currentFileId, "primary");
-			else state.editor.setValue("", "primary");
+			else if (state.editor) state.editor.setValue("", "primary");
 		}
 
 		if (state.renamingItemId) {
@@ -1772,7 +1772,7 @@ async function restoreWorkspaceState() {
 			restoreEditorViewForTab(secondaryTab, "secondary");
 		}
 	} else {
-		state.editor.setSplit(false);
+		if (state.editor) state.editor.setSplit(false);
 	}
 
 	renderTabs();
@@ -2130,7 +2130,7 @@ async function connectSession(idOverride = null, secretOverride = null) {
 	state.activeGroup = "primary";
 	state.selectedKey = "";
 	state.selectedPayload = null;
-	state.editor.setValue("", "primary");
+	if (state.editor) state.editor.setValue("", "primary");
 
 	const ok = await loadSessionFiles(true);
 	if (ok) {
@@ -2154,7 +2154,7 @@ function disconnectSession() {
 	state.currentFileId = "";
 	state.secondaryFileId = "";
 	state.activeGroup = "primary";
-	state.editor.setSplit(false);
+	if (state.editor) state.editor.setSplit(false);
 	state.selectedKey = "";
 	state.selectedPayload = null;
 	state.selectedKeys.clear();
@@ -2171,7 +2171,7 @@ function disconnectSession() {
 	state.outputEntries = [];
 	state.lastOutputId = 0;
 	setOutputOpen(false);
-	state.editor.setValue("", "primary");
+	if (state.editor) state.editor.setValue("", "primary");
 	updateConnectionUi(false, "Disconnected");
 	setStatus("Connection forgotten.", "warning");
 	renderTree();
@@ -3237,9 +3237,88 @@ function bindEvents() {
 	});
 }
 
+
+function createSafeEditorController() {
+	const fallback = refs.fallbackEditor || document.createElement("textarea");
+	const secondaryFallback = refs.fallbackEditorSecondary || fallback;
+	let primaryValue = fallback.value || "";
+	let secondaryValue = secondaryFallback.value || "";
+	return {
+		ready: false,
+		isSplit: false,
+		activeGroup: "primary",
+		getValue(group = "primary") { return group === "secondary" ? secondaryValue : primaryValue; },
+		setValue(value = "", group = "primary") {
+			if (group === "secondary") {
+				secondaryValue = value;
+				if (secondaryFallback) secondaryFallback.value = value;
+				return;
+			}
+			primaryValue = value;
+			if (fallback) fallback.value = value;
+		},
+		focus() { try { fallback.focus(); } catch (_) {} },
+		focusLine() { try { fallback.focus(); } catch (_) {} },
+		getViewState() { return { type: "fallback", selectionStart: 0, selectionEnd: 0, scrollTop: 0, scrollLeft: 0 }; },
+		applyViewState() {},
+		foldAll() {},
+		unfoldAll() {},
+		layout() {},
+		setSplit(enabled) {
+			this.isSplit = !!enabled;
+			if (refs.editorShell) refs.editorShell.classList.toggle("split", this.isSplit);
+		},
+		applySettings() {},
+	};
+}
+
+function bindEmergencyGateEvents() {
+	if (refs.gateConnectButton && !refs.gateConnectButton.dataset.cloudEmergencyBound) {
+		refs.gateConnectButton.dataset.cloudEmergencyBound = "true";
+		refs.gateConnectButton.addEventListener("click", () => connectSession(refs.gateSessionInput?.value || "", refs.gateSecretInput?.value || ""));
+	}
+	for (const input of [refs.gateSessionInput, refs.gateSecretInput]) {
+		if (!input || input.dataset.cloudEmergencyBound) continue;
+		input.dataset.cloudEmergencyBound = "true";
+		input.addEventListener("keydown", event => {
+			if (event.key === "Enter") connectSession(refs.gateSessionInput?.value || "", refs.gateSecretInput?.value || "");
+		});
+	}
+	document.querySelectorAll(".open-learn-button").forEach(button => {
+		if (button.dataset.cloudEmergencyBound) return;
+		button.dataset.cloudEmergencyBound = "true";
+		button.addEventListener("click", openLearnModal);
+	});
+	if (refs.closeLearnButton && !refs.closeLearnButton.dataset.cloudEmergencyBound) {
+		refs.closeLearnButton.dataset.cloudEmergencyBound = "true";
+		refs.closeLearnButton.addEventListener("click", closeLearnModal);
+	}
+	if (refs.gateLanguageSelect && !refs.gateLanguageSelect.dataset.cloudEmergencyBound) {
+		refs.gateLanguageSelect.dataset.cloudEmergencyBound = "true";
+		refs.gateLanguageSelect.addEventListener("change", () => {
+			state.language = applyLanguage(refs.gateLanguageSelect.value);
+			if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.gateAppearanceSelect && !refs.gateAppearanceSelect.dataset.cloudEmergencyBound) {
+		refs.gateAppearanceSelect.dataset.cloudEmergencyBound = "true";
+		refs.gateAppearanceSelect.addEventListener("change", () => {
+			state.settings.interfaceTheme = applyInterfaceTheme(refs.gateAppearanceSelect.value);
+			saveJson(STORAGE.settings, state.settings);
+		});
+	}
+	if (refs.settingsButton && !refs.settingsButton.dataset.cloudEmergencyBound) {
+		refs.settingsButton.dataset.cloudEmergencyBound = "true";
+		refs.settingsButton.addEventListener("click", openSettings);
+	}
+}
+
 function bootEditor() {
 	applyUiZoom(false);
-	state.editor = createEditorController({
+	try {
+		state.editor = createEditorController({
 		host: refs.monacoHost,
 		fallback: refs.fallbackEditor,
 		secondaryHost: refs.monacoHostSecondary,
@@ -3266,7 +3345,11 @@ function bootEditor() {
 		onProjectSearch: openProjectSearch,
 		onFoldAll: foldActiveScript,
 		onUnfoldAll: unfoldActiveScript,
-	});
+		});
+	} catch (error) {
+		console.error("[Cloud] Editor boot failed. Fallback editor enabled:", error);
+		state.editor = createSafeEditorController();
+	}
 }
 
 function boot() {
@@ -3280,9 +3363,14 @@ function boot() {
 	bootEntryPhrases();
 	setupResizer();
 	setupTabsWheelScroll();
+	try {
+		bindEvents();
+	} catch (error) {
+		console.error("[Cloud] Event binding failed. Emergency controls remain active:", error);
+		bindEmergencyGateEvents();
+	}
 	bootEditor();
-	bindEvents();
-	populateLanguageSelect(refs.languageInput, state.language);
+	if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
 	if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
 	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
 	applyLanguage(state.language);
@@ -3310,6 +3398,8 @@ try {
 	boot();
 } catch (error) {
 	console.error("[Cloud] Boot failed:", error);
+	try { bindEmergencyGateEvents(); } catch (_) {}
+	if (!state.editor) state.editor = createSafeEditorController();
 	hideBootSplash();
 	try {
 		showToast("Cloud recovered from a boot error. Check the console for details.", "error");

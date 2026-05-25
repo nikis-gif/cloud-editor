@@ -5858,3 +5858,40 @@ html[data-interface-theme="light"] .output-toolbar input {
 	border-color: #d4d4d4 !important;
 	color: #333333 !important;
 }
+
+/* v1.2.17 click recovery */
+.boot-splash {
+	pointer-events: none !important;
+}
+
+.boot-splash.hidden {
+	pointer-events: none !important;
+}
+
+.modal-backdrop:not(.open),
+.learn-page-backdrop:not(.open),
+.minimal-learn-backdrop:not(.open) {
+	pointer-events: none !important;
+}
+
+.session-gate,
+.vscode-gate,
+.app,
+.titlebar,
+.vscode-gate-titlebar,
+.vscode-gate-actions,
+.vscode-gate-actions button,
+.vscode-gate-actions a,
+.vscode-gate-actions select,
+.vscode-login-card,
+.vscode-login-form,
+.vscode-login-form input,
+.vscode-login-form button,
+.open-learn-button,
+#gateConnectButton,
+#gateLanguageSelect,
+#gateAppearanceSelect,
+#settingsButton,
+#connectionButton {
+	pointer-events: auto;
+}
