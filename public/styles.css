@@ -4603,3 +4603,243 @@ html[data-interface-theme="light"] .footer span {
 		grid-template-columns: minmax(0, 1fr) !important;
 	}
 }
+
+.boot-splash {
+	position: fixed;
+	inset: 0;
+	z-index: 999;
+	display: grid;
+	place-items: center;
+	background: #1e1e1e;
+	transition: opacity .18s ease, visibility .18s ease;
+}
+
+.boot-splash.hidden {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.boot-splash-card {
+	display: grid;
+	justify-items: center;
+	gap: 8px;
+	color: #cccccc;
+	font-size: 12px;
+}
+
+.boot-splash-card img {
+	width: 52px;
+	height: 52px;
+}
+
+.boot-splash-card strong {
+	color: #ffffff;
+	font-size: 20px;
+}
+
+html[data-interface-theme="light"] {
+	--bg: #f3f3f3;
+	--bg-soft: #eeeeee;
+	--panel: #f8f8f8;
+	--panel-2: #ffffff;
+	--panel-3: #e8e8e8;
+	--editor-bg: #ffffff;
+	--border: #d4d4d4;
+	--border-strong: #c2c2c2;
+	--text: #333333;
+	--text-strong: #1f1f1f;
+	--muted: #606060;
+	--muted-2: #7a7a7a;
+	--accent: #007acc;
+	--accent-2: #006ab1;
+	--accent-soft: rgba(0, 122, 204, 0.12);
+}
+
+html[data-interface-theme="light"] body,
+html[data-interface-theme="light"] .app,
+html[data-interface-theme="light"] .main,
+html[data-interface-theme="light"] .editor-shell,
+html[data-interface-theme="light"] .editor-pane,
+html[data-interface-theme="light"] #monacoEditor,
+html[data-interface-theme="light"] #monacoEditorSecondary,
+html[data-interface-theme="light"] #fallbackEditor,
+html[data-interface-theme="light"] #fallbackEditorSecondary {
+	background: #ffffff;
+	color: #333333;
+}
+
+html[data-interface-theme="light"] .titlebar,
+html[data-interface-theme="light"] .vscode-gate-titlebar,
+html[data-interface-theme="light"] .tabs,
+html[data-interface-theme="light"] .vscode-editor-tabs,
+html[data-interface-theme="light"] .modal-head,
+html[data-interface-theme="light"] .minimal-learn-header {
+	background: #f3f3f3;
+	border-color: #d4d4d4;
+}
+
+html[data-interface-theme="light"] .sidebar,
+html[data-interface-theme="light"] .vscode-gate-explorer,
+html[data-interface-theme="light"] .modal,
+html[data-interface-theme="light"] .minimal-learn-panel,
+html[data-interface-theme="light"] .vscode-welcome-card,
+html[data-interface-theme="light"] .vscode-login-card,
+html[data-interface-theme="light"] .connection-card,
+html[data-interface-theme="light"] .search-wrap,
+html[data-interface-theme="light"] .output-panel,
+html[data-interface-theme="light"] .output-entry,
+html[data-interface-theme="light"] .minimal-learn-section {
+	background: #f8f8f8;
+	border-color: #d4d4d4;
+}
+
+html[data-interface-theme="light"] .tab,
+html[data-interface-theme="light"] .vscode-editor-tab,
+html[data-interface-theme="light"] .secondary-button,
+html[data-interface-theme="light"] .icon-button,
+html[data-interface-theme="light"] .download-app-button,
+html[data-interface-theme="light"] .roblox-plugin-button,
+html[data-interface-theme="light"] .appearance-select,
+html[data-interface-theme="light"] input,
+html[data-interface-theme="light"] select,
+html[data-interface-theme="light"] textarea {
+	background: #ffffff;
+	border-color: #d4d4d4;
+	color: #333333;
+}
+
+html[data-interface-theme="light"] .tab.active,
+html[data-interface-theme="light"] .vscode-editor-tab.active,
+html[data-interface-theme="light"] .tree-row.selected,
+html[data-interface-theme="light"] .tree-row.multi-selected {
+	background: #e8e8e8;
+	color: #1f1f1f;
+}
+
+.output-panel {
+	display: none;
+	min-height: 190px;
+	max-height: 260px;
+	border-top: 1px solid #2b2b2b;
+	background: #1e1e1e;
+	grid-template-rows: 36px minmax(0, 1fr);
+}
+
+.output-panel.open {
+	display: grid;
+}
+
+.output-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 0 10px 0 12px;
+	background: #252526;
+	border-bottom: 1px solid #2b2b2b;
+}
+
+.output-head strong {
+	display: block;
+	font-size: 12px;
+	color: #ffffff;
+}
+
+.output-head span {
+	display: block;
+	font-size: 11px;
+	color: #969696;
+}
+
+.output-actions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.output-list {
+	overflow: auto;
+	padding: 8px;
+	font-family: Consolas, "Cascadia Code", monospace;
+	font-size: 12px;
+}
+
+.output-empty {
+	padding: 16px;
+	color: #969696;
+	border: 1px dashed #3c3c3c;
+	background: #181818;
+}
+
+.output-entry {
+	border: 1px solid #2b2b2b;
+	background: #181818;
+	margin-bottom: 7px;
+	padding: 8px 10px;
+}
+
+.output-entry.error { border-left: 3px solid #f48771; }
+.output-entry.warn { border-left: 3px solid #cca700; }
+.output-entry.print,
+.output-entry.output,
+.output-entry.info { border-left: 3px solid #3794ff; }
+
+.output-entry-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	color: #969696;
+	font-size: 11px;
+}
+
+.output-entry-head strong {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: #cccccc;
+}
+
+.output-level {
+	font-weight: 700;
+	color: #ffffff;
+}
+
+.output-message {
+	margin-top: 6px;
+	color: #d4d4d4;
+	white-space: pre-wrap;
+	line-height: 1.45;
+}
+
+.output-stack,
+.output-preview {
+	margin: 8px 0 0;
+	padding: 8px;
+	max-height: 160px;
+	overflow: auto;
+	border: 1px solid #2b2b2b;
+	background: #111111;
+	color: #bdbdbd;
+	white-space: pre-wrap;
+}
+
+.output-preview {
+	color: #dcdcdc;
+}
+
+.secondary-button.active,
+#outputToggleButton.active {
+	background: #37373d;
+	color: #ffffff;
+}
+
+.settings-modal,
+.settings-cloud-body,
+.setting-section,
+.editor-preview-card,
+.preview-editor-shell,
+.theme-preset {
+	border-radius: 4px !important;
+}

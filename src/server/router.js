@@ -118,6 +118,8 @@ async function handleSessionUpload(req, res) {
 		uploadedAt: Date.now(),
 		filesCount: uploadedFiles.length,
 		files: uploadedFiles,
+		output: existingSession && Array.isArray(existingSession.output) ? existingSession.output : [],
+		nextOutputId: existingSession && Number.isFinite(existingSession.nextOutputId) ? existingSession.nextOutputId : 1,
 		changes: existingSession && Array.isArray(existingSession.changes) ? existingSession.changes : [],
 		nextRevision: existingSession && Number.isFinite(existingSession.nextRevision) ? existingSession.nextRevision : 1,
 		protectedSources,
@@ -402,6 +404,97 @@ async function deleteItem(req, res, sessionId, fileId) {
 	sendJson(res, 200, { ok: true, sessionId, removed: getPublicFiles(removed), revision: change.revision });
 }
 
+
+function normalizeOutputEntry(raw, fallbackId) {
+	const value = raw && typeof raw === "object" ? raw : {};
+	const now = Date.now();
+	const id = Number.isFinite(Number(value.id)) ? Number(value.id) : fallbackId;
+	const level = normalizeText(value.level || value.messageType || "info", "info").toLowerCase();
+	const type = ["error", "warn", "warning", "info", "print", "output"].includes(level) ? level : "info";
+	const message = normalizeText(value.message, "").slice(0, 12000);
+	const stackTrace = normalizeText(value.stackTrace, "").slice(0, 20000);
+	const scriptName = normalizeText(value.scriptName, "").slice(0, 240);
+	const scriptPath = normalizeText(value.scriptPath, "").slice(0, 800);
+	const sourcePreview = normalizeText(value.sourcePreview || value.preview, "").slice(0, 24000);
+	const line = Number.isFinite(Number(value.line)) ? Number(value.line) : null;
+	const column = Number.isFinite(Number(value.column)) ? Number(value.column) : null;
+
+	return {
+		id,
+		createdAt: Number.isFinite(Number(value.createdAt)) ? Number(value.createdAt) : now,
+		clock: normalizeText(value.clock, ""),
+		level: type,
+		message,
+		stackTrace,
+		scriptName,
+		scriptPath,
+		root: normalizeText(value.root, ""),
+		relativePath: normalizeText(value.relativePath, ""),
+		line,
+		column,
+		sourcePreview,
+	};
+}
+
+async function appendOutput(req, res, sessionId) {
+	const sessionData = getAuthorizedSession(req, res, sessionId);
+	if (!sessionData) return;
+
+	const body = await readBody(req);
+	const rawEntries = Array.isArray(body && body.entries) ? body.entries : (body && typeof body === "object" ? [body] : []);
+
+	if (rawEntries.length === 0) {
+		sendJson(res, 400, { ok: false, error: "Invalid output body. Expected entry object or entries array." });
+		return;
+	}
+
+	sessionData.output = Array.isArray(sessionData.output) ? sessionData.output : [];
+	sessionData.nextOutputId = Number.isFinite(sessionData.nextOutputId) ? sessionData.nextOutputId : 1;
+
+	const added = [];
+	for (const raw of rawEntries.slice(0, 120)) {
+		const entry = normalizeOutputEntry(raw, sessionData.nextOutputId++);
+		if (!entry.message && !entry.stackTrace) continue;
+		sessionData.output.push(entry);
+		added.push(entry);
+	}
+
+	if (sessionData.output.length > 1500) {
+		sessionData.output.splice(0, sessionData.output.length - 1500);
+	}
+
+	sendJson(res, 200, { ok: true, sessionId, addedCount: added.length, lastOutputId: sessionData.nextOutputId - 1 });
+}
+
+function sendOutput(req, res, sessionId, url) {
+	const sessionData = getAuthorizedSession(req, res, sessionId);
+	if (!sessionData) return;
+
+	const after = Number(url.searchParams.get("after") || "0");
+	const limit = Math.max(1, Math.min(500, Number(url.searchParams.get("limit") || "200")));
+	const output = Array.isArray(sessionData.output) ? sessionData.output : [];
+	const entries = output.filter(entry => Number(entry.id) > after).slice(-limit);
+	const lastOutputId = output.length > 0 ? Number(output[output.length - 1].id) || 0 : 0;
+
+	sendJson(res, 200, {
+		ok: true,
+		sessionId,
+		after,
+		lastOutputId,
+		entriesCount: entries.length,
+		entries,
+	});
+}
+
+function clearOutput(req, res, sessionId) {
+	const sessionData = getAuthorizedSession(req, res, sessionId);
+	if (!sessionData) return;
+
+	sessionData.output = [];
+	sessionData.nextOutputId = 1;
+	sendJson(res, 200, { ok: true, sessionId, cleared: true });
+}
+
 function sendChanges(req, res, sessionId, url) {
 	const sessionData = getAuthorizedSession(req, res, sessionId);
 	if (!sessionData) return;
@@ -438,7 +531,7 @@ async function handleRequest(req, res) {
 		const url = new URL(req.url, "http://localhost");
 
 		if (req.method === "GET" && url.pathname === "/health") {
-			sendJson(res, 200, { ok: true, service: "Cloud API", version: "1.2.3", time: Date.now() });
+			sendJson(res, 200, { ok: true, service: "Cloud API", version: "1.2.11", time: Date.now() });
 			return;
 		}
 
@@ -480,6 +573,23 @@ async function handleRequest(req, res) {
 		const deleteMatch = url.pathname.match(/^\/sessions\/([^/]+)\/files\/([^/]+)\/delete$/);
 		if (req.method === "POST" && deleteMatch) {
 			await deleteItem(req, res, decodeURIComponent(deleteMatch[1]), decodeURIComponent(deleteMatch[2]));
+			return;
+		}
+
+
+		const outputMatch = url.pathname.match(/^\/sessions\/([^/]+)\/output$/);
+		if (req.method === "GET" && outputMatch) {
+			sendOutput(req, res, decodeURIComponent(outputMatch[1]), url);
+			return;
+		}
+
+		if (req.method === "POST" && outputMatch) {
+			await appendOutput(req, res, decodeURIComponent(outputMatch[1]));
+			return;
+		}
+
+		if (req.method === "DELETE" && outputMatch) {
+			clearOutput(req, res, decodeURIComponent(outputMatch[1]));
 			return;
 		}
 

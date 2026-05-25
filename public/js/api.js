@@ -79,3 +79,15 @@ export function deleteRemoteItem(auth, fileId) {
 		body: JSON.stringify({}),
 	}, auth);
 }
+
+export function fetchOutputLogs(auth, after = 0, limit = 200) {
+	const sessionId = encodeURIComponent(auth.sessionId);
+	const query = new URLSearchParams({ after: String(after || 0), limit: String(limit || 200) });
+	return requestJson(`/sessions/${sessionId}/output?${query.toString()}`, {}, auth);
+}
+
+export function clearOutputLogs(auth) {
+	return requestJson(`/sessions/${encodeURIComponent(auth.sessionId)}/output`, {
+		method: "DELETE",
+	}, auth);
+}

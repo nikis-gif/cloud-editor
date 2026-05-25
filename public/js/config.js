@@ -42,12 +42,12 @@ export const SESSION_STORAGE = {
 };
 
 export const DEFAULT_SETTINGS = {
-	interfaceTheme: "system",
+	interfaceTheme: "dark",
 	fontFamily: "JetBrains Mono, Cascadia Code, Fira Code, Consolas, monospace",
 	fontSize: 14,
 	autosaveMs: 3000,
 	wordWrap: "off",
-	editorTheme: "cloud-black-gray",
+	editorTheme: "cloud-dark",
 	minimap: true,
 };
 

@@ -1,6 +1,8 @@
 local HttpService = game:GetService("HttpService")
 local ScriptEditorService = game:GetService("ScriptEditorService")
 local RunService = game:GetService("RunService")
+local LogService = game:GetService("LogService")
+local ScriptContext = game:GetService("ScriptContext")
 
 local PLUGIN_NAME = "Cloud"
 local WIDGET_ID = "Cloud_MainWidget"
@@ -17,6 +19,8 @@ local ITEM_ID_ATTRIBUTE = "CloudItemId"
 local LEGACY_ITEM_ID_ATTRIBUTE = "ForgeItemId"
 local OLD_LEGACY_ITEM_ID_ATTRIBUTE = "StudioBridgeItemId"
 local SECRET_HIDDEN_TEXT = "Hidden - click Copy Secret"
+local OUTPUT_BATCH_INTERVAL = 0.4
+local OUTPUT_MAX_BATCH = 60
 
 local toolbar = plugin:CreateToolbar(PLUGIN_NAME)
 local button = toolbar:CreateButton("Cloud_Open", "Open Cloud", "rbxassetid://136661669872868", "Cloud")
@@ -69,31 +73,34 @@ local secretVisible = false
 local networkBusy = false
 local playPaused = false
 local resolvingBaseUrl = false
+local outputBuffer = {}
+local outputConnections = {}
+local outputFlushBusy = false
+local lastOutputFlushAt = 0
 
 local theme = {
-	Background = Color3.fromRGB(7, 10, 16),
-	BackgroundSoft = Color3.fromRGB(10, 14, 21),
-	Surface = Color3.fromRGB(14, 18, 28),
-	SurfaceRaised = Color3.fromRGB(17, 22, 34),
-	Panel = Color3.fromRGB(15, 20, 30),
-	PanelDark = Color3.fromRGB(10, 14, 21),
-	PanelSoft = Color3.fromRGB(25, 33, 48),
-	PanelHover = Color3.fromRGB(31, 40, 58),
-	Text = Color3.fromRGB(243, 247, 255),
-	MutedText = Color3.fromRGB(164, 175, 194),
-	SubtleText = Color3.fromRGB(112, 124, 146),
-	AccentStrong = Color3.fromRGB(88, 126, 255),
-	AccentSoft = Color3.fromRGB(52, 72, 145),
-	AccentCyan = Color3.fromRGB(106, 218, 255),
-	AccentViolet = Color3.fromRGB(143, 116, 255),
-	Success = Color3.fromRGB(69, 204, 134),
-	Danger = Color3.fromRGB(235, 91, 102),
-	Warning = Color3.fromRGB(245, 195, 92),
-	Border = Color3.fromRGB(32, 40, 56),
-	BorderSoft = Color3.fromRGB(27, 35, 49),
-	Cloud = Color3.fromRGB(222, 232, 255),
+	Background = Color3.fromRGB(30, 30, 30),
+	BackgroundSoft = Color3.fromRGB(24, 24, 24),
+	Surface = Color3.fromRGB(37, 37, 38),
+	SurfaceRaised = Color3.fromRGB(37, 37, 38),
+	Panel = Color3.fromRGB(37, 37, 38),
+	PanelDark = Color3.fromRGB(30, 30, 30),
+	PanelSoft = Color3.fromRGB(45, 45, 45),
+	PanelHover = Color3.fromRGB(51, 51, 51),
+	Text = Color3.fromRGB(235, 235, 235),
+	MutedText = Color3.fromRGB(190, 190, 190),
+	SubtleText = Color3.fromRGB(145, 145, 145),
+	AccentStrong = Color3.fromRGB(14, 99, 156),
+	AccentSoft = Color3.fromRGB(0, 122, 204),
+	AccentCyan = Color3.fromRGB(55, 148, 255),
+	AccentViolet = Color3.fromRGB(14, 99, 156),
+	Success = Color3.fromRGB(137, 209, 133),
+	Danger = Color3.fromRGB(244, 135, 113),
+	Warning = Color3.fromRGB(204, 167, 0),
+	Border = Color3.fromRGB(43, 43, 43),
+	BorderSoft = Color3.fromRGB(60, 60, 60),
+	Cloud = Color3.fromRGB(204, 204, 204),
 }
-
 local ui = {}
 
 local function getServiceSafe(serviceName)
@@ -512,6 +519,178 @@ local function readScriptSource(scriptInstance)
 	return nil, tostring(result or fallbackResult)
 end
 
+
+local requestOutputJson
+local flushOutputEntries
+
+local function getRootAndRelativePath(instance)
+	if not instance then
+		return "", ""
+	end
+
+	for _, rootData in ipairs(allowedRoots) do
+		local root = rootData.Instance
+
+		if root and (instance == root or instance:IsDescendantOf(root)) then
+			return rootData.Name, getRelativePath(root, instance)
+		end
+	end
+
+	local names = {}
+	local current = instance
+
+	while current and current ~= game do
+		table.insert(names, 1, current.Name)
+		current = current.Parent
+	end
+
+	return "", table.concat(names, "/")
+end
+
+local function extractLineNumber(message, stackTrace)
+	local text = tostring(message or "") .. "\n" .. tostring(stackTrace or "")
+	local line = text:match(":(%d+):") or text:match("line%s+(%d+)")
+	return tonumber(line)
+end
+
+local function buildSourcePreview(scriptInstance, lineNumber)
+	if not scriptInstance or not isScriptClass(scriptInstance.ClassName) then
+		return ""
+	end
+
+	local source = readScriptSource(scriptInstance)
+
+	if typeof(source) ~= "string" or source == "" then
+		return ""
+	end
+
+	local lines = string.split(source, "\n")
+	local line = math.clamp(tonumber(lineNumber) or 1, 1, math.max(1, #lines))
+	local firstLine = math.max(1, line - 8)
+	local lastLine = math.min(#lines, line + 8)
+	local preview = {}
+
+	for index = firstLine, lastLine do
+		local marker = index == line and "> " or "  "
+		table.insert(preview, marker .. tostring(index) .. " | " .. tostring(lines[index] or ""))
+	end
+
+	return table.concat(preview, "\n")
+end
+
+local function queueOutputEntry(level, message, stackTrace, scriptInstance)
+	if not session.Active then
+		return
+	end
+
+	local rootName, relativePath = getRootAndRelativePath(scriptInstance)
+	local lineNumber = extractLineNumber(message, stackTrace)
+	local sourcePreview = buildSourcePreview(scriptInstance, lineNumber)
+
+	table.insert(outputBuffer, {
+		createdAt = DateTime.now().UnixTimestampMillis,
+		clock = os.date("%H:%M:%S"),
+		level = tostring(level or "info"),
+		message = tostring(message or ""),
+		stackTrace = tostring(stackTrace or ""),
+		scriptName = scriptInstance and scriptInstance.Name or "",
+		scriptPath = relativePath ~= "" and (rootName ~= "" and (rootName .. "/" .. relativePath) or relativePath) or "",
+		root = rootName,
+		relativePath = relativePath,
+		line = lineNumber,
+		sourcePreview = sourcePreview,
+	})
+
+	if #outputBuffer >= OUTPUT_MAX_BATCH then
+		flushOutputEntries()
+	end
+end
+
+function flushOutputEntries()
+	if outputFlushBusy or not session.Active or #outputBuffer == 0 then
+		return
+	end
+
+	outputFlushBusy = true
+	lastOutputFlushAt = os.clock()
+
+	local entries = table.clone(outputBuffer)
+	table.clear(outputBuffer)
+
+	task.spawn(function()
+		local path = "/sessions/" .. tostring(session.Id or "") .. "/output"
+		local success, requestError = requestOutputJson("POST", path, { entries = entries })
+
+		if not success then
+			for _, entry in ipairs(entries) do
+				table.insert(outputBuffer, entry)
+			end
+			setLastAction("Output upload failed")
+		else
+			setLastAction("Output mirrored")
+		end
+
+		outputFlushBusy = false
+		updateStatsView()
+	end)
+end
+
+local function startOutputCapture()
+	if #outputConnections > 0 then
+		return
+	end
+
+	table.insert(outputConnections, LogService.MessageOut:Connect(function(message, messageType)
+		local level = "info"
+		local typeName = typeof(messageType) == "EnumItem" and messageType.Name or tostring(messageType or "")
+
+		if string.find(string.lower(typeName), "error") then
+			level = "error"
+		elseif string.find(string.lower(typeName), "warning") then
+			level = "warn"
+		elseif string.find(string.lower(typeName), "output") then
+			level = "print"
+		end
+
+		queueOutputEntry(level, message, "", nil)
+	end))
+
+	table.insert(outputConnections, ScriptContext.Error:Connect(function(...)
+		local args = { ... }
+		local message = ""
+		local stackTrace = ""
+		local scriptInstance = nil
+
+		for _, value in ipairs(args) do
+			if typeof(value) == "Instance" then
+				scriptInstance = value
+			elseif typeof(value) == "string" then
+				if message == "" then
+					message = value
+				elseif stackTrace == "" then
+					stackTrace = value
+				else
+					stackTrace ..= "\n" .. value
+				end
+			end
+		end
+
+		queueOutputEntry("error", message, stackTrace, scriptInstance)
+	end))
+end
+
+local function stopOutputCapture()
+	for _, connection in ipairs(outputConnections) do
+		pcall(function()
+			connection:Disconnect()
+		end)
+	end
+
+	table.clear(outputConnections)
+	table.clear(outputBuffer)
+	outputFlushBusy = false
+end
+
 local function updateScriptSource(scriptInstance, newSource)
 	if not canSync() then
 		return false, "Cloud is paused while Play Mode is running."
@@ -844,6 +1023,47 @@ local function requestJson(method, path, body)
 	end
 
 	return requestJsonAtBaseUrl(apiConfig.BaseUrl, method, path, body, true, MAX_REQUEST_ATTEMPTS)
+end
+
+
+function requestOutputJson(method, path, body)
+	local baseUrl = normalizeBaseUrl(apiConfig.BaseUrl)
+
+	if baseUrl == "" then
+		baseUrl = CLOUD_BASE_URL
+	end
+
+	local headers = {
+		["Content-Type"] = "application/json",
+		["X-Cloud-Session"] = session.Id or "",
+		["X-Cloud-Secret"] = session.Secret or "",
+		["X-Forge-Session"] = session.Id or "",
+		["X-Forge-Secret"] = session.Secret or "",
+	}
+
+	local requestOptions = {
+		Url = baseUrl .. path,
+		Method = method,
+		Headers = headers,
+	}
+
+	if body ~= nil then
+		requestOptions.Body = HttpService:JSONEncode(body)
+	end
+
+	local success, response = pcall(function()
+		return HttpService:RequestAsync(requestOptions)
+	end)
+
+	if not success then
+		return false, tostring(response)
+	end
+
+	if not response.Success then
+		return false, tostring(response.StatusCode) .. " " .. tostring(response.StatusMessage)
+	end
+
+	return true, nil
 end
 
 local function getInstanceDepth(root, instance)
@@ -1716,6 +1936,8 @@ local function createSession()
 	setLastAction("Session created")
 	updateAllViews()
 	print("[Cloud] Session created:", session.Id)
+	startOutputCapture()
+	queueOutputEntry("info", "Cloud output mirror connected.", "", nil)
 
 	local connected = requestJson("GET", "/health", nil)
 
@@ -1748,6 +1970,7 @@ local function endSession()
 	lastScanCount = 0
 	setLastAction("Session ended")
 	updateAllViews()
+	stopOutputCapture()
 	print("[Cloud] Session ended.")
 end
 
@@ -2225,7 +2448,6 @@ local function buildWidget()
 	ui.createSessionButton = createActionButton("Create Session", theme.AccentStrong)
 	ui.createSessionButton.LayoutOrder = 6
 	ui.createSessionButton.Parent = sessionCard
-	createGradient(theme.AccentStrong, theme.AccentViolet, 0).Parent = ui.createSessionButton
 
 	local copyButtons = createRow(sessionCard, 36, 7, 8)
 	ui.copyIdButton = createHalfButton("Copy ID", theme.PanelSoft)
@@ -2404,6 +2626,12 @@ end)
 
 widget:GetPropertyChangedSignal("Enabled"):Connect(function()
 	button:SetActive(widget.Enabled)
+end)
+
+RunService.Heartbeat:Connect(function()
+	if session.Active and #outputBuffer > 0 and os.clock() - lastOutputFlushAt >= OUTPUT_BATCH_INTERVAL then
+		flushOutputEntries()
+	end
 end)
 
 task.spawn(function()

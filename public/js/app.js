@@ -26,6 +26,8 @@ import {
 	createRemoteItem,
 	moveRemoteItem,
 	deleteRemoteItem,
+	fetchOutputLogs,
+	clearOutputLogs,
 } from "./api.js";
 import {
 	setupUi,
@@ -126,6 +128,14 @@ const refs = {
 	learnModal: document.getElementById("learnModal"),
 	closeLearnButton: document.getElementById("closeLearnButton"),
 	entryPhraseText: document.getElementById("entryPhraseText"),
+	bootSplash: document.getElementById("bootSplash"),
+	outputToggleButton: document.getElementById("outputToggleButton"),
+	outputPanel: document.getElementById("outputPanel"),
+	outputList: document.getElementById("outputList"),
+	outputStatus: document.getElementById("outputStatus"),
+	outputRefreshButton: document.getElementById("outputRefreshButton"),
+	outputClearButton: document.getElementById("outputClearButton"),
+	outputCloseButton: document.getElementById("outputCloseButton"),
 };
 
 setupUi(refs);
@@ -172,6 +182,10 @@ const state = {
 	suppressViewStateSaveUntil: 0,
 	entryPhraseIndex: 0,
 	entryPhraseTimer: null,
+	outputEntries: [],
+	lastOutputId: 0,
+	outputPollTimer: null,
+	outputOpen: false,
 };
 
 function getAuth() {
@@ -1747,7 +1761,106 @@ async function restoreWorkspaceState() {
 	saveWorkspaceState(false);
 	setTimeout(() => saveWorkspaceState(true), 25);
 	setStatus("Restored " + restoredIds.length + " open script(s).", "success");
+	if (state.outputOpen) pollOutputLogs(true);
 	return true;
+}
+
+
+function formatOutputTime(value) {
+	const time = Number(value || Date.now());
+	if (!Number.isFinite(time)) return "--:--:--";
+	return new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function getOutputLevel(entry) {
+	const level = String(entry && entry.level || "info").toLowerCase();
+	if (level === "warning") return "warn";
+	return ["error", "warn", "print", "output", "info"].includes(level) ? level : "info";
+}
+
+function renderOutputEntries() {
+	if (!refs.outputList) return;
+
+	if (state.outputEntries.length === 0) {
+		refs.outputList.innerHTML = '<div class="output-empty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>';
+		if (refs.outputStatus) refs.outputStatus.textContent = "Waiting for play session logs.";
+		return;
+	}
+
+	const html = state.outputEntries.slice(-250).map(entry => {
+		const level = getOutputLevel(entry);
+		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || "Runtime";
+		const line = entry.line ? ":" + escapeHtml(String(entry.line)) : "";
+		const stack = entry.stackTrace ? '<pre class="output-stack">' + escapeHtml(entry.stackTrace) + '</pre>' : "";
+		const preview = entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
+		return '<article class="output-entry ' + level + '">' +
+			'<div class="output-entry-head"><span class="output-level">' + escapeHtml(level.toUpperCase()) + '</span><span>' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span><strong>' + escapeHtml(path + line) + '</strong></div>' +
+			'<div class="output-message">' + escapeHtml(entry.message || "") + '</div>' + stack + preview +
+		'</article>';
+	}).join("");
+
+	refs.outputList.innerHTML = html;
+	refs.outputList.scrollTop = refs.outputList.scrollHeight;
+	if (refs.outputStatus) refs.outputStatus.textContent = state.outputEntries.length + " output entr" + (state.outputEntries.length === 1 ? "y" : "ies") + " captured.";
+}
+
+async function pollOutputLogs(force = false) {
+	if (!hasConnection()) return;
+
+	try {
+		const data = await fetchOutputLogs(getAuth(), force ? 0 : state.lastOutputId, 250);
+		const entries = Array.isArray(data.entries) ? data.entries : [];
+		if (force) state.outputEntries = [];
+		if (entries.length > 0) {
+			const seen = new Set(state.outputEntries.map(entry => entry.id));
+			for (const entry of entries) {
+				if (!seen.has(entry.id)) state.outputEntries.push(entry);
+			}
+			state.outputEntries.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+			state.outputEntries = state.outputEntries.slice(-500);
+		}
+		state.lastOutputId = Math.max(state.lastOutputId, Number(data.lastOutputId) || 0);
+		renderOutputEntries();
+	} catch (error) {
+		if (refs.outputStatus) refs.outputStatus.textContent = error.message || "Output unavailable.";
+	}
+}
+
+function setOutputOpen(open) {
+	state.outputOpen = !!open;
+	if (refs.outputPanel) refs.outputPanel.classList.toggle("open", state.outputOpen);
+	if (refs.outputToggleButton) refs.outputToggleButton.classList.toggle("active", state.outputOpen);
+	if (refs.editorShell) refs.editorShell.closest(".main")?.classList.toggle("output-open", state.outputOpen);
+	if (state.outputOpen) pollOutputLogs(true);
+}
+
+function startOutputPolling() {
+	if (state.outputPollTimer) clearInterval(state.outputPollTimer);
+	state.outputPollTimer = setInterval(() => pollOutputLogs(false), 1200);
+}
+
+function stopOutputPolling() {
+	if (state.outputPollTimer) clearInterval(state.outputPollTimer);
+	state.outputPollTimer = null;
+}
+
+async function clearOutputPanel() {
+	if (!hasConnection()) return;
+	try {
+		await clearOutputLogs(getAuth());
+		state.outputEntries = [];
+		state.lastOutputId = 0;
+		renderOutputEntries();
+	} catch (error) {
+		showToast(error.message, "error");
+	}
+}
+
+function hideBootSplash() {
+	document.body.classList.remove("booting");
+	if (!refs.bootSplash) return;
+	refs.bootSplash.classList.add("hidden");
+	setTimeout(() => refs.bootSplash && refs.bootSplash.remove(), 240);
 }
 
 function startPolling() {
@@ -1756,6 +1869,7 @@ function startPolling() {
 	}
 
 	state.pollTimer = setInterval(() => loadSessionFiles(false), FILES_POLL_INTERVAL);
+	startOutputPolling();
 }
 
 function getMaskedSessionId() {
@@ -1847,6 +1961,10 @@ function disconnectSession() {
 	if (refs.gateSecretInput) refs.gateSecretInput.value = "";
 
 	if (state.pollTimer) clearInterval(state.pollTimer);
+	stopOutputPolling();
+	state.outputEntries = [];
+	state.lastOutputId = 0;
+	setOutputOpen(false);
 	state.editor.setValue("", "primary");
 	updateConnectionUi(false, "Disconnected");
 	setStatus("Connection forgotten.", "warning");
@@ -2717,6 +2835,10 @@ function bindEvents() {
 	refs.cancelConnectionButton.addEventListener("click", closeConnectionModal);
 	refs.disconnectButton.addEventListener("click", disconnectSession);
 	refs.refreshButton.addEventListener("click", () => loadSessionFiles(true));
+	if (refs.outputToggleButton) refs.outputToggleButton.addEventListener("click", () => setOutputOpen(!state.outputOpen));
+	if (refs.outputCloseButton) refs.outputCloseButton.addEventListener("click", () => setOutputOpen(false));
+	if (refs.outputRefreshButton) refs.outputRefreshButton.addEventListener("click", () => pollOutputLogs(true));
+	if (refs.outputClearButton) refs.outputClearButton.addEventListener("click", clearOutputPanel);
 	refs.saveButton.addEventListener("click", () => saveCurrentFile(false));
 	if (refs.splitButton) refs.splitButton.addEventListener("click", () => splitTab(state.currentFileId));
 	refs.closeSplitButton.addEventListener("click", closeSplit);
@@ -2928,6 +3050,7 @@ function boot() {
 	updateEditorHeader();
 	updateConnectionUi(hasConnection(), hasConnection() ? "Connected" : "Disconnected");
 	syncConnectionModalMode();
+	setTimeout(hideBootSplash, 260);
 
 	if (hasConnection()) {
 		setTimeout(async () => {
