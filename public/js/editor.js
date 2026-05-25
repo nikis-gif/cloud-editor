@@ -132,22 +132,51 @@ function registerCompletions(monaco) {
 		return /^\s*$/.test(text) || /^\s*(local|function|task|pcall|Instance|for|if|while|repeat)?\w*$/i.test(text);
 	}
 
+	function cleanSnippetForPreview(value) {
+		return String(value || "")
+			.replace(/\$\{\d+:([^}]+)\}/g, "$1")
+			.replace(/\$\d+/g, "")
+			.replace(/\n{3,}/g, "\n\n");
+	}
+
+	function codePreview(value) {
+		const preview = cleanSnippetForPreview(value);
+		return preview ? "```lua\n" + preview + "\n```" : "";
+	}
+
+	function completionDocumentation(label, insertText, detail, description) {
+		const parts = ["**" + String(label || "Completion") + "**"];
+		if (detail) parts.push("`" + String(detail) + "`");
+		if (description) parts.push(String(description));
+		const preview = codePreview(insertText);
+		if (preview) {
+			parts.push("Preview:");
+			parts.push(preview);
+		}
+		return { value: parts.join("\n\n") };
+	}
+
 	function completion(item, kind, sortPrefix, itemRange) {
+		const label = item[0];
+		const insertText = item[1];
+		const detail = item[2] || "Game API";
+		const description = item[3] || detail || "Game API completion.";
 		return {
-			label: item[0],
+			label,
 			kind,
-			detail: item[2] || "Game API",
-			documentation: { value: item[3] || item[2] || "Game API completion." },
-			insertText: item[1],
+			detail,
+			documentation: completionDocumentation(label, insertText, detail, description),
+			insertText,
 			insertTextRules: snippetRule,
-			sortText: sortPrefix + item[0],
+			sortText: sortPrefix + label,
+			filterText: label,
 			range: itemRange,
 		};
 	}
 
 	function serviceDocumentation(serviceName) {
 		return {
-			value: "**" + serviceName + "** service\n\n```lua\nlocal " + serviceName + " = game:GetService(\"" + serviceName + "\")\n```\nUse this completion when you need direct access to the " + serviceName + " service.",
+			value: "**" + serviceName + "** service\n\nUse this when you need direct access to the `" + serviceName + "` service.\n\nPreview:\n\n```lua\nlocal " + serviceName.replace(/[^A-Za-z0-9_]/g, "") + " = game:GetService(\"" + serviceName + "\")\n```",
 		};
 	}
 
@@ -199,7 +228,16 @@ function registerCompletions(monaco) {
 		const key = "prop|" + detail + "|" + prop;
 		if (seen.has(key)) return;
 		seen.add(key);
-		suggestions.push({ label: prop, kind: propertyKind, detail, insertText: prop, sortText: sortPrefix + prop, range: itemRange });
+		suggestions.push({
+			label: prop,
+			kind: propertyKind,
+			detail,
+			documentation: completionDocumentation(prop, prop, detail, "Property available on this context."),
+			insertText: prop,
+			sortText: sortPrefix + prop,
+			filterText: prop,
+			range: itemRange,
+		});
 	}
 
 	function looksLikeSignalName(name) {
@@ -247,7 +285,7 @@ function registerCompletions(monaco) {
 						const key = "prop|" + prop;
 						if (!seen.has(key)) {
 							seen.add(key);
-							suggestions.push({ label: prop, kind: propertyKind, detail: "Property", insertText: prop, sortText: "090" + prop, range: itemRange });
+							suggestions.push({ label: prop, kind: propertyKind, detail: "Property", documentation: completionDocumentation(prop, prop, "Property", "Common Instance property."), insertText: prop, sortText: "090" + prop, filterText: prop, range: itemRange });
 						}
 					}
 				}
@@ -294,11 +332,11 @@ function registerCompletions(monaco) {
 				const key = "global|" + globalName;
 				if (seen.has(key)) continue;
 				seen.add(key);
-				suggestions.push({ label: globalName, kind: variableKind, detail: "Luau global", insertText: globalName, sortText: "220" + globalName, range: itemRange });
+				suggestions.push({ label: globalName, kind: variableKind, detail: "Luau global", documentation: completionDocumentation(globalName, globalName, "Luau global", "Built-in Luau or Roblox global."), insertText: globalName, sortText: "220" + globalName, filterText: globalName, range: itemRange });
 			}
 
 			for (const keyword of LUA_KEYWORDS) {
-				suggestions.push({ label: keyword, kind: keywordKind, detail: "Luau keyword", insertText: keyword, sortText: "230" + keyword, range: itemRange });
+				suggestions.push({ label: keyword, kind: keywordKind, detail: "Luau keyword", documentation: completionDocumentation(keyword, keyword, "Luau keyword", "Language keyword."), insertText: keyword, sortText: "230" + keyword, filterText: keyword, range: itemRange });
 			}
 
 			if (cleanSnippetPlace(linePrefix)) {
@@ -565,7 +603,7 @@ export function createEditorController(options) {
 					acceptSuggestionOnEnter: "on",
 					suggestSelection: "first",
 					wordBasedSuggestions: "matchingDocuments",
-					suggest: { showIcons: true, preview: true, showSnippets: true, showStatusBar: true, showInlineDetails: true, showMethods: true, showFunctions: true, showClasses: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
+					suggest: { showIcons: true, preview: true, previewMode: "prefix", showSnippets: true, showStatusBar: true, showInlineDetails: true, showMethods: true, showFunctions: true, showClasses: true, showWords: true, insertMode: "replace", selectionMode: "always", localityBonus: true },
 				});
 
 				target.editor.onDidChangeModelContent(() => options.onChange(groupName));
