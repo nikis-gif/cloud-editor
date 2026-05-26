@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Cloud</title>
@@ -80,5 +81,619 @@ Cloud.Editor:Open()</code></pre></div>
 	<script src="/js/api.js"></script>
 	<script src="/js/editor.js"></script>
 	<script src="/js/app.js"></script>
+=======
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Cloud</title>
+	<link rel="icon" type="image/png" href="/assets/cloud-logo.png" />
+	<script>if (window.cloudDesktop || window.forgeDesktop) document.documentElement.classList.add("cloud-desktop-app", "forge-desktop-app");</script>
+	<link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="no-session booting">
+	<div id="bootSplash" class="boot-splash"><div class="boot-splash-card"><img src="/assets/cloud-logo.png" alt="Cloud" /><strong>Cloud</strong><span id="bootSplashText">Loading workspace...</span></div></div>
+	<script>
+		(function () {
+			var closed = false;
+			function closeSplash() {
+				if (closed) return;
+				closed = true;
+				document.body.classList.remove("booting");
+				var splash = document.getElementById("bootSplash");
+				if (!splash) return;
+				splash.classList.add("hidden");
+				setTimeout(function () {
+					if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+				}, 240);
+			}
+			function showRecoveredState(error) {
+				var text = document.getElementById("bootSplashText");
+				if (text) text.textContent = "Recovering interface...";
+				if (window.console && error) console.error("[Cloud] Boot recovered:", error);
+				setTimeout(closeSplash, 700);
+			}
+			window.__cloudHideBootSplash = closeSplash;
+			window.addEventListener("error", function (event) {
+				showRecoveredState(event && (event.error || event.message));
+			});
+			window.addEventListener("unhandledrejection", function (event) {
+				showRecoveredState(event && event.reason);
+			});
+			setTimeout(closeSplash, 3200);
+		})();
+	</script>
+	<div id="sessionGate" class="session-gate vscode-gate">
+		<header class="vscode-gate-titlebar">
+			<a class="vscode-gate-brand" href="#" aria-label="Cloud home">
+				<img src="/assets/cloud-logo.png" alt="Cloud" />
+				<span><strong>Cloud</strong><em data-i18n="entryBrandSubtitle">Professional scripting workspace</em></span>
+			</a>
+
+			<div class="vscode-gate-actions">
+				<select id="gateLanguageSelect" class="appearance-select" aria-label="Language"></select>
+				<select id="gateAppearanceSelect" class="appearance-select" aria-label="Appearance">
+					<option value="system">System</option>
+					<option value="dark">Dark</option>
+					<option value="light">Light</option>
+				</select>
+				<button type="button" class="open-learn-button" data-i18n="entryLearn">Learn</button>
+				<a href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener" data-i18n="entryPlugin">Plugin</a>
+			</div>
+		</header>
+
+		<main class="vscode-gate-workbench">
+			<aside class="vscode-gate-activity" aria-hidden="true">
+				<div class="activity-dot active"></div>
+				<div class="activity-dot"></div>
+				<div class="activity-dot"></div>
+			</aside>
+
+			<aside class="vscode-gate-explorer">
+				<div class="vscode-panel-title" data-i18n="explorer">Explorer</div>
+				<div class="vscode-section">
+					<div class="vscode-section-head">CLOUD</div>
+					<div class="vscode-file active">private.session</div>
+					<div class="vscode-file">workspace.tree</div>
+					<div class="vscode-file">scripts.editor</div>
+				</div>
+				<div class="vscode-section compact vscode-shortcuts-panel">
+					<div class="vscode-section-head">SHORTCUTS</div>
+					<div class="vscode-shortcut-row"><span>Ctrl + S</span><em>Save</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + W</span><em>Close tab</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + 1-9</span><em>Switch tab</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + I</span><em>Create</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + D</span><em>Duplicate</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + C</span><em>Copy</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + X</span><em>Cut</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + V</span><em>Paste</em></div>
+					<div class="vscode-shortcut-row"><span>Shift + Click</span><em>Range select</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + Click</span><em>Toggle select</em></div>
+					<div class="vscode-shortcut-row"><span>Delete</span><em>Remove</em></div>
+					<div class="vscode-shortcut-row"><span>F2</span><em>Rename</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + Shift + E</span><em>Fold</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + E</span><em>Unfold</em></div>
+					<div class="vscode-shortcut-row"><span>Ctrl + +/-/0</span><em>Zoom</em></div>
+					<div class="vscode-shortcut-row"><span>Esc</span><em>Close panels</em></div>
+				</div>
+			</aside>
+
+			<section class="vscode-gate-editor">
+				<div class="vscode-editor-tabs">
+					<div class="vscode-editor-tab active">Welcome</div>
+					<div class="vscode-editor-tab">Connection</div>
+				</div>
+
+				<div class="vscode-editor-content">
+					<section class="vscode-welcome-card">
+						<div class="vscode-start-preview" aria-label="Cloud workspace preview">
+							<div class="vscode-start-preview-head"><span>cloud/session.boot.lua</span><em>ready</em></div>
+							<pre><code><span>local</span> Workspace = Cloud:OpenWorkspace()
+Workspace:SyncExplorer()
+Output:MirrorRuntime()</code></pre>
+						</div>
+						<div class="vscode-workspace-meta" aria-label="Cloud workflow summary">
+							<span>Private session</span>
+							<span>Live explorer</span>
+							<span>Script editor</span>
+							<span>File actions</span>
+						</div>
+						<div class="entry-badge vscode-badge"><i></i><span data-i18n="entryHeroBadge">Private workspace</span></div>
+						<h1 data-i18n="entryHeroTitle">Cloud Workspace</h1>
+						<p data-i18n="entryHeroBody">Connect your private session, open your project tree, and edit scripts in a clean professional workspace.</p>
+						<div class="vscode-rotator" aria-live="polite"><span id="entryPhraseText">Welcome to Cloud, ready to build?</span></div>
+					</section>
+
+					<section class="vscode-login-card">
+						<div class="vscode-login-head">
+							<div class="vscode-login-status"><span>Private access</span><strong>Session required</strong></div>
+							<span data-i18n="entryConnectBadge">Connect</span>
+							<h2 data-i18n="entryConnectTitle">Enter Cloud</h2>
+							<p data-i18n="entryConnectBody">Paste your Session ID and Hidden Secret to unlock the workspace.</p>
+						</div>
+
+						<div class="vscode-login-form">
+							<label for="gateSessionInput" data-i18n="entrySessionLabel">Session ID</label>
+							<input id="gateSessionInput" type="password" placeholder="Paste session ID" autocomplete="off" data-i18n-placeholder="entrySessionPlaceholder" />
+
+							<label for="gateSecretInput" data-i18n="entrySecretLabel">Hidden Secret</label>
+							<input id="gateSecretInput" type="password" placeholder="Paste hidden secret" autocomplete="off" data-i18n-placeholder="entrySecretPlaceholder" />
+
+							<button id="gateConnectButton" class="gate-connect-button" data-i18n="entryConnectAction">Enter Cloud</button>
+						</div>
+
+						<button type="button" class="vscode-learn-inline open-learn-button" data-i18n="entryCtaBody">Open Learn for setup steps, shortcuts, and workflow tips.</button>
+					</section>
+				</div>
+			</section>
+		</main>
+	</div>
+	<div class="app" id="app">
+		<header class="titlebar">
+			<div class="brand">
+				<img class="brand-logo" src="/assets/cloud-logo.png" alt="Cloud" />
+				<div class="brand-copy">
+					<strong>Cloud</strong>
+					<span>A clean workspace for game development.</span>
+				</div>
+			</div>
+
+			<div class="command-center">
+				<span id="connectionDot" class="connection-dot disconnected"></span>
+				<span id="connectionLabel">Disconnected</span>
+			</div>
+
+			<div class="title-actions">
+				<button id="openLearnButton" class="secondary-button learn-top-button">Learn</button>
+				<a id="downloadAppButton" class="download-app-button" href="https://github.com/nikis-gif/cloud-editor/releases/latest/download/Cloud-Setup.exe" target="_blank" rel="noopener">Download Cloud App</a>
+				<a id="robloxPluginButton" class="roblox-plugin-button" href="https://create.roblox.com/store/asset/110405258188669/Forge-Codex" target="_blank" rel="noopener">Plugin</a>
+				<button id="connectionButton" class="icon-button" title="Connection" aria-label="Connection">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l1.41-1.41a5 5 0 0 0-7.07-7.07L10.7 5.23"/><path d="M14 11a5 5 0 0 0-7.07 0l-1.41 1.41a5 5 0 0 0 7.07 7.07l.71-.71"/></svg>
+				</button>
+				<button id="settingsButton" class="icon-button" title="Settings" aria-label="Settings">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.04.04a2 2 0 1 1-2.83 2.83l-.04-.04A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.42 1.12V21a2 2 0 1 1-4 0v-.08A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.04.04a2 2 0 1 1-2.83-2.83l.04-.04A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.12-.42H2.8a2 2 0 1 1 0-4h.08A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.04-.04a2 2 0 1 1 2.83-2.83l.04.04A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .42-1.12V2.8a2 2 0 1 1 4 0v.08A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.04-.04a2 2 0 1 1 2.83 2.83l-.04.04A1.7 1.7 0 0 0 19.4 9c.38.16.73.37 1 .6.33.28.72.42 1.12.42h.08a2 2 0 1 1 0 4h-.08A1.7 1.7 0 0 0 19.4 15z"/></svg>
+				</button>
+			</div>
+		</header>
+
+		<aside class="sidebar">
+			<div class="sidebar-title">
+				<span>Explorer</span>
+				<div class="sidebar-actions">
+					<button id="refreshButton" class="icon-button" title="Refresh tree" aria-label="Refresh tree">
+						<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5"/><path d="M4 18v-5h5"/><path d="M19 11a7 7 0 0 0-11.9-4.95L4 9"/><path d="M5 13a7 7 0 0 0 11.9 4.95L20 15"/></svg>
+					</button>
+				</div>
+			</div>
+
+			<div class="connection-card">
+				<div class="connection-card-title">Session</div>
+				<div id="status" class="status compact">Connect once to open your workspace.</div>
+			</div>
+
+			<div class="project-header">
+				<span>Project</span>
+				<span id="fileCount" class="file-count">0 items</span>
+			</div>
+
+			<div class="search-wrap">
+				<input id="searchInput" placeholder="Search by name, class or path" autocomplete="off" />
+			</div>
+
+			<div id="tree" class="tree"></div>
+		</aside>
+
+		<div id="resizer" class="resizer"></div>
+
+		<main class="main">
+			<div id="tabs" class="tabs"></div>
+
+			<div class="editor-header">
+				<div class="editor-title">
+					<strong id="fileTitle">No file open</strong>
+					<span id="filePath">Connect to a private Cloud session and open a script.</span>
+				</div>
+				<div class="editor-actions">
+					<button id="projectSearchButton" class="secondary-button" title="Search project">Search</button>
+					<button id="splitButton" class="secondary-button hidden-action" title="Open active tab to the right">Split</button>
+					<button id="closeSplitButton" class="secondary-button" title="Close split view">Close Split</button>
+					<button id="outputToggleButton" class="secondary-button">Output</button>
+					<button id="saveButton" class="secondary-button">Save</button>
+				</div>
+			</div>
+
+			<div class="editor-shell" id="editorShell">
+				<div class="editor-pane primary-pane" id="primaryPane">
+					<div id="monacoEditor"></div>
+					<textarea id="fallbackEditor" spellcheck="false"></textarea>
+				</div>
+				<div class="editor-split-line" id="editorSplitLine"></div>
+				<div class="editor-pane secondary-pane" id="secondaryPane">
+					<div class="secondary-pane-bar"><span id="secondaryTitle">Split View</span><button id="secondaryCloseButton" class="tab-close" aria-label="Close split"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button></div>
+					<div id="monacoEditorSecondary"></div>
+					<textarea id="fallbackEditorSecondary" spellcheck="false"></textarea>
+				</div>
+				<div id="splitDropHint" class="split-drop-hint">Drop tab here to split right</div>
+				<div id="placeholder" class="placeholder">
+					<div class="placeholder-card">
+						<img class="placeholder-logo" src="/assets/cloud-logo.png" alt="Cloud" />
+						<h1>Welcome to Cloud</h1>
+						<p>Open a script from the Explorer to start editing.</p>
+					</div>
+				</div>
+			</div>
+
+			<section id="outputPanel" class="output-panel" aria-label="Output panel">
+				<div id="outputResizeHandle" class="output-resize-handle" title="Drag to resize Output"></div>
+				<header class="output-head">
+					<div class="output-title-area">
+						<strong data-i18n="outputTitle">Output</strong>
+						<span id="outputStatus" data-i18n="outputWaiting">Waiting for play session logs.</span>
+					</div>
+					<div class="output-actions">
+						<button id="outputRefreshButton" class="secondary-button" data-i18n="refresh">Refresh</button>
+						<button id="outputClearButton" class="secondary-button" data-i18n="clear">Clear</button>
+						<button id="outputCloseButton" class="icon-button" aria-label="Close Output"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+					</div>
+				</header>
+				<div class="output-toolbar">
+					<select id="outputLevelFilter" aria-label="Output type filter">
+						<option value="all" data-i18n="outputAllMessages">All Messages</option>
+						<option value="error" data-i18n="outputErrors">Errors</option>
+						<option value="warn" data-i18n="outputWarnings">Warnings</option>
+						<option value="print" data-i18n="outputPrints">Prints</option>
+						<option value="info" data-i18n="outputInfo">Info</option>
+					</select>
+					<select id="outputContextFilter" aria-label="Output context filter">
+						<option value="all" data-i18n="outputAllContexts">All Contexts</option>
+						<option value="Server">Server</option>
+						<option value="Client">Client</option>
+						<option value="Plugin">Plugin</option>
+						<option value="Runtime">Runtime</option>
+					</select>
+					<div class="output-filter-wrap">
+						<input id="outputTextFilter" type="search" autocomplete="off" data-i18n-placeholder="outputFilterPlaceholder" placeholder="Filter..." />
+					</div>
+					<button id="outputDetailButton" class="icon-button output-detail-button" title="Output detail options" aria-label="Output detail options"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M5 12h14"/><path d="M5 17h14"/></svg></button>
+				</div>
+				<div id="outputDetailMenu" class="output-detail-menu" aria-hidden="true">
+					<label><input id="outputShowTimestamp" type="checkbox" checked /> <span data-i18n="outputShowTimestamp">Show timestamp</span></label>
+					<label><input id="outputShowContext" type="checkbox" checked /> <span data-i18n="outputShowContext">Show context</span></label>
+					<label><input id="outputShowSource" type="checkbox" checked /> <span data-i18n="outputShowSource">Show source</span></label>
+					<label><input id="outputShowPreview" type="checkbox" checked /> <span data-i18n="outputShowPreview">Show script preview</span></label>
+				</div>
+				<div id="outputList" class="output-list">
+					<div class="output-empty" data-i18n="outputEmpty">Run the game with the Cloud plugin connected to mirror prints, warnings and script errors here.</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<span id="footerLeft">Ready</span>
+			<span id="footerRight">Ctrl+S save · Shift+Click select · Ctrl+C/X/V copy cut paste · Delete remove</span>
+		</footer>
+	</div>
+
+	<div id="connectionModal" class="modal-backdrop">
+		<div id="connectionDialog" class="modal connection-modal">
+			<div class="modal-head">
+				<div class="modal-title">Connection</div>
+				<button id="closeConnectionButton" class="icon-button" aria-label="Close connection modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="connectedSessionPanel" class="connected-session-panel">
+					<div class="connected-session-card">
+						<span class="connection-kicker">Workspace connected</span>
+						<strong>Cloud is ready</strong>
+						<span id="connectedSessionLabel">Session active</span>
+					</div>
+					<p class="connection-helper">Use Forget only when you want to disconnect this browser from the current session.</p>
+				</div>
+				<div id="connectionFormPanel" class="connection-form-panel">
+					<div class="secure-note">
+						<strong>Connect to your workspace.</strong>
+						<span>Your session ID and secret are required before Cloud can read or save files.</span>
+					</div>
+					<label class="field-label" for="sessionInput">Session ID</label>
+					<input id="sessionInput" type="password" placeholder="Paste session ID" autocomplete="off" />
+					<label class="field-label" for="secretInput">Session Secret</label>
+					<input id="secretInput" type="password" placeholder="Paste session secret" autocomplete="off" />
+				</div>
+				<div class="modal-actions split-actions">
+					<button id="disconnectButton" class="secondary-button">Forget</button>
+					<div class="right-actions">
+						<button id="cancelConnectionButton" class="secondary-button">Done</button>
+						<button id="loadButton" class="primary-button">Connect</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="createModal" class="modal-backdrop popover-backdrop">
+		<div class="modal create-modal">
+			<div class="modal-head compact-head create-panel-head">
+				<div>
+					<div class="modal-title">Create</div>
+					<div id="createLocation" class="modal-subtitle">Parent: none</div>
+				</div>
+				<button id="closeCreateButton" class="icon-button" aria-label="Close create modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body create-body compact-create-body">
+				<div class="create-intro">
+					<strong>Choose what to create</strong>
+					<span>Small, fast and synced with your project.</span>
+				</div>
+				<div id="typeGrid" class="create-list"></div>
+				<div class="create-name-row">
+					<label class="field-label" for="createNameInput">Name</label>
+					<input id="createNameInput" placeholder="Instance name" autocomplete="off" />
+				</div>
+				<div class="modal-actions create-actions">
+					<button id="cancelCreateButton" class="secondary-button">Cancel</button>
+					<button id="confirmCreateButton" class="primary-button">Create</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="projectSearchModal" class="modal-backdrop search-backdrop">
+		<div class="modal search-modal">
+			<div class="modal-head">
+				<div>
+					<div class="modal-title">Project Search</div>
+					<div class="modal-subtitle">Search loaded scripts by text, line and path.</div>
+				</div>
+				<button id="closeProjectSearchButton" class="icon-button" aria-label="Close search modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="project-search-row">
+					<input id="projectSearchInput" placeholder="Search in all scripts" autocomplete="off" />
+					<button id="runProjectSearchButton" class="primary-button">Find</button>
+				</div>
+				<div id="projectSearchStatus" class="search-status">Type a term and press Enter.</div>
+				<div id="projectSearchResults" class="search-results"></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="confirmModal" class="modal-backdrop">
+		<div class="modal">
+			<div class="modal-head">
+				<div id="confirmTitle" class="modal-title">Confirm</div>
+				<button id="closeConfirmButton" class="icon-button" aria-label="Close confirm modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="confirmMessage" class="location-box"></div>
+				<div class="modal-actions">
+					<button id="cancelConfirmButton" class="secondary-button">Cancel</button>
+					<button id="acceptConfirmButton" class="danger-button">Confirm</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div id="settingsModal" class="modal-backdrop">
+		<div class="modal settings-modal">
+			<div class="modal-head settings-head">
+				<div>
+					<div class="modal-title">Settings</div>
+					<div class="modal-subtitle">Shape Cloud around the way you like to code.</div>
+				</div>
+				<button id="closeSettingsButton" class="icon-button" aria-label="Close settings modal">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</div>
+			<div class="modal-body settings-body settings-cloud-body">
+				<div class="settings-panel">
+					<section class="setting-section">
+						<div class="setting-section-head">
+							<strong>Workspace</strong>
+							<span>Interface and editor behavior</span>
+						</div>
+						<div class="setting-grid cloud-setting-grid">
+							<label for="languageInput">Interface language</label>
+							<select id="languageInput"></select>
+							<label for="appearanceInput">Appearance</label>
+							<select id="appearanceInput">
+								<option value="system">System default</option>
+								<option value="dark">Dark</option>
+								<option value="light">Light</option>
+							</select>
+							<label for="wordWrapInput">Word wrap</label>
+							<select id="wordWrapInput">
+								<option value="off">Off</option>
+								<option value="on">On</option>
+							</select>
+							<label for="minimapInput">Minimap</label>
+							<label class="cloud-switch" for="minimapInput">
+								<input id="minimapInput" type="checkbox" />
+								<span></span>
+								<em>Show code map</em>
+							</label>
+						</div>
+					</section>
+					<section class="setting-section">
+						<div class="setting-section-head">
+							<strong>Typography</strong>
+							<span>Readable defaults for long Lua sessions</span>
+						</div>
+						<div class="setting-grid cloud-setting-grid">
+							<label for="fontFamilyInput">Font family</label>
+							<input id="fontFamilyInput" placeholder="JetBrains Mono, Cascadia Code, Fira Code, Consolas, monospace" />
+							<label for="fontSizeInput">Font size</label>
+							<input id="fontSizeInput" type="number" min="10" max="28" />
+							<label for="autosaveInput">Autosave delay</label>
+							<input id="autosaveInput" type="number" min="1000" max="15000" />
+						</div>
+					</section>
+					<section class="setting-section">
+						<div class="setting-section-head">
+							<strong>Theme presets</strong>
+							<span>Pick a mood, then fine tune it</span>
+						</div>
+						<div class="theme-preset-grid">
+							<button type="button" class="theme-preset" data-theme-preset="cloud-black-gray"><span style="--a:#090a0e;--b:#2b303a;--c:#9ca3af"></span><strong>Black / Gray</strong><em>Default</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-white"><span style="--a:#ffffff;--b:#e9eef7;--c:#3b82f6"></span><strong>White</strong><em>Bright</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-pink"><span style="--a:#1b0f18;--b:#ec4899;--c:#f9a8d4"></span><strong>Pink</strong><em>Soft</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-purple"><span style="--a:#130f24;--b:#8b5cf6;--c:#c4b5fd"></span><strong>Purple</strong><em>Cloud</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-matrix"><span style="--a:#020403;--b:#00ff84;--c:#0f5132"></span><strong>Matrix</strong><em>Terminal</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-bubble"><span style="--a:#0f172a;--b:#22d3ee;--c:#f0abfc"></span><strong>Bubble</strong><em>Playful</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-sky"><span style="--a:#06162e;--b:#38bdf8;--c:#dbeafe"></span><strong>Sky</strong><em>Clean</em></button>
+							<button type="button" class="theme-preset" data-theme-preset="cloud-dark"><span style="--a:#111827;--b:#6d5dfc;--c:#60a5fa"></span><strong>Cloud Dark</strong><em>Balanced</em></button>
+						</div>
+						<label class="hidden-setting-label" for="editorThemeInput">Editor theme</label>
+						<select id="editorThemeInput" class="theme-select">
+							<option value="cloud-black-gray">Black / Gray</option>
+							<option value="cloud-white">White</option>
+							<option value="cloud-pink">Pink</option>
+							<option value="cloud-purple">Purple</option>
+							<option value="cloud-matrix">Matrix</option>
+							<option value="cloud-bubble">Bubble</option>
+							<option value="cloud-sky">Sky</option>
+							<option value="cloud-dark">Cloud Dark</option>
+							<option value="cloud-codex">Codex Graphite</option>
+							<option value="cloud-graphite">Graphite</option>
+							<option value="cloud-void">Void</option>
+							<option value="cloud-midnight">Midnight</option>
+							<option value="cloud-warm">Warm Dark</option>
+							<option value="cloud-forest">Forest</option>
+							<option value="cloud-rose-pine">Rose Pine</option>
+							<option value="cloud-nord">Nord</option>
+							<option value="cloud-dracula">Dracula</option>
+							<option value="cloud-ocean">Ocean</option>
+							<option value="cloud-mono">Mono</option>
+							<option value="cloud-contrast">High Contrast</option>
+						</select>
+					</section>
+				</div>
+				<div class="editor-preview-card cloud-preview-card">
+					<div class="preview-head">
+						<div><span>Preview</span><strong id="settingsPreviewMeta">Lua · 14px · 3000ms</strong></div>
+						<div class="preview-dots"><i></i><i></i><i></i></div>
+					</div>
+					<div class="preview-editor-shell">
+						<pre id="settingsPreview" class="editor-preview"><code><span class="ln">1</span><span class="kw">local</span> Players = game:<span class="fn">GetService</span>(<span class="str">"Players"</span>)
+<span class="ln">2</span><span class="kw">local</span> ReplicatedStorage = game:<span class="fn">GetService</span>(<span class="str">"ReplicatedStorage"</span>)
+<span class="ln">3</span>
+<span class="ln">4</span>Players.PlayerAdded:<span class="fn">Connect</span>(<span class="kw">function</span>(player)
+<span class="ln">5</span>	<span class="kw">local</span> profile = ReplicatedStorage:<span class="fn">WaitForChild</span>(<span class="str">"Profiles"</span>)
+<span class="ln">6</span>	<span class="fn">print</span>(player.Name, profile.Name)
+<span class="ln">7</span><span class="kw">end</span>)</code></pre>
+						<div id="previewMinimap" class="preview-minimap"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+					</div>
+					<div class="settings-summary">
+						<span id="previewWrapBadge">Wrap off</span>
+						<span id="previewMinimapBadge">Minimap on</span>
+					</div>
+				</div>
+				<div class="modal-actions settings-actions">
+					<button id="resetSettingsButton" class="secondary-button">Reset</button>
+					<button id="saveSettingsButton" class="primary-button">Apply</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="learnModal" class="learn-page-backdrop minimal-learn-backdrop">
+		<div class="minimal-learn-panel">
+			<header class="minimal-learn-header">
+				<div>
+					<span data-i18n="learnPageKicker">Learn</span>
+					<h2 data-i18n="learnPageTitle">How Cloud works</h2>
+					<p data-i18n="learnPageSubtitle">A short setup guide for connecting your workspace and using the editor without friction.</p>
+				</div>
+				<button id="closeLearnButton" class="icon-button" aria-label="Close learn overlay">
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
+				</button>
+			</header>
+
+			<div class="minimal-learn-body vscode-learn-body">
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnConnectionFlowTitle">Connection flow</h3>
+					<ol>
+						<li data-i18n="learnConnectionOne">Open the plugin inside your controlled game development environment.</li>
+						<li data-i18n="learnConnectionTwo">Create a private session and copy both generated values.</li>
+						<li data-i18n="learnConnectionThree">Paste the Session ID and Hidden Secret on the Cloud start screen.</li>
+						<li data-i18n="learnConnectionFour">After connecting, Cloud loads the project tree and keeps the workspace available for editing.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnDailyFlowTitle">Daily workflow</h3>
+					<ol>
+						<li data-i18n="learnDailyOne">Use the Explorer to open scripts and keep folders organized.</li>
+						<li data-i18n="learnDailyTwo">Use tabs when jumping between multiple scripts.</li>
+						<li data-i18n="learnDailyThree">Use split view when comparing or editing two scripts at the same time.</li>
+						<li data-i18n="learnDailyFour">Save often with Ctrl + S and use the footer status to confirm the editor state.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnOutputTitle">Output mirror</h3>
+					<ol>
+						<li data-i18n="learnOutputOne">Run the game while the Cloud session is active.</li>
+						<li data-i18n="learnOutputTwo">Prints, warnings, and runtime errors are mirrored to the Output panel.</li>
+						<li data-i18n="learnOutputThree">Errors show the runtime source path and stack details when available.</li>
+						<li data-i18n="learnOutputFour">Drag the top edge of Output to resize the panel.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section shortcut-section wide">
+					<h3 data-i18n="learnAllShortcutsTitle">All shortcuts</h3>
+					<div class="shortcut-grid-full">
+						<div><b>Ctrl + S</b><span data-i18n="shortcutSave">Save the active script.</span></div>
+						<div><b>Ctrl + W</b><span data-i18n="shortcutCloseTab">Close the active tab.</span></div>
+						<div><b>Ctrl + 1-9</b><span data-i18n="shortcutSwitchTab">Switch to a tab by position.</span></div>
+						<div><b>Ctrl + I</b><span data-i18n="shortcutCreate">Create a new item from the selected parent.</span></div>
+						<div><b>Ctrl + D</b><span data-i18n="shortcutDuplicate">Duplicate selected Explorer items or the active script.</span></div>
+						<div><b>Ctrl + C</b><span data-i18n="shortcutCopy">Copy selected Explorer items.</span></div>
+						<div><b>Ctrl + X</b><span data-i18n="shortcutCut">Cut selected Explorer items.</span></div>
+						<div><b>Ctrl + V</b><span data-i18n="shortcutPaste">Paste copied or cut items into the selected parent.</span></div>
+						<div><b>Shift + Click</b><span data-i18n="shortcutRangeSelect">Select a range of scripts in the Explorer.</span></div>
+						<div><b>Ctrl + Click</b><span data-i18n="shortcutToggleSelect">Toggle one item in the current selection.</span></div>
+						<div><b>Delete</b><span data-i18n="shortcutDelete">Remove selected scripts or folders.</span></div>
+						<div><b>F2</b><span data-i18n="shortcutRename">Rename the selected item.</span></div>
+						<div><b>Ctrl + Shift + E</b><span data-i18n="shortcutFold">Fold the active script.</span></div>
+						<div><b>Ctrl + E</b><span data-i18n="shortcutUnfold">Unfold the active script.</span></div>
+						<div><b>Ctrl + +</b><span data-i18n="shortcutZoomIn">Increase the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + -</b><span data-i18n="shortcutZoomOut">Decrease the Cloud UI zoom.</span></div>
+						<div><b>Ctrl + 0</b><span data-i18n="shortcutZoomReset">Reset the Cloud UI zoom.</span></div>
+						<div><b>Esc</b><span data-i18n="shortcutEsc">Close modals, panels, Learn, search, or create dialogs.</span></div>
+					</div>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnExplorerActionsTitle">Explorer actions</h3>
+					<ol>
+						<li data-i18n="learnExplorerOne">Create scripts, local scripts, module scripts, and folders from valid parents.</li>
+						<li data-i18n="learnExplorerTwo">Copy, cut, paste, duplicate, rename, and delete directly from the Explorer.</li>
+						<li data-i18n="learnExplorerThree">Use multi-select before copy, cut, duplicate, or delete actions.</li>
+					</ol>
+				</section>
+
+				<section class="minimal-learn-section">
+					<h3 data-i18n="learnEditorBehaviorTitle">Editor behavior</h3>
+					<ol>
+						<li data-i18n="learnEditorOne">Cloud keeps editor shortcuts separate from Explorer shortcuts when focus is inside code.</li>
+						<li data-i18n="learnEditorTwo">Copy and cut text still work normally inside the editor.</li>
+						<li data-i18n="learnEditorThree">Explorer copy, cut, paste, and delete run when focus is outside the code editor.</li>
+					</ol>
+				</section>
+			</div>
+			</div>
+		</div>
+	</div>
+	<div id="toastStack" class="toast-stack"></div>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+	<script type="module" src="/js/app.js"></script>
+	<script src="/js/desktop.js"></script>
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 </body>
 </html>

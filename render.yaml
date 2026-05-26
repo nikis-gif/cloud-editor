@@ -1,8 +1,15 @@
 services:
   - type: web
+<<<<<<< HEAD
     name: cloud-editor-vscode
     runtime: node
     plan: free
+=======
+    name: cloud-editor-03s5
+    runtime: node
+    repo: https://github.com/nikis-gif/cloud-editor
+    branch: main
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
     buildCommand: npm install
     startCommand: npm start
     envVars:

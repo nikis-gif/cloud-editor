@@ -10,11 +10,19 @@ function startServer(options = {}) {
 
 	return new Promise((resolve, reject) => {
 		let settled = false;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 		server.once("error", error => {
 			if (settled) return;
 			settled = true;
 			reject(error);
 		});
+<<<<<<< HEAD
+=======
+
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 		server.listen(port, host, () => {
 			if (settled) return;
 			settled = true;
@@ -31,7 +39,11 @@ if (require.main === module) {
 			console.log("[Cloud UI] http://localhost:" + port);
 		})
 		.catch(error => {
+<<<<<<< HEAD
 			console.error("[Cloud API] Failed to start:", error && error.message ? error.message : error);
+=======
+			console.error("[Cloud API] Failed to start:", error.message || error);
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 			process.exitCode = 1;
 		});
 }

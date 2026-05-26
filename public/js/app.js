@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 (function () {
 	const api = window.CloudApi;
 	const editorTools = window.CloudEditor;
@@ -595,3 +596,3459 @@
 
 	boot();
 }());
+=======
+import {
+	ROOT_ORDER,
+	CREATE_TYPES,
+	STORAGE,
+	SESSION_STORAGE,
+	DEFAULT_SETTINGS,
+	FILES_POLL_INTERVAL,
+} from "./config.js";
+import {
+	loadJson,
+	saveJson,
+	clamp,
+	escapeHtml,
+	sanitizeName,
+	getParentPath,
+	getFullPath,
+	isScriptClass,
+	isScriptItem,
+	isInputLike,
+	getDefaultSourceForClass,
+} from "./helpers.js";
+import {
+	fetchSessionFiles,
+	fetchSource,
+	saveSource,
+	createRemoteItem,
+	moveRemoteItem,
+	deleteRemoteItem,
+	fetchOutputLogs,
+	clearOutputLogs,
+} from "./api.js";
+import {
+	setupUi,
+	setStatus,
+	showToast,
+	requestConfirm,
+	closeConfirm,
+} from "./ui.js";
+import { createEditorController } from "./editor.js";
+import { setIcon, svgIcon } from "./icons.js";
+import { applyLanguage, getLanguage, populateLanguageSelect, t } from "./i18n.js";
+
+const refs = {
+	sessionInput: document.getElementById("sessionInput"),
+	secretInput: document.getElementById("secretInput"),
+	loadButton: document.getElementById("loadButton"),
+	connectionButton: document.getElementById("connectionButton"),
+	connectionModal: document.getElementById("connectionModal"),
+	connectionDialog: document.getElementById("connectionDialog"),
+	connectedSessionLabel: document.getElementById("connectedSessionLabel"),
+	closeConnectionButton: document.getElementById("closeConnectionButton"),
+	cancelConnectionButton: document.getElementById("cancelConnectionButton"),
+	disconnectButton: document.getElementById("disconnectButton"),
+	connectionDot: document.getElementById("connectionDot"),
+	connectionLabel: document.getElementById("connectionLabel"),
+	refreshButton: document.getElementById("refreshButton"),
+	searchInput: document.getElementById("searchInput"),
+	statusEl: document.getElementById("status"),
+	fileCount: document.getElementById("fileCount"),
+	treeEl: document.getElementById("tree"),
+	tabsEl: document.getElementById("tabs"),
+	fileTitle: document.getElementById("fileTitle"),
+	filePath: document.getElementById("filePath"),
+	footerLeft: document.getElementById("footerLeft"),
+	footerRight: document.getElementById("footerRight"),
+	editorShell: document.getElementById("editorShell"),
+	monacoHost: document.getElementById("monacoEditor"),
+	fallbackEditor: document.getElementById("fallbackEditor"),
+	monacoHostSecondary: document.getElementById("monacoEditorSecondary"),
+	fallbackEditorSecondary: document.getElementById("fallbackEditorSecondary"),
+	secondaryPane: document.getElementById("secondaryPane"),
+	secondaryTitle: document.getElementById("secondaryTitle"),
+	secondaryCloseButton: document.getElementById("secondaryCloseButton"),
+	splitButton: document.getElementById("splitButton"),
+	closeSplitButton: document.getElementById("closeSplitButton"),
+	splitDropHint: document.getElementById("splitDropHint"),
+	placeholder: document.getElementById("placeholder"),
+	resizer: document.getElementById("resizer"),
+	saveButton: document.getElementById("saveButton"),
+	projectSearchButton: document.getElementById("projectSearchButton"),
+	projectSearchModal: document.getElementById("projectSearchModal"),
+	closeProjectSearchButton: document.getElementById("closeProjectSearchButton"),
+	projectSearchInput: document.getElementById("projectSearchInput"),
+	runProjectSearchButton: document.getElementById("runProjectSearchButton"),
+	projectSearchStatus: document.getElementById("projectSearchStatus"),
+	projectSearchResults: document.getElementById("projectSearchResults"),
+	createModal: document.getElementById("createModal"),
+	createLocation: document.getElementById("createLocation"),
+	typeGrid: document.getElementById("typeGrid"),
+	createNameInput: document.getElementById("createNameInput"),
+	closeCreateButton: document.getElementById("closeCreateButton"),
+	cancelCreateButton: document.getElementById("cancelCreateButton"),
+	confirmCreateButton: document.getElementById("confirmCreateButton"),
+	confirmModal: document.getElementById("confirmModal"),
+	confirmTitle: document.getElementById("confirmTitle"),
+	confirmMessage: document.getElementById("confirmMessage"),
+	closeConfirmButton: document.getElementById("closeConfirmButton"),
+	cancelConfirmButton: document.getElementById("cancelConfirmButton"),
+	acceptConfirmButton: document.getElementById("acceptConfirmButton"),
+	settingsButton: document.getElementById("settingsButton"),
+	settingsModal: document.getElementById("settingsModal"),
+	closeSettingsButton: document.getElementById("closeSettingsButton"),
+	languageInput: document.getElementById("languageInput"),
+	appearanceInput: document.getElementById("appearanceInput"),
+	gateAppearanceSelect: document.getElementById("gateAppearanceSelect"),
+	gateLanguageSelect: document.getElementById("gateLanguageSelect"),
+	fontFamilyInput: document.getElementById("fontFamilyInput"),
+	fontSizeInput: document.getElementById("fontSizeInput"),
+	autosaveInput: document.getElementById("autosaveInput"),
+	wordWrapInput: document.getElementById("wordWrapInput"),
+	editorThemeInput: document.getElementById("editorThemeInput"),
+	minimapInput: document.getElementById("minimapInput"),
+	resetSettingsButton: document.getElementById("resetSettingsButton"),
+	saveSettingsButton: document.getElementById("saveSettingsButton"),
+	settingsPreview: document.getElementById("settingsPreview"),
+	settingsPreviewMeta: document.getElementById("settingsPreviewMeta"),
+	previewMinimap: document.getElementById("previewMinimap"),
+	previewMinimapBadge: document.getElementById("previewMinimapBadge"),
+	previewWrapBadge: document.getElementById("previewWrapBadge"),
+	betaWarningModal: document.getElementById("betaWarningModal"),
+	betaLanguageSelect: document.getElementById("betaLanguageSelect"),
+	betaContinueButton: document.getElementById("betaContinueButton"),
+	toastStack: document.getElementById("toastStack"),
+	sessionGate: document.getElementById("sessionGate"),
+	gateSessionInput: document.getElementById("gateSessionInput"),
+	gateSecretInput: document.getElementById("gateSecretInput"),
+	gateConnectButton: document.getElementById("gateConnectButton"),
+	openLearnButton: document.getElementById("openLearnButton"),
+	learnModal: document.getElementById("learnModal"),
+	closeLearnButton: document.getElementById("closeLearnButton"),
+	entryPhraseText: document.getElementById("entryPhraseText"),
+	bootSplash: document.getElementById("bootSplash"),
+	outputToggleButton: document.getElementById("outputToggleButton"),
+	outputPanel: document.getElementById("outputPanel"),
+	outputList: document.getElementById("outputList"),
+	outputStatus: document.getElementById("outputStatus"),
+	outputRefreshButton: document.getElementById("outputRefreshButton"),
+	outputClearButton: document.getElementById("outputClearButton"),
+	outputCloseButton: document.getElementById("outputCloseButton"),
+	outputResizeHandle: document.getElementById("outputResizeHandle"),
+	outputLevelFilter: document.getElementById("outputLevelFilter"),
+	outputContextFilter: document.getElementById("outputContextFilter"),
+	outputTextFilter: document.getElementById("outputTextFilter"),
+	outputDetailButton: document.getElementById("outputDetailButton"),
+	outputDetailMenu: document.getElementById("outputDetailMenu"),
+	outputShowTimestamp: document.getElementById("outputShowTimestamp"),
+	outputShowContext: document.getElementById("outputShowContext"),
+	outputShowSource: document.getElementById("outputShowSource"),
+	outputShowPreview: document.getElementById("outputShowPreview"),
+};
+
+setupUi(refs);
+
+const state = {
+	sessionId: "",
+	secret: "",
+	files: [],
+	filesById: new Map(),
+	treeRoot: null,
+	nodeByKey: new Map(),
+	selectedKey: "",
+	selectedPayload: null,
+	selectedKeys: new Set(),
+	lastSelectedKey: "",
+	clipboard: { mode: "copy", items: [] },
+	currentFileId: "",
+	secondaryFileId: "",
+	activeGroup: "primary",
+	openTabs: new Map(),
+	expandedKeys: new Set(loadJson(STORAGE.expanded, [])),
+	pollTimer: null,
+	autosaveTimer: null,
+	isLoadingFiles: false,
+	draggingItemId: "",
+	draggingTabId: "",
+	tabContextCloseHandler: null,
+	tabContextKeyHandler: null,
+	renamingItemId: "",
+	pendingCreateParent: null,
+	selectedCreateClass: "Script",
+	settings: {
+		...DEFAULT_SETTINGS,
+		...loadJson(STORAGE.settings, DEFAULT_SETTINGS),
+	},
+	language: getLanguage(),
+	viewRestoreTokens: { primary: 0, secondary: 0 },
+	editor: null,
+	lastConnectionErrorAt: 0,
+	projectSearchCache: new Map(),
+	hasInitializedRootExpansion: false,
+	isRestoringWorkspace: false,
+	renameStartedAt: 0,
+	suppressViewStateSaveUntil: 0,
+	entryPhraseIndex: 0,
+	entryPhraseTimer: null,
+	outputEntries: [],
+	lastOutputId: 0,
+	outputPollTimer: null,
+	outputOpen: false,
+	outputHeight: Number(localStorage.getItem("Cloud.OutputHeight")) || 260,
+	outputFilters: { level: "all", context: "all", text: "" },
+	outputView: { timestamp: true, context: true, source: true, preview: true },
+};
+
+function getAuth() {
+	return {
+		sessionId: state.sessionId,
+		secret: state.secret,
+	};
+}
+
+function hasConnection() {
+	return !!state.sessionId && !!state.secret;
+}
+
+function tx(key) {
+	return t(state.language, key);
+}
+
+function normalizeInterfaceTheme(value) {
+	return ["system", "dark", "light"].includes(value) ? value : "system";
+}
+
+function applyInterfaceTheme(value) {
+	const theme = normalizeInterfaceTheme(value);
+	document.documentElement.dataset.interfaceTheme = theme;
+	if (refs.gateAppearanceSelect) refs.gateAppearanceSelect.value = theme;
+	if (refs.appearanceInput) refs.appearanceInput.value = theme;
+	return theme;
+}
+
+function getWorkspaceStorageKey() {
+	const sessionId = String(state.sessionId || "").trim();
+	return sessionId ? STORAGE.workspace + ":" + sessionId : STORAGE.workspace;
+}
+
+function saveWorkspaceState(saveViews = true) {
+	if (!hasConnection() || state.isRestoringWorkspace) return;
+
+	if (saveViews) saveAllVisibleEditorViewStates();
+
+	const viewStates = {};
+
+	for (const tab of state.openTabs.values()) {
+		if (tab.viewState) {
+			viewStates[tab.fileId] = tab.viewState;
+		}
+	}
+
+	const payload = {
+		tabIds: Array.from(state.openTabs.keys()),
+		currentFileId: state.currentFileId || "",
+		secondaryFileId: state.secondaryFileId || "",
+		activeGroup: state.activeGroup || "primary",
+		viewStates,
+		savedAt: Date.now(),
+	};
+
+	saveJson(getWorkspaceStorageKey(), payload);
+}
+
+function clearWorkspaceState() {
+	try {
+		localStorage.removeItem(getWorkspaceStorageKey());
+	} catch (error) {}
+}
+
+function updateConnectionUi(connected, label) {
+	refs.connectionDot.classList.toggle("connected", !!connected);
+	refs.connectionDot.classList.toggle("disconnected", !connected);
+	refs.connectionLabel.textContent = label || (connected ? "Connected" : "Disconnected");
+	document.body.classList.toggle("no-session", !connected);
+	document.body.classList.toggle("workspace-ready", !!connected);
+}
+
+let lastDiscordActivitySignature = "";
+
+function updateDesktopDiscordActivity(activeTab = null) {
+	const desktopApi = window.cloudDesktop || window.forgeDesktop;
+	if (!desktopApi || !desktopApi.setDiscordActivity) return;
+
+	const payload = activeTab ? {
+		details: "Editing " + activeTab.name,
+		state: activeTab.className + " · " + activeTab.root,
+	} : {
+		details: hasConnection() ? "Browsing project files" : "Waiting for private session",
+		state: hasConnection() ? "Workspace connected" : "Private IDE workspace",
+	};
+
+	const signature = JSON.stringify(payload);
+	if (signature === lastDiscordActivitySignature) return;
+	lastDiscordActivitySignature = signature;
+
+	desktopApi.setDiscordActivity(payload).catch(() => {});
+}
+
+function updateFileIndex() {
+	state.filesById = new Map();
+	for (const item of state.files) {
+		state.filesById.set(item.fileId, item);
+	}
+}
+
+function getLoadedFile(fileId) {
+	return state.filesById.get(fileId) || null;
+}
+
+function nodeKey(root, relativePath, item) {
+	if (!relativePath) {
+		return "root:" + root;
+	}
+
+	return item && item.fileId ? "item:" + item.fileId : "virtual:" + root + "/" + relativePath;
+}
+
+function createNode(name, root, relativePath, item) {
+	const key = nodeKey(root, relativePath, item);
+	const node = {
+		key,
+		name,
+		root,
+		relativePath: relativePath || "",
+		item: item || null,
+		children: new Map(),
+	};
+
+	state.nodeByKey.set(key, node);
+	return node;
+}
+
+function getItemByPath(root, relativePath) {
+	const normalized = String(relativePath || "");
+	return state.files.find(item => item.root === root && item.relativePath === normalized) || null;
+}
+
+function attachVirtualPath(rootNode, rootName, relativePath) {
+	let cursor = rootNode;
+	let partial = "";
+	const parts = String(relativePath || "").split("/").filter(Boolean);
+
+	for (const part of parts) {
+		partial = partial ? partial + "/" + part : part;
+		const realItem = getItemByPath(rootName, partial);
+		const key = nodeKey(rootName, partial, realItem);
+
+		if (!cursor.children.has(key)) {
+			cursor.children.set(key, createNode(part, rootName, partial, realItem));
+		}
+
+		cursor = cursor.children.get(key);
+	}
+
+	return cursor;
+}
+
+function buildTree() {
+	state.nodeByKey = new Map();
+	const root = createNode("__root__", "", "", null);
+	const itemNodes = new Map();
+
+	for (const rootName of ROOT_ORDER) {
+		root.children.set(rootName, createNode(rootName, rootName, "", null));
+	}
+
+	for (const item of state.files) {
+		const node = createNode(item.name, item.root, item.relativePath, item);
+		itemNodes.set(item.fileId, node);
+	}
+
+	for (const item of state.files) {
+		if (!root.children.has(item.root)) {
+			root.children.set(item.root, createNode(item.root, item.root, "", null));
+		}
+
+		const node = itemNodes.get(item.fileId);
+		let parentNode = null;
+		const parentId = item.parentItemId || "";
+
+		if (parentId && itemNodes.has(parentId)) {
+			parentNode = itemNodes.get(parentId);
+		} else if (!item.parentRelativePath) {
+			parentNode = root.children.get(item.root);
+		} else {
+			parentNode = attachVirtualPath(root.children.get(item.root), item.root, item.parentRelativePath);
+		}
+
+		if (!parentNode.children.has(node.key)) {
+			parentNode.children.set(node.key, node);
+		}
+	}
+
+	if (!state.hasInitializedRootExpansion && !localStorage.getItem(STORAGE.expanded)) {
+		for (const rootNode of root.children.values()) {
+			if (rootNode.children.size > 0) {
+				state.expandedKeys.add(rootNode.key);
+			}
+		}
+		state.hasInitializedRootExpansion = true;
+	}
+
+	state.treeRoot = root;
+}
+
+function getNodeClass(node) {
+	if (!node.relativePath) {
+		return "Root";
+	}
+
+	return node.item ? node.item.className : "Instance";
+}
+
+function isContainerClass(className) {
+	return !!className && className !== "Root" && !isScriptClass(className);
+}
+
+function getNodeIcon(node) {
+	const className = getNodeClass(node);
+
+	if (!node.relativePath) return { icon: "root", cls: "root" };
+	if (className === "Folder") return { icon: "folder", cls: "folder" };
+	if (className === "Configuration") return { icon: "configuration", cls: "folder configuration" };
+	if (className === "ModuleScript") return { icon: "module", cls: "module" };
+	if (className === "LocalScript") return { icon: "localScript", cls: "script" };
+	if (className === "Script") return { icon: "script", cls: "script" };
+	if (className === "Model" || className === "WorldModel" || className === "Actor") return { icon: "model", cls: "instance model" };
+	if (className === "Part" || className === "MeshPart" || className === "UnionOperation" || className === "WedgePart" || className === "CornerWedgePart" || className === "BasePart") return { icon: "part", cls: "instance part" };
+	if (className.endsWith("Gui") || className === "Frame" || className === "TextLabel" || className === "TextButton" || className === "ImageLabel" || className === "ImageButton") return { icon: "gui", cls: "instance gui" };
+	if (className === "RemoteEvent" || className === "RemoteFunction" || className === "BindableEvent" || className === "BindableFunction") return { icon: "remote", cls: "instance remote" };
+	if (className.endsWith("Value")) return { icon: "value", cls: "instance value" };
+	if (className === "Sound") return { icon: "sound", cls: "instance sound" };
+	if (className.includes("Light") || className === "Beam" || className === "ParticleEmitter" || className === "Trail") return { icon: "light", cls: "instance light" };
+	return { icon: "instance", cls: "instance" };
+}
+
+function getParentPayload(node) {
+	return {
+		root: node.root,
+		relativePath: node.relativePath || "",
+		itemId: node.item ? node.item.fileId : "",
+		label: node.root + (node.relativePath ? "/" + node.relativePath : ""),
+	};
+}
+
+function sortNodes(nodes) {
+	return nodes.sort((a, b) => {
+		const aClass = getNodeClass(a);
+		const bClass = getNodeClass(b);
+		const aScript = isScriptClass(aClass);
+		const bScript = isScriptClass(bClass);
+
+		if (!a.relativePath && !b.relativePath) {
+			return ROOT_ORDER.indexOf(a.root) - ROOT_ORDER.indexOf(b.root);
+		}
+
+		if (isContainerClass(aClass) && !isContainerClass(bClass)) return -1;
+		if (!isContainerClass(aClass) && isContainerClass(bClass)) return 1;
+		if (!aScript && bScript) return -1;
+		if (aScript && !bScript) return 1;
+		return a.name.localeCompare(b.name);
+	});
+}
+
+function nodeMatchesSearch(node, query) {
+	if (!query) {
+		return true;
+	}
+
+	const target = `${node.name} ${node.root}/${node.relativePath} ${getNodeClass(node)}`.toLowerCase();
+
+	if (target.includes(query)) {
+		return true;
+	}
+
+	for (const child of node.children.values()) {
+		if (nodeMatchesSearch(child, query)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+function setSelectedNode(node) {
+	if (!node) {
+		state.selectedKey = "";
+		state.selectedPayload = null;
+		state.selectedKeys.clear();
+		state.lastSelectedKey = "";
+	} else {
+		state.selectedKey = node.key;
+		state.selectedPayload = getParentPayload(node);
+		state.selectedKeys.clear();
+		if (node.item) state.selectedKeys.add(node.key);
+		state.lastSelectedKey = node.key;
+	}
+
+	renderTree();
+	updateEditorHeader();
+}
+
+function pruneSelectedKeys() {
+	for (const key of Array.from(state.selectedKeys)) {
+		if (!state.nodeByKey.has(key)) state.selectedKeys.delete(key);
+	}
+
+	if (state.selectedKey && !state.nodeByKey.has(state.selectedKey)) {
+		state.selectedKey = "";
+		state.selectedPayload = null;
+	}
+}
+
+function getVisibleItemKeys() {
+	return Array.from(refs.treeEl.querySelectorAll(".tree-row[data-key]"))
+		.map(row => row.dataset.key || "")
+		.filter(key => key.startsWith("item:"));
+}
+
+function selectRangeToNode(node) {
+	const keys = getVisibleItemKeys();
+	const start = keys.indexOf(state.lastSelectedKey);
+	const end = keys.indexOf(node.key);
+
+	if (start < 0 || end < 0) {
+		state.selectedKeys.clear();
+		if (node.item) state.selectedKeys.add(node.key);
+		return;
+	}
+
+	const from = Math.min(start, end);
+	const to = Math.max(start, end);
+	state.selectedKeys = new Set(keys.slice(from, to + 1));
+}
+
+function handleTreeSelection(node, event) {
+	if (!node) return false;
+
+	if (!node.item) {
+		setSelectedNode(node);
+		return false;
+	}
+
+	if (event && event.shiftKey) {
+		selectRangeToNode(node);
+		state.selectedKey = node.key;
+		state.selectedPayload = getParentPayload(node);
+		state.lastSelectedKey = node.key;
+		renderTree();
+		updateEditorHeader();
+		return true;
+	}
+
+	if (event && (event.ctrlKey || event.metaKey)) {
+		if (state.selectedKeys.has(node.key)) {
+			state.selectedKeys.delete(node.key);
+		} else {
+			state.selectedKeys.add(node.key);
+		}
+
+		state.selectedKey = node.key;
+		state.selectedPayload = state.selectedKeys.size > 0 ? getParentPayload(node) : null;
+		state.lastSelectedKey = node.key;
+		renderTree();
+		updateEditorHeader();
+		return true;
+	}
+
+	setSelectedNode(node);
+	return false;
+}
+
+function isEditorEventTarget(target) {
+	return !!(target && target.closest && target.closest(".monaco-editor, #monacoEditor, #monacoEditorSecondary, #fallbackEditor, #fallbackEditorSecondary"));
+}
+
+function getSelectedItems(includeFallback = true) {
+	const ids = [];
+	for (const key of state.selectedKeys) {
+		if (key.startsWith("item:")) ids.push(key.slice(5));
+	}
+
+	if (includeFallback && ids.length === 0 && state.selectedPayload && state.selectedPayload.itemId) {
+		ids.push(state.selectedPayload.itemId);
+	}
+
+	const seen = new Set();
+	const items = [];
+	for (const id of ids) {
+		if (!id || seen.has(id)) continue;
+		seen.add(id);
+		const item = getLoadedFile(id);
+		if (item) items.push(item);
+	}
+
+	return items;
+}
+
+function isClipboardItem(item) {
+	return item && (isScriptClass(item.className) || isContainerClass(item.className));
+}
+
+function getTopLevelItems(items) {
+	const selectedIds = new Set(items.map(item => item.fileId));
+	return items.filter(item => {
+		let cursor = item;
+		const visited = new Set();
+
+		while (cursor && cursor.parentItemId) {
+			if (selectedIds.has(cursor.parentItemId)) return false;
+			if (visited.has(cursor.parentItemId)) return true;
+			visited.add(cursor.parentItemId);
+			cursor = getLoadedFile(cursor.parentItemId);
+		}
+
+		return true;
+	});
+}
+
+function getActiveFileId(group = state.activeGroup) {
+	return group === "secondary" ? state.secondaryFileId : state.currentFileId;
+}
+
+function saveEditorViewForGroup(group = state.activeGroup) {
+	if (!state.editor) return;
+	if (Date.now() < state.suppressViewStateSaveUntil) return;
+
+	const fileId = getActiveFileId(group);
+	const tab = fileId ? state.openTabs.get(fileId) : null;
+
+	if (!tab) return;
+
+	tab.viewState = state.editor.getViewState(group);
+}
+
+function saveAllVisibleEditorViewStates() {
+	saveEditorViewForGroup("primary");
+
+	if (state.secondaryFileId) {
+		saveEditorViewForGroup("secondary");
+	}
+}
+
+function restoreEditorViewForTab(tab, group = state.activeGroup) {
+	if (!state.editor) return;
+
+	const targetGroup = group === "secondary" ? "secondary" : "primary";
+	const token = (state.viewRestoreTokens[targetGroup] || 0) + 1;
+	state.viewRestoreTokens[targetGroup] = token;
+	const viewState = tab && tab.viewState ? tab.viewState : null;
+
+	const apply = () => {
+		if (state.viewRestoreTokens[targetGroup] !== token) return;
+		state.editor.restoreViewState(viewState, targetGroup);
+	};
+
+	apply();
+	requestAnimationFrame(apply);
+	setTimeout(apply, 20);
+	setTimeout(apply, 80);
+}
+
+function setActiveGroup(group) {
+	state.activeGroup = group === "secondary" && state.secondaryFileId ? "secondary" : "primary";
+	updateEditorHeader();
+}
+
+function updateEditorHeader() {
+	const activeFileId = getActiveFileId();
+	const activeTab = state.openTabs.get(activeFileId) || null;
+	const primaryTab = state.openTabs.get(state.currentFileId) || null;
+	const secondaryTab = state.openTabs.get(state.secondaryFileId) || null;
+	refs.placeholder.style.display = primaryTab ? "none" : "grid";
+	refs.saveButton.disabled = !activeTab || !activeTab.dirty;
+	if (refs.splitButton) refs.splitButton.disabled = !primaryTab;
+	refs.closeSplitButton.style.display = state.secondaryFileId ? "inline-flex" : "none";
+	refs.secondaryTitle.textContent = secondaryTab ? secondaryTab.name + " · " + secondaryTab.className : "Split View";
+
+	if (activeTab) {
+		const splitText = state.secondaryFileId ? " · Split active: " + state.activeGroup : "";
+		refs.fileTitle.textContent = activeTab.name + " [" + activeTab.className + "]";
+		refs.filePath.textContent = activeTab.root + "/" + activeTab.relativePath + splitText;
+		document.title = "Cloud - " + activeTab.name + ".lua";
+		updateDesktopDiscordActivity(activeTab);
+		return;
+	}
+
+	updateDesktopDiscordActivity(null);
+	refs.fileTitle.textContent = tx("noFileOpen");
+	refs.filePath.textContent = hasConnection()
+		? "Open a script from the Explorer."
+		: tx("filePathEmpty");
+	document.title = "Cloud";
+}
+
+function renderTree() {
+	buildTree();
+
+	const query = refs.searchInput.value.trim().toLowerCase();
+	refs.treeEl.innerHTML = "";
+	refs.fileCount.textContent = state.files.length + (state.files.length === 1 ? " item" : " items");
+
+	if (!hasConnection()) {
+		refs.treeEl.innerHTML = '<div class="tree-empty">Connect privately to unlock your project tree.</div>';
+		return;
+	}
+
+	if (state.files.length === 0) {
+		refs.treeEl.innerHTML = '<div class="tree-empty">No scripts or folders were uploaded yet.</div>';
+	}
+
+	const fragment = document.createDocumentFragment();
+	for (const node of sortNodes(Array.from(state.treeRoot.children.values()))) {
+		if (node.children.size === 0 && query) continue;
+		renderNode(fragment, node, 0, query);
+	}
+
+	refs.treeEl.appendChild(fragment);
+	updateEditorHeader();
+}
+
+function getActiveEditorGroup() {
+	return state.activeGroup === "secondary" && state.secondaryFileId ? "secondary" : "primary";
+}
+
+function getClosableFileId(group = getActiveEditorGroup()) {
+	return getActiveFileId(group) || state.currentFileId || Array.from(state.openTabs.keys()).pop() || "";
+}
+
+function foldActiveScript() {
+	state.editor?.foldAll?.(getActiveEditorGroup());
+	setStatus("Current script folded.", "success");
+}
+
+function unfoldActiveScript() {
+	state.editor?.unfoldAll?.(getActiveEditorGroup());
+	setStatus("Current script unfolded.", "success");
+}
+
+function collapseExplorer() {
+	refs.searchInput.value = "";
+	state.expandedKeys.clear();
+	saveJson(STORAGE.expanded, []);
+	renderTree();
+	setStatus("Explorer collapsed.", "success");
+}
+
+function expandExplorer() {
+	refs.searchInput.value = "";
+	buildTree();
+	const keys = [];
+	function walk(node) {
+		if (!node || node.children.size === 0) return;
+		keys.push(node.key);
+		for (const child of node.children.values()) walk(child);
+	}
+	for (const rootNode of state.treeRoot.children.values()) walk(rootNode);
+	state.expandedKeys = new Set(keys);
+	saveJson(STORAGE.expanded, keys);
+	renderTree();
+	setStatus("Explorer expanded.", "success");
+}
+
+
+const UI_ZOOM_STORAGE = "Cloud.UiZoom";
+let uiZoom = clamp(Number(localStorage.getItem(UI_ZOOM_STORAGE)) || 1, 0.75, 1.7);
+
+function applyUiZoom(showFeedback = false) {
+	document.body.style.zoom = String(uiZoom);
+	try { localStorage.setItem(UI_ZOOM_STORAGE, String(uiZoom)); } catch (error) {}
+	if (showFeedback) showToast("Zoom " + Math.round(uiZoom * 100) + "%", "success");
+}
+
+function handleZoomShortcut(event) {
+	const mod = event.ctrlKey || event.metaKey;
+	if (!mod || event.altKey) return false;
+
+	const key = String(event.key || "").toLowerCase();
+	const code = String(event.code || "").toLowerCase();
+	const zoomIn = key === "+" || key === "=" || code === "equal" || code === "numpadadd";
+	const zoomOut = key === "-" || code === "minus" || code === "numpadsubtract";
+	const zoomReset = key === "0" || code === "digit0" || code === "numpad0";
+
+	if (!zoomIn && !zoomOut && !zoomReset) return false;
+
+	event.preventDefault();
+	event.stopPropagation();
+	if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+	if (zoomIn) uiZoom = clamp(Number((uiZoom + 0.1).toFixed(2)), 0.75, 1.7);
+	if (zoomOut) uiZoom = clamp(Number((uiZoom - 0.1).toFixed(2)), 0.75, 1.7);
+	if (zoomReset) uiZoom = 1;
+
+	applyUiZoom(true);
+	setTimeout(() => {
+		if (state.editor) state.editor.layout();
+	}, 60);
+	return true;
+}
+
+function switchTabByShortcutIndex(index) {
+	const tabIds = Array.from(state.openTabs.keys());
+	const fileId = tabIds[index - 1];
+
+	if (!fileId) {
+		showToast("No tab exists in slot " + index + ".", "warning");
+		return false;
+	}
+
+	switchTab(fileId, state.activeGroup || "primary");
+	return true;
+}
+
+function handleGlobalShortcut(event) {
+	if (handleZoomShortcut(event)) return true;
+
+	const key = String(event.key || "").toLowerCase();
+	const code = event.code || "";
+	const mod = event.ctrlKey || event.metaKey;
+
+	if (!mod) return false;
+
+	if (!event.shiftKey && !event.altKey && (key === "s" || code === "KeyS")) {
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		saveCurrentFile(false, getActiveFileId(state.activeGroup || "primary"));
+		return true;
+	}
+
+	if (!event.shiftKey && !event.altKey && !isInputLike(event.target) && !isEditorEventTarget(event.target)) {
+		if (key === "c" || code === "KeyC") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			copySelectedItems(false);
+			return true;
+		}
+
+		if (key === "x" || code === "KeyX") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			copySelectedItems(true);
+			return true;
+		}
+
+		if (key === "v" || code === "KeyV") {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			pasteClipboardItems();
+			return true;
+		}
+	}
+
+	if (!event.shiftKey && !event.altKey) {
+		let tabIndex = 0;
+
+		if (/^[1-9]$/.test(key)) {
+			tabIndex = Number(key);
+		} else if (/^Digit[1-9]$/.test(code)) {
+			tabIndex = Number(code.slice(5));
+		} else if (/^Numpad[1-9]$/.test(code)) {
+			tabIndex = Number(code.slice(6));
+		}
+
+		if (tabIndex >= 1 && tabIndex <= 9) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			return switchTabByShortcutIndex(tabIndex);
+		}
+	}
+
+	if (!event.shiftKey && (key === "d" || code === "KeyD")) {
+		if (isInputLike(event.target) || isEditorEventTarget(event.target)) return false;
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		if (getSelectedItems(true).length > 0) {
+			duplicateSelectedItems();
+		} else {
+			duplicateCurrentScript(state.activeGroup || "primary");
+		}
+		return true;
+	}
+
+	if (key === "w" || code === "KeyW") {
+		const fileId = getClosableFileId();
+		if (!fileId) return false;
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		closeTab(fileId);
+		return true;
+	}
+
+	if (event.shiftKey && (key === "e" || code === "KeyE")) {
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		foldActiveScript();
+		return true;
+	}
+
+	if (!event.shiftKey && (key === "e" || code === "KeyE")) {
+		event.preventDefault();
+		event.stopPropagation();
+		if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+		unfoldActiveScript();
+		return true;
+	}
+
+	return false;
+}
+
+function makeIconButton(className, iconName, title) {
+	const button = document.createElement("button");
+	button.className = className;
+	button.title = title || "";
+	button.innerHTML = svgIcon(iconName);
+	return button;
+}
+
+function renderNode(parent, node, depth, query) {
+	if (!nodeMatchesSearch(node, query)) {
+		return;
+	}
+
+	const children = sortNodes(Array.from(node.children.values())).filter(child => nodeMatchesSearch(child, query));
+	const hasChildren = children.length > 0;
+	const isExpanded = query ? true : state.expandedKeys.has(node.key);
+	const row = document.createElement("div");
+	row.className = "tree-row";
+	row.style.paddingLeft = (depth * 14 + 5) + "px";
+	row.dataset.key = node.key;
+
+	if (state.selectedKey === node.key || state.selectedKeys.has(node.key)) row.classList.add("selected");
+	if (node.item && state.currentFileId === node.item.fileId) row.classList.add("opened");
+
+	const chevron = makeIconButton("chevron" + (hasChildren ? "" : " empty"), hasChildren ? (isExpanded ? "chevronDown" : "chevronRight") : "chevronRight", "Toggle");
+	chevron.addEventListener("click", event => {
+		event.stopPropagation();
+		if (!hasChildren) return;
+
+		if (state.expandedKeys.has(node.key)) state.expandedKeys.delete(node.key);
+		else state.expandedKeys.add(node.key);
+
+		saveJson(STORAGE.expanded, Array.from(state.expandedKeys));
+		renderTree();
+	});
+
+	const iconData = getNodeIcon(node);
+	const icon = document.createElement("span");
+	icon.className = "node-icon " + iconData.cls;
+	icon.innerHTML = svgIcon(iconData.icon);
+
+	let nameEl = null;
+
+	if (node.item && state.renamingItemId === node.item.fileId) {
+		nameEl = document.createElement("input");
+		nameEl.className = "node-rename-input";
+		nameEl.value = node.name;
+		nameEl.spellcheck = false;
+		nameEl.dataset.renameItemId = node.item.fileId;
+
+		let renameFinished = false;
+
+		function finishRename(shouldCommit) {
+			if (renameFinished) return;
+			renameFinished = true;
+
+			if (shouldCommit) {
+				renameItem(node.item.fileId, nameEl.value);
+			} else {
+				state.renamingItemId = "";
+				state.renameStartedAt = 0;
+				renderTree();
+			}
+		}
+
+		nameEl.addEventListener("click", event => event.stopPropagation());
+		nameEl.addEventListener("dblclick", event => event.stopPropagation());
+		nameEl.addEventListener("mousedown", event => event.stopPropagation());
+		nameEl.addEventListener("keydown", event => {
+			event.stopPropagation();
+
+			if (event.key === "Enter") {
+				event.preventDefault();
+				finishRename(true);
+			}
+
+			if (event.key === "Escape") {
+				event.preventDefault();
+				finishRename(false);
+			}
+		});
+		nameEl.addEventListener("blur", () => {
+			setTimeout(() => {
+				if (renameFinished || state.renamingItemId !== node.item.fileId) return;
+
+				if (Date.now() - state.renameStartedAt < 520) {
+					setTimeout(() => {
+						if (!renameFinished && state.renamingItemId === node.item.fileId) {
+							nameEl.focus();
+							nameEl.select();
+						}
+					}, 30);
+					return;
+				}
+
+				finishRename(true);
+			}, 160);
+		});
+
+		setTimeout(() => {
+			if (state.renamingItemId !== node.item.fileId) return;
+			nameEl.focus();
+			nameEl.select();
+		}, 80);
+	} else {
+		nameEl = document.createElement("span");
+		nameEl.className = "node-name";
+		nameEl.textContent = node.name;
+	}
+
+	const actions = document.createElement("span");
+	actions.className = "node-actions";
+
+	const addButton = makeIconButton("node-action", "plus", "Create inside " + (node.root + (node.relativePath ? "/" + node.relativePath : "")));
+	addButton.addEventListener("click", event => {
+		event.stopPropagation();
+		setSelectedNode(node);
+		openCreatePanel(getParentPayload(node), "Script");
+	});
+
+	actions.appendChild(addButton);
+
+	if (node.item) {
+		const deleteButton = makeIconButton("node-action danger-action", "trash", "Delete selected item");
+		deleteButton.addEventListener("click", event => {
+			event.stopPropagation();
+			setSelectedNode(node);
+			deleteSelectedItem();
+		});
+		actions.appendChild(deleteButton);
+	}
+
+	row.appendChild(chevron);
+	row.appendChild(icon);
+	row.appendChild(nameEl);
+	row.appendChild(actions);
+
+	row.addEventListener("click", event => {
+		if (node.item && state.renamingItemId === node.item.fileId) return;
+
+		const handledSelection = handleTreeSelection(node, event);
+		if (handledSelection) return;
+
+		if (node.item && isScriptItem(node.item)) {
+			openFile(node.item, { focusEditor: false });
+		}
+	});
+
+	row.addEventListener("dblclick", event => {
+		event.stopPropagation();
+		if (!hasChildren || (node.item && state.renamingItemId === node.item.fileId)) return;
+
+		if (state.expandedKeys.has(node.key)) state.expandedKeys.delete(node.key);
+		else state.expandedKeys.add(node.key);
+
+		saveJson(STORAGE.expanded, Array.from(state.expandedKeys));
+		renderTree();
+	});
+
+	if (node.item && (isScriptClass(node.item.className) || isContainerClass(node.item.className))) {
+		row.draggable = true;
+		row.addEventListener("dragstart", event => {
+			event.stopPropagation();
+			state.draggingItemId = node.item.fileId;
+			event.dataTransfer.setData("text/cloud-item", node.item.fileId);
+			event.dataTransfer.setData("text/plain", node.item.fileId);
+			event.dataTransfer.effectAllowed = "move";
+		});
+		row.addEventListener("dragend", () => {
+			state.draggingItemId = "";
+		});
+	}
+
+	row.addEventListener("dragover", event => {
+		const draggedId = state.draggingItemId || event.dataTransfer.getData("text/cloud-item") || event.dataTransfer.getData("text/plain");
+		const dragged = getLoadedFile(draggedId);
+		const target = getParentPayload(node);
+
+		if (!dragged || isDescendantTarget(dragged, target)) return;
+
+		event.preventDefault();
+		row.classList.add("drag-over");
+	});
+
+	row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+	row.addEventListener("drop", event => {
+		event.preventDefault();
+		event.stopPropagation();
+		row.classList.remove("drag-over");
+
+		const draggedId = state.draggingItemId || event.dataTransfer.getData("text/cloud-item") || event.dataTransfer.getData("text/plain");
+		state.draggingItemId = "";
+		moveItem(draggedId, getParentPayload(node));
+	});
+
+	parent.appendChild(row);
+
+	if (hasChildren && isExpanded) {
+		for (const child of children) {
+			renderNode(parent, child, depth + 1, query);
+		}
+	}
+}
+
+function isDescendantTarget(item, targetParent) {
+	if (!item || !targetParent) {
+		return false;
+	}
+
+	if (targetParent.itemId && targetParent.itemId === item.fileId) {
+		return true;
+	}
+
+	let cursor = targetParent.itemId ? getLoadedFile(targetParent.itemId) : null;
+	const visited = new Set();
+
+	while (cursor && cursor.parentItemId) {
+		if (cursor.parentItemId === item.fileId) return true;
+		if (visited.has(cursor.parentItemId)) return false;
+		visited.add(cursor.parentItemId);
+		cursor = getLoadedFile(cursor.parentItemId);
+	}
+
+	return false;
+}
+
+function reorderTab(sourceId, targetId, placeAfter) {
+	if (!state.openTabs.has(sourceId) || !state.openTabs.has(targetId) || sourceId === targetId) return;
+
+	const entries = Array.from(state.openTabs.entries());
+	const sourceEntry = entries.find(entry => entry[0] === sourceId);
+	const filtered = entries.filter(entry => entry[0] !== sourceId);
+	let targetIndex = filtered.findIndex(entry => entry[0] === targetId);
+
+	if (!sourceEntry || targetIndex < 0) return;
+	if (placeAfter) targetIndex += 1;
+
+	filtered.splice(targetIndex, 0, sourceEntry);
+	state.openTabs.clear();
+
+	for (const entry of filtered) {
+		state.openTabs.set(entry[0], entry[1]);
+	}
+
+	renderTabs();
+	saveWorkspaceState();
+}
+
+
+function closeTabContextMenu() {
+	const existing = document.querySelector(".tab-context-menu");
+	if (existing) existing.remove();
+	if (state.tabContextCloseHandler) {
+		document.removeEventListener("pointerdown", state.tabContextCloseHandler, true);
+		state.tabContextCloseHandler = null;
+	}
+	if (state.tabContextKeyHandler) {
+		document.removeEventListener("keydown", state.tabContextKeyHandler, true);
+		state.tabContextKeyHandler = null;
+	}
+}
+
+async function closeAllTabs(force = false) {
+	const tabs = Array.from(state.openTabs.values());
+	if (tabs.length === 0) return;
+	if (!force && tabs.some(tab => tab.dirty)) {
+		const confirmed = await requestConfirm({
+			title: "Close all scripts",
+			message: "Some scripts have unsaved changes. Close all open scripts anyway?",
+			acceptText: "Close all",
+		});
+		if (!confirmed) return;
+	}
+	for (const tab of tabs) state.openTabs.delete(tab.fileId);
+	state.currentFileId = "";
+	state.secondaryFileId = "";
+	state.activeGroup = "primary";
+	if (state.editor) state.editor.setSplit(false);
+	if (state.editor) state.editor.setValue("", "primary");
+	renderTabs();
+	updateEditorHeader();
+	saveWorkspaceState();
+}
+
+async function closeOtherTabs(fileId) {
+	const target = state.openTabs.get(fileId);
+	if (!target) return;
+	const others = Array.from(state.openTabs.values()).filter(tab => tab.fileId !== fileId);
+	if (others.length === 0) return;
+	if (others.some(tab => tab.dirty)) {
+		const confirmed = await requestConfirm({
+			title: "Close other scripts",
+			message: "Some other scripts have unsaved changes. Close them anyway?",
+			acceptText: "Close others",
+		});
+		if (!confirmed) return;
+	}
+	for (const tab of others) state.openTabs.delete(tab.fileId);
+	state.currentFileId = fileId;
+	if (state.secondaryFileId && state.secondaryFileId !== fileId) {
+		state.secondaryFileId = "";
+		if (state.editor) state.editor.setSplit(false);
+	}
+	switchTab(fileId, "primary");
+	saveWorkspaceState();
+}
+
+function revealTabInExplorer(fileId) {
+	const tab = state.openTabs.get(fileId) || getLoadedFile(fileId);
+	if (!tab) return;
+	refs.searchInput.value = "";
+	buildTree();
+	state.expandedKeys.add("root:" + tab.root);
+	const parts = String(tab.relativePath || "").split("/").filter(Boolean);
+	let partial = "";
+	for (let index = 0; index < parts.length - 1; index++) {
+		partial = partial ? partial + "/" + parts[index] : parts[index];
+		const folderItem = getItemByPath(tab.root, partial);
+		state.expandedKeys.add(nodeKey(tab.root, partial, folderItem));
+	}
+	state.selectedKey = "item:" + fileId;
+	state.selectedPayload = { root: tab.root, relativePath: tab.relativePath, itemId: fileId, label: tab.root + "/" + tab.relativePath };
+	saveJson(STORAGE.expanded, Array.from(state.expandedKeys));
+	renderTree();
+	requestAnimationFrame(() => {
+		const row = refs.treeEl.querySelector(`[data-key="item:${CSS.escape(fileId)}"]`);
+		if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+	});
+}
+
+function openTabContextMenu(event, tab) {
+	event.preventDefault();
+	event.stopPropagation();
+	closeTabContextMenu();
+	const menu = document.createElement("div");
+	menu.className = "tab-context-menu";
+	menu.innerHTML = `
+		<button type="button" data-action="close-all"><span>Close all scripts</span><span class="hint">All</span></button>
+		<button type="button" data-action="close-others"><span>Close except this</span><span class="hint">Keep</span></button>
+		<button type="button" data-action="reveal"><span>Go to script</span><span class="hint">Explorer</span></button>
+	`;
+	document.body.appendChild(menu);
+	const rect = menu.getBoundingClientRect();
+	const x = Math.min(event.clientX, window.innerWidth - rect.width - 8);
+	const y = Math.min(event.clientY, window.innerHeight - rect.height - 8);
+	menu.style.left = Math.max(8, x) + "px";
+	menu.style.top = Math.max(8, y) + "px";
+	menu.addEventListener("click", async clickEvent => {
+		const button = clickEvent.target.closest("button[data-action]");
+		if (!button) return;
+		const action = button.dataset.action;
+		closeTabContextMenu();
+		if (action === "close-all") await closeAllTabs(false);
+		if (action === "close-others") await closeOtherTabs(tab.fileId);
+		if (action === "reveal") revealTabInExplorer(tab.fileId);
+	});
+	state.tabContextCloseHandler = pointerEvent => {
+		if (menu.contains(pointerEvent.target)) return;
+		closeTabContextMenu();
+	};
+	state.tabContextKeyHandler = keyEvent => {
+		if (keyEvent.key === "Escape") closeTabContextMenu();
+	};
+	setTimeout(() => {
+		document.addEventListener("pointerdown", state.tabContextCloseHandler, true);
+		document.addEventListener("keydown", state.tabContextKeyHandler, true);
+	}, 0);
+}
+
+function setupTabsWheelScroll() {
+	if (!refs.tabsEl) return;
+	refs.tabsEl.addEventListener("wheel", event => {
+		if (refs.tabsEl.scrollWidth <= refs.tabsEl.clientWidth) return;
+		const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+		if (delta === 0) return;
+		event.preventDefault();
+		refs.tabsEl.scrollLeft += delta;
+	}, { passive: false });
+}
+
+function renderTabs() {
+	refs.tabsEl.innerHTML = "";
+
+	for (const tab of state.openTabs.values()) {
+		const item = document.createElement("div");
+		item.className = "tab draggable-tab" + (tab.fileId === getActiveFileId() ? " active" : "") + (tab.fileId === state.secondaryFileId ? " split-open" : "") + (tab.dirty ? " dirty" : "");
+		item.title = tab.root + "/" + tab.relativePath;
+		item.draggable = true;
+
+		const icon = document.createElement("span");
+		icon.className = "node-icon " + (tab.className === "ModuleScript" ? "module" : "script");
+		icon.innerHTML = svgIcon(tab.className === "ModuleScript" ? "module" : (tab.className === "LocalScript" ? "localScript" : "script"));
+
+		const name = document.createElement("span");
+		name.className = "tab-name";
+		name.textContent = tab.name;
+
+		const dot = document.createElement("span");
+		dot.className = "dirty-dot";
+
+		const close = makeIconButton("tab-close", "close", "Close tab");
+		close.draggable = false;
+		close.addEventListener("mousedown", event => event.stopPropagation());
+		close.addEventListener("click", event => {
+			event.stopPropagation();
+			closeTab(tab.fileId);
+		});
+
+		item.addEventListener("click", () => switchTab(tab.fileId, "primary"));
+		item.addEventListener("contextmenu", event => openTabContextMenu(event, tab));
+		item.addEventListener("dblclick", event => { event.preventDefault(); splitTab(tab.fileId); });
+		item.addEventListener("auxclick", event => {
+			if (event.button === 1) {
+				event.preventDefault();
+				closeTab(tab.fileId);
+			}
+		});
+		item.addEventListener("mousedown", event => {
+			if (event.button === 1) event.preventDefault();
+		});
+		item.addEventListener("dragstart", event => {
+			state.draggingTabId = tab.fileId;
+			refs.tabsEl.classList.add("dragging-tabs");
+			event.dataTransfer.setData("text/cloud-tab", tab.fileId);
+			event.dataTransfer.effectAllowed = "move";
+			item.classList.add("dragging");
+		});
+		item.addEventListener("dragend", () => {
+			state.draggingTabId = "";
+			refs.tabsEl.classList.remove("dragging-tabs");
+			item.classList.remove("dragging", "drag-over-left", "drag-over-right");
+		});
+		item.addEventListener("dragover", event => {
+			const sourceId = state.draggingTabId || event.dataTransfer.getData("text/cloud-tab");
+			if (!sourceId || sourceId === tab.fileId || !state.openTabs.has(sourceId)) return;
+
+			event.preventDefault();
+			event.dataTransfer.dropEffect = "move";
+
+			const rect = item.getBoundingClientRect();
+			const placeAfter = event.clientX > rect.left + rect.width / 2;
+			item.classList.toggle("drag-over-left", !placeAfter);
+			item.classList.toggle("drag-over-right", placeAfter);
+		});
+		item.addEventListener("dragenter", event => {
+			const sourceId = state.draggingTabId || event.dataTransfer.getData("text/cloud-tab");
+			if (!sourceId || sourceId === tab.fileId || !state.openTabs.has(sourceId)) return;
+			event.preventDefault();
+		});
+		item.addEventListener("dragleave", () => {
+			item.classList.remove("drag-over-left", "drag-over-right");
+		});
+		item.addEventListener("drop", event => {
+			event.preventDefault();
+			item.classList.remove("drag-over-left", "drag-over-right");
+			const sourceId = state.draggingTabId || event.dataTransfer.getData("text/cloud-tab");
+			state.draggingTabId = "";
+			refs.tabsEl.classList.remove("dragging-tabs");
+
+			if (!sourceId || sourceId === tab.fileId || !state.openTabs.has(sourceId)) return;
+
+			const rect = item.getBoundingClientRect();
+			const placeAfter = event.clientX > rect.left + rect.width / 2;
+			reorderTab(sourceId, tab.fileId, placeAfter);
+		});
+
+		item.appendChild(icon);
+		item.appendChild(name);
+		item.appendChild(dot);
+		item.appendChild(close);
+		refs.tabsEl.appendChild(item);
+	}
+}
+
+function switchTab(fileId, group = "primary", options = {}) {
+	const tab = state.openTabs.get(fileId);
+	if (!tab) return;
+
+	const targetGroup = group === "secondary" ? "secondary" : "primary";
+	const previousFileId = getActiveFileId(targetGroup);
+	if (previousFileId && previousFileId !== fileId) {
+		saveEditorViewForGroup(targetGroup);
+	}
+
+	state.suppressViewStateSaveUntil = Date.now() + 220;
+
+	if (targetGroup === "secondary") {
+		state.secondaryFileId = fileId;
+		state.editor.setSplit(true);
+	} else {
+		state.currentFileId = fileId;
+	}
+
+	state.activeGroup = targetGroup;
+	state.selectedKey = "item:" + fileId;
+	state.selectedPayload = {
+		root: tab.root,
+		relativePath: tab.relativePath,
+		itemId: tab.fileId,
+		label: tab.root + "/" + tab.relativePath,
+	};
+	state.selectedKeys = new Set(["item:" + fileId]);
+	state.lastSelectedKey = "item:" + fileId;
+
+	state.editor.setValue(tab.source, targetGroup);
+	restoreEditorViewForTab(tab, targetGroup);
+	renderTabs();
+	renderTree();
+	updateEditorHeader();
+	if (Number(options.lineNumber) > 0) {
+		const targetLine = Number(options.lineNumber);
+		const focusTargetLine = () => state.editor.focusLine(targetLine, targetGroup);
+		requestAnimationFrame(focusTargetLine);
+		setTimeout(focusTargetLine, 60);
+		setTimeout(focusTargetLine, 180);
+	} else if (options.focusEditor !== false) {
+		setTimeout(() => state.editor.focus(targetGroup), 0);
+	}
+	setTimeout(() => {
+		state.suppressViewStateSaveUntil = 0;
+		saveWorkspaceState(false);
+	}, 260);
+}
+
+function splitTab(fileId = state.currentFileId) {
+	const tab = state.openTabs.get(fileId);
+	if (!tab) {
+		showToast("Open a script before splitting the editor.", "warning");
+		return;
+	}
+
+	state.secondaryFileId = fileId;
+	state.activeGroup = "secondary";
+	state.editor.setSplit(true);
+	state.editor.setValue(tab.source, "secondary");
+	renderTabs();
+	updateEditorHeader();
+	state.editor.focus("secondary");
+	saveWorkspaceState();
+}
+
+function closeSplit() {
+	state.secondaryFileId = "";
+	state.activeGroup = "primary";
+	if (state.editor) state.editor.setSplit(false);
+	renderTabs();
+	updateEditorHeader();
+	state.editor.focus("primary");
+	saveWorkspaceState();
+}
+
+async function openFile(file, options = {}) {
+	if (!hasConnection() || !file || !isScriptItem(file)) return;
+
+	if (state.openTabs.has(file.fileId)) {
+		switchTab(file.fileId, "primary", options);
+		return;
+	}
+
+	setStatus("Opening " + file.name + "...", "warning");
+
+	try {
+		const data = await fetchSource(getAuth(), file.fileId);
+		state.openTabs.set(file.fileId, {
+			fileId: file.fileId,
+			name: file.name,
+			className: file.className,
+			root: file.root,
+			relativePath: file.relativePath,
+			parentItemId: file.parentItemId || "",
+			source: data.source || "",
+			baseSourceHash: data.sourceHash || file.sourceHash || null,
+			sourceHash: data.sourceHash || file.sourceHash || null,
+			dirty: false,
+			viewState: null,
+		});
+
+		switchTab(file.fileId, "primary", options);
+		setStatus("Opened " + file.name, "success");
+	} catch (error) {
+		setStatus(error.message, "error");
+		showToast(error.message, "error");
+	}
+}
+
+async function closeTab(fileId, force = false) {
+	const tab = state.openTabs.get(fileId);
+	if (!tab) return;
+
+	if (tab.dirty && !force) {
+		const confirmed = await requestConfirm({
+			title: "Close unsaved script",
+			message: tab.name + " has unsaved changes. Close it anyway?",
+			acceptText: "Close",
+		});
+
+		if (!confirmed) return;
+	}
+
+	state.openTabs.delete(fileId);
+
+	if (state.secondaryFileId === fileId) {
+		state.secondaryFileId = "";
+		if (state.editor) state.editor.setSplit(false);
+	}
+
+	if (state.currentFileId === fileId) {
+		const next = state.openTabs.keys().next();
+		state.currentFileId = next.done ? "" : next.value;
+
+		if (state.currentFileId) {
+			switchTab(state.currentFileId, "primary");
+		} else {
+			if (state.editor) state.editor.setValue("", "primary");
+		}
+	}
+
+	if (!state.secondaryFileId) state.activeGroup = "primary";
+
+	renderTabs();
+	updateEditorHeader();
+	saveWorkspaceState();
+}
+
+function markCurrentDirty(group = state.activeGroup) {
+	if (!state.editor || state.editor.isApplying(group)) return;
+
+	const fileId = getActiveFileId(group);
+	if (!fileId) return;
+
+	const tab = state.openTabs.get(fileId);
+	if (!tab) return;
+
+	tab.source = state.editor.getValue(group);
+	tab.viewState = state.editor.getViewState(group);
+	tab.dirty = true;
+	state.projectSearchCache.set(fileId, tab.source);
+	renderTabs();
+	updateEditorHeader();
+	scheduleAutoSave(fileId);
+}
+
+function scheduleAutoSave(fileId = getActiveFileId()) {
+	clearTimeout(state.autosaveTimer);
+	state.autosaveTimer = setTimeout(() => saveCurrentFile(true, fileId), state.settings.autosaveMs);
+}
+
+async function saveCurrentFile(silent = false, fileId = getActiveFileId()) {
+	if (!hasConnection() || !fileId) return;
+
+	const tab = state.openTabs.get(fileId);
+	if (!tab) return;
+	if (!tab.dirty) {
+		if (!silent) setStatus("No changes to save.", "success");
+		return;
+	}
+
+	if (tab.fileId === state.secondaryFileId) {
+		tab.source = state.editor.getValue("secondary");
+	} else if (tab.fileId === state.currentFileId) {
+		tab.source = state.editor.getValue("primary");
+	} else {
+		tab.source = tab.source || "";
+	}
+
+	if (!silent) {
+		setStatus("Saving " + tab.name + "...", "warning");
+	}
+
+	try {
+		const data = await saveSource(getAuth(), tab.fileId, tab.source, tab.baseSourceHash || tab.sourceHash || null);
+
+		tab.dirty = false;
+		tab.sourceHash = data.sourceHash;
+		tab.baseSourceHash = data.sourceHash;
+		state.projectSearchCache.set(tab.fileId, tab.source);
+		renderTabs();
+		updateEditorHeader();
+		await loadSessionFiles(false);
+		setStatus("Saved revision " + data.revision + ". Cloud will apply it automatically.", "success");
+		if (!silent) showToast("Saved " + tab.name + ".", "success");
+	} catch (error) {
+		setStatus(error.message, "error");
+		showToast(error.message, "error");
+	}
+}
+
+async function reloadTabSource(fileId, silent = true) {
+	const tab = state.openTabs.get(fileId);
+	if (!tab || tab.dirty || !hasConnection()) return;
+
+	try {
+		const data = await fetchSource(getAuth(), fileId);
+		tab.source = data.source || "";
+		tab.sourceHash = data.sourceHash || null;
+		tab.baseSourceHash = data.sourceHash || null;
+
+		if (state.currentFileId === fileId) {
+			state.editor.setValue(tab.source, "primary");
+			restoreEditorViewForTab(tab, "primary");
+		}
+
+		if (state.secondaryFileId === fileId) {
+			state.editor.setValue(tab.source, "secondary");
+			restoreEditorViewForTab(tab, "secondary");
+		}
+
+		state.projectSearchCache.set(fileId, tab.source);
+
+		if (!silent) showToast("Reloaded " + tab.name + ".", "success");
+	} catch (error) {
+		if (!silent) showToast(error.message, "error");
+	}
+}
+
+async function loadSessionFiles(showStatus = true) {
+	if (!hasConnection() || state.isLoadingFiles) return false;
+
+	state.isLoadingFiles = true;
+
+	try {
+		const data = await fetchSessionFiles(getAuth());
+		state.files = Array.isArray(data.files) ? data.files : [];
+		updateFileIndex();
+		pruneSelectedKeys();
+		updateConnectionUi(true, "Connected");
+
+		for (const tab of Array.from(state.openTabs.values())) {
+			const latest = getLoadedFile(tab.fileId);
+
+			if (!latest) {
+				state.openTabs.delete(tab.fileId);
+				if (state.currentFileId === tab.fileId) state.currentFileId = "";
+				showToast(tab.name + " was deleted. Tab closed automatically.", "warning");
+				continue;
+			}
+
+			tab.name = latest.name;
+			tab.className = latest.className;
+			tab.root = latest.root;
+			tab.relativePath = latest.relativePath;
+			tab.parentItemId = latest.parentItemId || "";
+
+			if (!tab.dirty && latest.sourceHash && latest.sourceHash !== tab.sourceHash) {
+				await reloadTabSource(tab.fileId, true);
+			}
+		}
+
+		if (state.currentFileId && !state.openTabs.has(state.currentFileId)) {
+			const next = state.openTabs.keys().next();
+			state.currentFileId = next.done ? "" : next.value;
+			if (state.currentFileId) switchTab(state.currentFileId, "primary");
+			else if (state.editor) state.editor.setValue("", "primary");
+		}
+
+		if (state.renamingItemId) {
+			updateEditorHeader();
+			if (showStatus) {
+				setStatus("Loaded " + data.filesCount + " item(s).", "success");
+			}
+			return true;
+		}
+
+		renderTree();
+		renderTabs();
+		updateEditorHeader();
+		if (state.openTabs.size > 0) saveWorkspaceState();
+
+		if (showStatus) {
+			setStatus("Loaded " + data.filesCount + " item(s).", "success");
+		}
+
+		return true;
+	} catch (error) {
+		updateConnectionUi(false, "Retrying");
+		const now = Date.now();
+
+		if (showStatus || now - state.lastConnectionErrorAt > 9000) {
+			setStatus(error.message, "error");
+			if (showStatus) showToast(error.message, "error");
+			state.lastConnectionErrorAt = now;
+		}
+
+		return false;
+	} finally {
+		state.isLoadingFiles = false;
+	}
+}
+
+async function restoreWorkspaceState() {
+	if (!hasConnection()) return false;
+	if (state.openTabs.size > 0) return false;
+
+	const saved = loadJson(getWorkspaceStorageKey(), null);
+
+	if (!saved || !Array.isArray(saved.tabIds) || saved.tabIds.length === 0) {
+		return false;
+	}
+
+	const uniqueIds = Array.from(new Set(saved.tabIds.filter(Boolean)));
+	const restoredIds = [];
+	state.isRestoringWorkspace = true;
+
+	for (const fileId of uniqueIds.slice(0, 32)) {
+		const file = getLoadedFile(fileId);
+
+		if (!isScriptItem(file)) {
+			continue;
+		}
+
+		try {
+			const data = await fetchSource(getAuth(), file.fileId);
+			state.openTabs.set(file.fileId, {
+				fileId: file.fileId,
+				name: file.name,
+				className: file.className,
+				root: file.root,
+				relativePath: file.relativePath,
+				parentItemId: file.parentItemId || "",
+				source: data.source || "",
+				baseSourceHash: data.sourceHash || file.sourceHash || null,
+				sourceHash: data.sourceHash || file.sourceHash || null,
+				dirty: false,
+				viewState: saved.viewStates && saved.viewStates[file.fileId] ? saved.viewStates[file.fileId] : null,
+			});
+			state.projectSearchCache.set(file.fileId, data.source || "");
+			restoredIds.push(file.fileId);
+		} catch (error) {}
+	}
+
+	state.isRestoringWorkspace = false;
+
+	if (restoredIds.length === 0) {
+		clearWorkspaceState();
+		renderTabs();
+		updateEditorHeader();
+		return false;
+	}
+
+	const primaryId = restoredIds.includes(saved.currentFileId) ? saved.currentFileId : restoredIds[0];
+	const secondaryId = restoredIds.includes(saved.secondaryFileId) ? saved.secondaryFileId : "";
+
+	state.currentFileId = primaryId;
+	state.secondaryFileId = secondaryId;
+	state.activeGroup = saved.activeGroup === "secondary" && secondaryId ? "secondary" : "primary";
+
+	const primaryTab = state.openTabs.get(primaryId);
+	if (primaryTab) {
+		state.editor.setValue(primaryTab.source || "", "primary");
+		restoreEditorViewForTab(primaryTab, "primary");
+		state.selectedKey = "item:" + primaryTab.fileId;
+		state.selectedPayload = {
+			root: primaryTab.root,
+			relativePath: primaryTab.relativePath,
+			itemId: primaryTab.fileId,
+			label: primaryTab.root + "/" + primaryTab.relativePath,
+		};
+	}
+
+	if (secondaryId) {
+		const secondaryTab = state.openTabs.get(secondaryId);
+		state.editor.setSplit(true);
+		if (secondaryTab) {
+			state.editor.setValue(secondaryTab.source || "", "secondary");
+			restoreEditorViewForTab(secondaryTab, "secondary");
+		}
+	} else {
+		if (state.editor) state.editor.setSplit(false);
+	}
+
+	renderTabs();
+	renderTree();
+	updateEditorHeader();
+	state.editor.focus(state.activeGroup);
+	saveWorkspaceState(false);
+	setTimeout(() => saveWorkspaceState(true), 25);
+	setStatus("Restored " + restoredIds.length + " open script(s).", "success");
+	if (state.outputOpen) {
+		applyOutputHeight();
+		pollOutputLogs(true);
+	}
+	return true;
+}
+
+
+function formatOutputTime(value) {
+	const time = Number(value || Date.now());
+	if (!Number.isFinite(time)) return "--:--:--";
+	return new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function getOutputLevel(entry) {
+	const level = String(entry && entry.level || "info").toLowerCase();
+	if (level === "warning") return "warn";
+	return ["error", "warn", "print", "output", "info"].includes(level) ? level : "info";
+}
+
+
+function applyOutputHeight() {
+	if (!refs.outputPanel) return;
+	const height = Math.max(150, Math.min(window.innerHeight * 0.6, Number(state.outputHeight) || 260));
+	state.outputHeight = height;
+	refs.outputPanel.style.setProperty("--output-height", height + "px");
+}
+
+function bindOutputResize() {
+	if (!refs.outputResizeHandle || !refs.outputPanel) return;
+	applyOutputHeight();
+	let startY = 0;
+	let startHeight = 0;
+	let dragging = false;
+
+	const onMove = event => {
+		if (!dragging) return;
+		const delta = startY - event.clientY;
+		state.outputHeight = Math.max(150, Math.min(window.innerHeight * 0.6, startHeight + delta));
+		applyOutputHeight();
+	};
+
+	const onUp = () => {
+		if (!dragging) return;
+		dragging = false;
+		document.body.classList.remove("resizing-output");
+		localStorage.setItem("Cloud.OutputHeight", String(Math.round(state.outputHeight)));
+		window.removeEventListener("pointermove", onMove);
+		window.removeEventListener("pointerup", onUp);
+	};
+
+	refs.outputResizeHandle.addEventListener("pointerdown", event => {
+		dragging = true;
+		startY = event.clientY;
+		startHeight = refs.outputPanel.getBoundingClientRect().height || state.outputHeight;
+		document.body.classList.add("resizing-output");
+		window.addEventListener("pointermove", onMove);
+		window.addEventListener("pointerup", onUp);
+		event.preventDefault();
+	});
+
+	window.addEventListener("resize", applyOutputHeight);
+}
+
+function normalizeOutputPath(path) {
+	return String(path || "")
+		.replace(/^game[./]/i, "")
+		.replace(/\[/g, ".")
+		.replace(/\]/g, "")
+		.replace(/["']/g, "")
+		.replace(/\\/g, "/")
+		.replace(/\./g, "/")
+		.replace(/\/+/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
+function findScriptForOutputEntry(entry) {
+	const scripts = state.files.filter(isScriptItem);
+	if (!scripts.length) return null;
+
+	const root = String(entry.root || "");
+	const relative = String(entry.relativePath || "");
+	if (root && relative) {
+		const exact = scripts.find(file => file.root === root && file.relativePath === relative);
+		if (exact) return exact;
+	}
+
+	const rawPath = entry.scriptPath || entry.scriptName || "";
+	const normalized = normalizeOutputPath(rawPath).toLowerCase();
+	if (!normalized) return null;
+
+	const playerScriptsMatch = normalized.match(/players\/[^/]+\/playerscripts\/(.+)$/);
+	if (playerScriptsMatch) {
+		const wanted = "starterplayerscripts/" + playerScriptsMatch[1];
+		const found = scripts.find(file => file.root === "StarterPlayer" && normalizeOutputPath(file.relativePath).toLowerCase() === wanted);
+		if (found) return found;
+	}
+
+	const characterScriptsMatch = normalized.match(/players\/[^/]+\/character\/(.+)$/) || normalized.match(/workspace\/[^/]+\/(.+)$/);
+	if (characterScriptsMatch) {
+		const wanted = "startercharacterscripts/" + characterScriptsMatch[1];
+		const found = scripts.find(file => file.root === "StarterPlayer" && normalizeOutputPath(file.relativePath).toLowerCase() === wanted);
+		if (found) return found;
+	}
+
+	for (const file of scripts) {
+		const full = normalizeOutputPath(file.root + "/" + file.relativePath).toLowerCase();
+		const rel = normalizeOutputPath(file.relativePath).toLowerCase();
+		const name = normalizeOutputPath(file.name).toLowerCase();
+		if (normalized === full || normalized.endsWith("/" + full) || normalized.includes("/" + full)) return file;
+		if (normalized === rel || normalized.endsWith("/" + rel) || normalized.includes("/" + rel)) return file;
+		if (name && normalized.endsWith("/" + name)) return file;
+	}
+
+	return null;
+}
+
+function extractOutputLineNumber(entry) {
+	const directLine = Number(entry && entry.line);
+	if (Number.isFinite(directLine) && directLine > 0) return directLine;
+
+	const text = [
+		entry && entry.message,
+		entry && entry.stackTrace,
+		entry && entry.scriptPath,
+		entry && entry.sourcePreview,
+	].filter(Boolean).join("\n");
+
+	const patterns = [
+		/line\s+(\d+)/i,
+		/Line\s+(\d+)/,
+		/:(\d+):\d+/,
+		/:(\d+)\b/,
+		/,\s*(?:line|Line)\s+(\d+)/,
+	];
+
+	for (const pattern of patterns) {
+		const match = text.match(pattern);
+		if (match) {
+			const line = Number(match[1]);
+			if (Number.isFinite(line) && line > 0) return line;
+		}
+	}
+
+	return 0;
+}
+
+async function openOutputEntry(entryIndex) {
+	const entry = state.outputEntries[entryIndex];
+	if (!entry) return;
+	const file = findScriptForOutputEntry(entry);
+	if (!file) {
+		showToast("Could not map this output line to a Cloud script yet.", "warning");
+		return;
+	}
+	const line = extractOutputLineNumber(entry);
+	await openFile(file, { focusEditor: true, lineNumber: line });
+	revealTabInExplorer(file.fileId);
+	if (line > 0) {
+		const focusTargetLine = () => state.editor && state.editor.focusLine(line, "primary");
+		requestAnimationFrame(focusTargetLine);
+		setTimeout(focusTargetLine, 60);
+		setTimeout(focusTargetLine, 180);
+	}
+}
+
+function getOutputContext(entry) {
+	const source = String(entry.source || entry.context || "Runtime").trim();
+	if (/client/i.test(source)) return "Client";
+	if (/server/i.test(source)) return "Server";
+	if (/plugin/i.test(source)) return "Plugin";
+	return source || "Runtime";
+}
+
+function getOutputFilteredEntries() {
+	const levelFilter = String(state.outputFilters.level || "all");
+	const contextFilter = String(state.outputFilters.context || "all");
+	const textFilter = String(state.outputFilters.text || "").trim().toLowerCase();
+	return state.outputEntries.filter(entry => {
+		const level = getOutputLevel(entry);
+		const context = getOutputContext(entry);
+		if (levelFilter !== "all" && level !== levelFilter) return false;
+		if (contextFilter !== "all" && context !== contextFilter) return false;
+		if (textFilter) {
+			const content = [entry.message, entry.scriptPath, entry.scriptName, entry.stackTrace, entry.sourcePreview, context, entry.player].filter(Boolean).join("\n").toLowerCase();
+			if (!content.includes(textFilter)) return false;
+		}
+		return true;
+	});
+}
+
+function outputLineNumber(entry) {
+	const line = Number(entry.line || 0);
+	const column = Number(entry.column || 0);
+	if (line > 0 && column > 0) return ":" + line + ":" + column;
+	if (line > 0) return ":" + line;
+	return "";
+}
+
+function renderOutputEntries() {
+	if (!refs.outputList) return;
+
+	if (state.outputEntries.length === 0) {
+		refs.outputList.innerHTML = '<div class="output-empty">' + escapeHtml(tx("outputEmpty")) + '</div>';
+		if (refs.outputStatus) refs.outputStatus.textContent = tx("outputWaiting");
+		return;
+	}
+
+	const filtered = getOutputFilteredEntries();
+	if (filtered.length === 0) {
+		refs.outputList.innerHTML = '<div class="output-empty">' + escapeHtml(tx("outputNoMatches")) + '</div>';
+		if (refs.outputStatus) refs.outputStatus.textContent = state.outputEntries.length + " captured, 0 visible.";
+		return;
+	}
+
+	const previousScrollTop = refs.outputList.scrollTop;
+	const wasNearBottom = refs.outputList.scrollHeight <= refs.outputList.clientHeight + 8 || refs.outputList.scrollTop + refs.outputList.clientHeight >= refs.outputList.scrollHeight - 32;
+	const visibleEntries = filtered.slice(-350);
+	const html = visibleEntries.map(entry => {
+		const entryIndex = state.outputEntries.indexOf(entry);
+		const level = getOutputLevel(entry);
+		const context = getOutputContext(entry);
+		const path = entry.scriptPath || [entry.root, entry.relativePath].filter(Boolean).join("/") || entry.scriptName || context || "Runtime";
+		const line = outputLineNumber(entry);
+		const stack = entry.stackTrace ? '<pre class="output-stack">' + escapeHtml(entry.stackTrace) + '</pre>' : "";
+		const preview = state.outputView.preview && entry.sourcePreview ? '<pre class="output-preview">' + escapeHtml(entry.sourcePreview) + '</pre>' : "";
+		const canOpen = findScriptForOutputEntry(entry) ? " can-open" : "";
+		const timestamp = state.outputView.timestamp ? '<span class="output-time">' + escapeHtml(formatOutputTime(entry.createdAt)) + '</span>' : "";
+		const contextHtml = state.outputView.context ? '<span class="output-context">' + escapeHtml(context) + '</span>' : "";
+		const sourceHtml = state.outputView.source ? '<button type="button" class="output-source" title="Open script at line">' + escapeHtml(path + line) + '</button>' : "";
+		return '<article class="output-line ' + level + canOpen + '" data-output-index="' + entryIndex + '">' +
+			'<div class="output-line-main">' +
+				timestamp +
+				'<span class="output-tag">[' + escapeHtml(level) + ']</span>' +
+				'<span class="output-text">' + escapeHtml(entry.message || "") + '</span>' +
+				sourceHtml +
+				contextHtml +
+			'</div>' + stack + preview +
+		'</article>';
+	}).join("");
+
+	refs.outputList.innerHTML = html;
+	for (const line of refs.outputList.querySelectorAll(".output-line[data-output-index]")) {
+		line.addEventListener("click", event => {
+			if (event.target.closest("pre") || event.target.closest("input") || event.target.closest("select")) return;
+			openOutputEntry(Number(line.dataset.outputIndex));
+		});
+	}
+	if (wasNearBottom) {
+		refs.outputList.scrollTop = refs.outputList.scrollHeight;
+	} else {
+		refs.outputList.scrollTop = previousScrollTop;
+	}
+	if (refs.outputStatus) {
+		const total = state.outputEntries.length;
+		refs.outputStatus.textContent = filtered.length === total ? total + " output entr" + (total === 1 ? "y" : "ies") + " captured." : filtered.length + " visible / " + total + " captured.";
+	}
+}
+
+async function pollOutputLogs(force = false) {
+	if (!hasConnection()) return;
+
+	try {
+		const data = await fetchOutputLogs(getAuth(), force ? 0 : state.lastOutputId, 250);
+		const entries = Array.isArray(data.entries) ? data.entries : [];
+		if (force) state.outputEntries = [];
+		if (entries.length > 0) {
+			const seen = new Set(state.outputEntries.map(entry => entry.id));
+			for (const entry of entries) {
+				if (!seen.has(entry.id)) state.outputEntries.push(entry);
+			}
+			state.outputEntries.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+			state.outputEntries = state.outputEntries.slice(-500);
+		}
+		state.lastOutputId = Math.max(state.lastOutputId, Number(data.lastOutputId) || 0);
+		renderOutputEntries();
+	} catch (error) {
+		if (refs.outputStatus) refs.outputStatus.textContent = error.message || "Output unavailable.";
+	}
+}
+
+function setOutputOpen(open) {
+	state.outputOpen = !!open;
+	if (refs.outputPanel) refs.outputPanel.classList.toggle("open", state.outputOpen);
+	if (refs.outputToggleButton) refs.outputToggleButton.classList.toggle("active", state.outputOpen);
+	if (refs.editorShell) refs.editorShell.closest(".main")?.classList.toggle("output-open", state.outputOpen);
+	if (state.outputOpen) {
+		applyOutputHeight();
+		pollOutputLogs(true);
+	}
+}
+
+function startOutputPolling() {
+	if (state.outputPollTimer) clearInterval(state.outputPollTimer);
+	state.outputPollTimer = setInterval(() => pollOutputLogs(false), 1200);
+}
+
+function stopOutputPolling() {
+	if (state.outputPollTimer) clearInterval(state.outputPollTimer);
+	state.outputPollTimer = null;
+}
+
+async function clearOutputPanel() {
+	if (!hasConnection()) return;
+	try {
+		await clearOutputLogs(getAuth());
+		state.outputEntries = [];
+		state.lastOutputId = 0;
+		renderOutputEntries();
+	} catch (error) {
+		showToast(error.message, "error");
+	}
+}
+
+function hideBootSplash() {
+	if (typeof window.__cloudHideBootSplash === "function") {
+		window.__cloudHideBootSplash();
+		return;
+	}
+
+	document.body.classList.remove("booting");
+	if (!refs.bootSplash) return;
+	refs.bootSplash.classList.add("hidden");
+	setTimeout(() => refs.bootSplash && refs.bootSplash.remove(), 240);
+}
+
+function startPolling() {
+	if (state.pollTimer) {
+		clearInterval(state.pollTimer);
+	}
+
+	state.pollTimer = setInterval(() => loadSessionFiles(false), FILES_POLL_INTERVAL);
+	startOutputPolling();
+}
+
+function getMaskedSessionId() {
+	const value = String(state.sessionId || "").trim();
+	if (!value) return "Session active";
+	return value.length > 6 ? value.slice(0, 3) + "••••" + value.slice(-3) : "Session active";
+}
+
+function syncConnectionModalMode() {
+	const connected = hasConnection();
+	if (refs.connectionDialog) refs.connectionDialog.classList.toggle("connected", connected);
+	if (refs.connectedSessionLabel) refs.connectedSessionLabel.textContent = connected ? getMaskedSessionId() : "Session active";
+	if (refs.cancelConnectionButton) refs.cancelConnectionButton.textContent = connected ? tx("done") : tx("cancel");
+	if (refs.connectionButton) refs.connectionButton.title = connected ? "Session options" : "Connect";
+}
+
+function openConnectionModal() {
+	syncConnectionModalMode();
+	refs.sessionInput.value = "";
+	refs.secretInput.value = "";
+	refs.connectionModal.classList.add("open");
+	setTimeout(() => {
+		if (hasConnection()) refs.disconnectButton.focus();
+		else refs.sessionInput.focus();
+	}, 30);
+}
+
+function closeConnectionModal() {
+	refs.connectionModal.classList.remove("open");
+}
+
+async function connectSession(idOverride = null, secretOverride = null) {
+	const id = String(idOverride !== null ? idOverride : refs.sessionInput.value).trim();
+	const secret = String(secretOverride !== null ? secretOverride : refs.secretInput.value).trim();
+
+	if (!id || !secret) {
+		showToast("Session ID and secret are required.", "warning");
+		return;
+	}
+
+	state.sessionId = id;
+	state.secret = secret;
+	sessionStorage.setItem(SESSION_STORAGE.sessionId, id);
+	sessionStorage.setItem(SESSION_STORAGE.secret, secret);
+
+	document.body.classList.add("session-loading");
+	if (refs.gateConnectButton) refs.gateConnectButton.textContent = "Entering Cloud...";
+	setStatus("Connecting privately...", "warning");
+	state.openTabs.clear();
+	state.currentFileId = "";
+	state.secondaryFileId = "";
+	state.activeGroup = "primary";
+	state.selectedKey = "";
+	state.selectedPayload = null;
+	if (state.editor) state.editor.setValue("", "primary");
+
+	const ok = await loadSessionFiles(true);
+	if (ok) {
+		await restoreWorkspaceState();
+		startPolling();
+		syncConnectionModalMode();
+		closeConnectionModal();
+		showToast("Workspace connected.", "success");
+	}
+	document.body.classList.remove("session-loading");
+	if (refs.gateConnectButton) refs.gateConnectButton.textContent = "Enter Cloud";
+}
+
+function disconnectSession() {
+	const workspaceKey = getWorkspaceStorageKey();
+	state.sessionId = "";
+	state.secret = "";
+	state.files = [];
+	state.filesById = new Map();
+	state.openTabs.clear();
+	state.currentFileId = "";
+	state.secondaryFileId = "";
+	state.activeGroup = "primary";
+	if (state.editor) state.editor.setSplit(false);
+	state.selectedKey = "";
+	state.selectedPayload = null;
+	state.selectedKeys.clear();
+	state.lastSelectedKey = "";
+	state.clipboard = { mode: "copy", items: [] };
+	sessionStorage.removeItem(SESSION_STORAGE.sessionId);
+	sessionStorage.removeItem(SESSION_STORAGE.secret);
+	try { localStorage.removeItem(workspaceKey); } catch (error) {}
+	if (refs.gateSessionInput) refs.gateSessionInput.value = "";
+	if (refs.gateSecretInput) refs.gateSecretInput.value = "";
+
+	if (state.pollTimer) clearInterval(state.pollTimer);
+	stopOutputPolling();
+	state.outputEntries = [];
+	state.lastOutputId = 0;
+	setOutputOpen(false);
+	if (state.editor) state.editor.setValue("", "primary");
+	updateConnectionUi(false, "Disconnected");
+	setStatus("Connection forgotten.", "warning");
+	renderTree();
+	renderTabs();
+	updateEditorHeader();
+	syncConnectionModalMode();
+	closeConnectionModal();
+}
+
+function getBestCreationParent() {
+	if (state.selectedPayload) {
+		return state.selectedPayload;
+	}
+
+	const current = state.openTabs.get(state.currentFileId);
+
+	if (current) {
+		return {
+			root: current.root,
+			relativePath: getParentPath(current.relativePath),
+			itemId: current.parentItemId || "",
+			label: current.root + "/" + getParentPath(current.relativePath),
+		};
+	}
+
+	return { root: "ServerScriptService", relativePath: "", itemId: "", label: "ServerScriptService" };
+}
+
+function openCreatePanel(parent, defaultClass = "Script") {
+	if (!hasConnection()) {
+		openConnectionModal();
+		showToast("Connect privately first.", "warning");
+		return;
+	}
+
+	state.pendingCreateParent = parent || getBestCreationParent();
+	state.selectedCreateClass = defaultClass;
+	refs.createLocation.textContent = "Parent: " + (state.pendingCreateParent.label || state.pendingCreateParent.root);
+	renderCreateTypes();
+	refs.createNameInput.value = getDefaultCreateName(state.selectedCreateClass);
+
+	const anchor = document.querySelector(".tree-row.selected") || refs.refreshButton;
+	const rect = anchor.getBoundingClientRect();
+	const left = Math.min(Math.max(rect.left + 12, 12), window.innerWidth - 310);
+	const top = Math.min(Math.max(rect.bottom + 8, 50), window.innerHeight - 330);
+	refs.createModal.style.setProperty("--create-x", left + "px");
+	refs.createModal.style.setProperty("--create-y", top + "px");
+	refs.createModal.classList.add("open");
+
+	setTimeout(() => refs.createNameInput.focus(), 20);
+}
+
+function closeCreatePanel() {
+	refs.createModal.classList.remove("open");
+	state.pendingCreateParent = null;
+}
+
+function renderCreateTypes() {
+	refs.typeGrid.innerHTML = "";
+
+	for (const type of CREATE_TYPES) {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.className = "type-card" + (type.className === state.selectedCreateClass ? " active" : "");
+		button.innerHTML = `<span class="type-icon">${svgIcon(type.icon)}</span><span class="type-copy"><strong>${escapeHtml(type.label)}</strong><span>${escapeHtml(type.description)}</span></span><span class="type-short">${escapeHtml(type.badge || type.className)}</span>`;
+		button.addEventListener("click", () => {
+			state.selectedCreateClass = type.className;
+			refs.createNameInput.value = getDefaultCreateName(type.className);
+			renderCreateTypes();
+			refs.createNameInput.focus();
+		});
+		refs.typeGrid.appendChild(button);
+	}
+}
+
+function getDefaultCreateName(className) {
+	const type = CREATE_TYPES.find(item => item.className === className);
+	return type ? type.defaultName : "Script";
+}
+
+function getSiblingItems(parent) {
+	if (!parent || !parent.root) return [];
+	const parentPath = parent.relativePath || "";
+	const parentId = parent.itemId || "";
+	return state.files.filter(item => {
+		if (item.root !== parent.root) return false;
+		if (parentId) return (item.parentItemId || "") === parentId;
+		return (item.parentRelativePath || "") === parentPath;
+	});
+}
+
+function getUniqueChildName(parent, baseName) {
+	const cleanBase = sanitizeName(baseName) || "Script";
+	const existing = new Set(getSiblingItems(parent).map(item => item.name));
+	if (!existing.has(cleanBase)) return cleanBase;
+	for (let index = 2; index < 500; index++) {
+		const candidate = cleanBase + " " + index;
+		if (!existing.has(candidate)) return candidate;
+	}
+	return cleanBase + " " + Date.now();
+}
+
+async function duplicateCurrentScript(group = state.activeGroup) {
+	if (!hasConnection()) return;
+	const fileId = getActiveFileId(group);
+	const tab = fileId ? state.openTabs.get(fileId) : null;
+	if (!tab || !isScriptClass(tab.className)) {
+		showToast("Open a script before duplicating it.", "warning");
+		return;
+	}
+
+	tab.source = state.editor.getValue(group);
+	const parentRelativePath = tab.parentRelativePath || getParentPath(tab.relativePath);
+	const parent = {
+		root: tab.root,
+		relativePath: parentRelativePath,
+		itemId: tab.parentItemId || "",
+		label: tab.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+	};
+	const name = getUniqueChildName(parent, tab.name + " Copy");
+
+	try {
+		setStatus("Duplicating " + tab.name + "...", "warning");
+		const data = await createRemoteItem(getAuth(), {
+			root: tab.root,
+			parentRelativePath,
+			parentItemId: tab.parentItemId || "",
+			className: tab.className,
+			name,
+			source: tab.source,
+		});
+		await loadSessionFiles(false);
+		if (data.item && isScriptItem(data.item)) await openFile(data.item);
+		showToast("Duplicated " + tab.name + ".", "success");
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+	}
+}
+
+async function createItem() {
+	const parent = state.pendingCreateParent || getBestCreationParent();
+	const className = state.selectedCreateClass;
+	const name = sanitizeName(refs.createNameInput.value);
+
+	if (!name) {
+		showToast("Name is required.", "warning");
+		refs.createNameInput.focus();
+		return;
+	}
+
+	try {
+		const data = await createRemoteItem(getAuth(), {
+			className,
+			name,
+			root: parent.root,
+			parentRelativePath: parent.relativePath || "",
+			parentItemId: parent.itemId || "",
+			source: getDefaultSourceForClass(className, name),
+		});
+
+		if (parent && parent.root) {
+			const parentKey = parent.itemId ? "item:" + parent.itemId : "root:" + parent.root;
+			state.expandedKeys.add(parentKey);
+			saveJson(STORAGE.expanded, Array.from(state.expandedKeys));
+		}
+
+		await loadSessionFiles(false);
+		closeCreatePanel();
+		showToast("Created " + className + " " + name + ".", "success");
+
+		if (data.item && isScriptItem(data.item)) {
+			await openFile(data.item);
+		} else if (data.item) {
+			state.selectedKey = "item:" + data.item.fileId;
+			state.selectedPayload = {
+				root: data.item.root,
+				relativePath: data.item.relativePath,
+				itemId: data.item.fileId,
+				label: data.item.root + "/" + data.item.relativePath,
+			};
+			renderTree();
+		}
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+	}
+}
+
+function getRenameTarget() {
+	if (state.selectedPayload && state.selectedPayload.itemId) {
+		return getLoadedFile(state.selectedPayload.itemId);
+	}
+
+	if (state.currentFileId) {
+		return getLoadedFile(state.currentFileId);
+	}
+
+	return null;
+}
+
+function startRenameSelected() {
+	const item = getRenameTarget();
+
+	if (!item) {
+		showToast("Select a script or folder to rename.", "warning");
+		return;
+	}
+
+	if (!item.fileId || !item.root || !item.relativePath) {
+		showToast("This item cannot be renamed.", "warning");
+		return;
+	}
+
+	state.renamingItemId = item.fileId;
+	state.renameStartedAt = Date.now();
+	state.selectedKey = "item:" + item.fileId;
+	state.selectedPayload = {
+		root: item.root,
+		relativePath: item.relativePath,
+		itemId: item.fileId,
+		label: item.root + "/" + item.relativePath,
+	};
+
+	renderTree();
+}
+
+async function renameItem(fileId, rawName) {
+	const item = getLoadedFile(fileId);
+	const newName = sanitizeName(rawName);
+	state.renamingItemId = "";
+	state.renameStartedAt = 0;
+
+	if (!item) {
+		showToast("Item no longer exists.", "warning");
+		renderTree();
+		return;
+	}
+
+	if (!newName) {
+		showToast("Name is required.", "warning");
+		renderTree();
+		return;
+	}
+
+	if (newName === item.name) {
+		renderTree();
+		return;
+	}
+
+	try {
+		const data = await moveRemoteItem(getAuth(), fileId, {
+			root: item.root,
+			parentRelativePath: item.parentRelativePath || getParentPath(item.relativePath),
+			parentItemId: item.parentItemId || "",
+			name: newName,
+		});
+
+		await loadSessionFiles(false);
+		const renamed = data.item || getLoadedFile(fileId);
+
+		if (renamed && renamed.fileId) {
+			state.selectedKey = "item:" + renamed.fileId;
+			state.selectedPayload = {
+				root: renamed.root,
+				relativePath: renamed.relativePath,
+				itemId: renamed.fileId,
+				label: renamed.root + "/" + renamed.relativePath,
+			};
+		}
+
+		showToast("Renamed to " + newName + ".", "success");
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+		renderTree();
+	}
+}
+
+async function moveItem(fileId, targetParent) {
+	if (!fileId || !targetParent || !hasConnection()) return;
+
+	const item = getLoadedFile(fileId);
+	if (!item) {
+		showToast("Item no longer exists.", "warning");
+		return;
+	}
+
+	if (isDescendantTarget(item, targetParent)) {
+		showToast("You cannot move an item inside itself.", "warning");
+		return;
+	}
+
+	if (item.root === targetParent.root && getParentPath(item.relativePath) === (targetParent.relativePath || "")) {
+		return;
+	}
+
+	try {
+		await moveRemoteItem(getAuth(), fileId, {
+			root: targetParent.root,
+			parentRelativePath: targetParent.relativePath || "",
+			parentItemId: targetParent.itemId || "",
+			name: item.name,
+		});
+
+		await loadSessionFiles(false);
+		showToast("Moved " + item.name + ".", "success");
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+	}
+}
+
+function getDeleteTargets() {
+	return getTopLevelItems(getSelectedItems(true));
+}
+
+function getDeleteTarget() {
+	return getDeleteTargets()[0] || null;
+}
+
+async function deleteSelectedItem() {
+	const items = getDeleteTargets();
+	if (items.length === 0) {
+		showToast("Select a script or folder first.", "warning");
+		return;
+	}
+
+	const title = items.length === 1 ? "Delete Item" : "Delete Items";
+	const message = items.length === 1
+		? "Delete " + items[0].className + " " + getFullPath(items[0]) + "? Descendant scripts/folders will also be removed."
+		: "Delete " + items.length + " selected items? Descendant scripts/folders will also be removed.";
+
+	const confirmed = await requestConfirm({
+		title,
+		message,
+		acceptText: "Delete",
+	});
+
+	if (!confirmed) return;
+
+	try {
+		const removedItems = [];
+		for (const item of items) {
+			const data = await deleteRemoteItem(getAuth(), item.fileId);
+			const removed = Array.isArray(data.removed) ? data.removed : [{ fileId: item.fileId }];
+			removedItems.push(...removed);
+		}
+
+		for (const removedItem of removedItems) {
+			if (state.openTabs.has(removedItem.fileId)) {
+				await closeTab(removedItem.fileId, true);
+			}
+		}
+
+		state.selectedKey = "";
+		state.selectedPayload = null;
+		state.selectedKeys.clear();
+		state.lastSelectedKey = "";
+		await loadSessionFiles(false);
+		showToast(items.length === 1 ? "Deleted " + items[0].name + "." : "Deleted " + items.length + " selected items.", "success");
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+	}
+}
+
+function getClipboardParent() {
+	const selected = state.selectedPayload && state.selectedPayload.itemId ? getLoadedFile(state.selectedPayload.itemId) : null;
+
+	if (selected && isContainerClass(selected.className)) {
+		return {
+			root: selected.root,
+			relativePath: selected.relativePath || "",
+			itemId: selected.fileId,
+			label: selected.root + "/" + selected.relativePath,
+		};
+	}
+
+	if (selected) {
+		const parentRelativePath = selected.parentRelativePath || getParentPath(selected.relativePath);
+		return {
+			root: selected.root,
+			relativePath: parentRelativePath,
+			itemId: selected.parentItemId || "",
+			label: selected.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+		};
+	}
+
+	return getBestCreationParent();
+}
+
+function copySelectedItems(cut = false) {
+	const items = getTopLevelItems(getSelectedItems(true)).filter(isClipboardItem);
+
+	if (items.length === 0) {
+		showToast("Select one or more scripts or folders first.", "warning");
+		return false;
+	}
+
+	state.clipboard = {
+		mode: cut ? "cut" : "copy",
+		items: items.map(item => ({
+			fileId: item.fileId,
+			name: item.name,
+			className: item.className,
+			root: item.root,
+			relativePath: item.relativePath,
+		})),
+	};
+
+	showToast((cut ? "Cut " : "Copied ") + items.length + (items.length === 1 ? " item." : " items."), "success");
+	return true;
+}
+
+function getChildItems(item) {
+	if (!item) return [];
+	return state.files
+		.filter(child => (child.parentItemId || "") === item.fileId)
+		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function getSourceForClipboard(item) {
+	if (!isScriptItem(item)) return "";
+
+	const tab = state.openTabs.get(item.fileId);
+	if (tab) {
+		if (item.fileId === state.currentFileId) tab.source = state.editor.getValue("primary");
+		if (item.fileId === state.secondaryFileId) tab.source = state.editor.getValue("secondary");
+		return tab.source || "";
+	}
+
+	const data = await fetchSource(getAuth(), item.fileId);
+	return data.source || "";
+}
+
+async function copyItemIntoParent(item, parent, nameOverride = "") {
+	const name = nameOverride || getUniqueChildName(parent, item.name + " Copy");
+	const source = await getSourceForClipboard(item);
+	const data = await createRemoteItem(getAuth(), {
+		className: item.className,
+		name,
+		root: parent.root,
+		parentRelativePath: parent.relativePath || "",
+		parentItemId: parent.itemId || "",
+		source,
+	});
+
+	const created = data.item || null;
+	if (created && isContainerClass(created.className)) {
+		const childParent = {
+			root: created.root,
+			relativePath: created.relativePath || "",
+			itemId: created.fileId,
+			label: created.root + "/" + created.relativePath,
+		};
+
+		for (const child of getChildItems(item)) {
+			if (isClipboardItem(child)) await copyItemIntoParent(child, childParent, child.name);
+		}
+	}
+
+	return created;
+}
+
+async function pasteClipboardItems() {
+	if (!hasConnection()) return false;
+	if (!state.clipboard.items || state.clipboard.items.length === 0) {
+		showToast("Copy or cut scripts first.", "warning");
+		return false;
+	}
+
+	const targetParent = getClipboardParent();
+	const topItems = state.clipboard.items
+		.map(entry => getLoadedFile(entry.fileId))
+		.filter(isClipboardItem);
+
+	if (topItems.length === 0) {
+		showToast("The copied items are no longer available.", "warning");
+		state.clipboard = { mode: "copy", items: [] };
+		return false;
+	}
+
+	try {
+		setStatus("Pasting " + topItems.length + " item(s)...", "warning");
+		let lastCreated = null;
+
+		if (state.clipboard.mode === "cut") {
+			for (const item of topItems) {
+				if (isDescendantTarget(item, targetParent)) {
+					showToast("Cannot move " + item.name + " inside itself.", "warning");
+					continue;
+				}
+
+				if (item.root === targetParent.root && (item.parentRelativePath || getParentPath(item.relativePath)) === (targetParent.relativePath || "")) {
+					continue;
+				}
+
+				await moveRemoteItem(getAuth(), item.fileId, {
+					root: targetParent.root,
+					parentRelativePath: targetParent.relativePath || "",
+					parentItemId: targetParent.itemId || "",
+					name: item.name,
+				});
+			}
+
+			state.clipboard = { mode: "copy", items: [] };
+		} else {
+			for (const item of topItems) {
+				lastCreated = await copyItemIntoParent(item, targetParent);
+			}
+		}
+
+		await loadSessionFiles(false);
+		if (lastCreated && isScriptItem(lastCreated)) await openFile(lastCreated);
+		showToast("Pasted " + topItems.length + (topItems.length === 1 ? " item." : " items."), "success");
+		return true;
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+		return false;
+	}
+}
+
+function getParentForItem(item) {
+	const parentRelativePath = item.parentRelativePath || getParentPath(item.relativePath);
+	return {
+		root: item.root,
+		relativePath: parentRelativePath,
+		itemId: item.parentItemId || "",
+		label: item.root + (parentRelativePath ? "/" + parentRelativePath : ""),
+	};
+}
+
+async function duplicateSelectedItems() {
+	if (!hasConnection()) return false;
+	const items = getTopLevelItems(getSelectedItems(true)).filter(isClipboardItem);
+
+	if (items.length === 0) {
+		showToast("Select one or more scripts or folders first.", "warning");
+		return false;
+	}
+
+	try {
+		setStatus("Duplicating " + items.length + " item(s)...", "warning");
+		let lastCreated = null;
+
+		for (const item of items) {
+			lastCreated = await copyItemIntoParent(item, getParentForItem(item));
+		}
+
+		await loadSessionFiles(false);
+		if (lastCreated && isScriptItem(lastCreated)) await openFile(lastCreated);
+		showToast("Duplicated " + items.length + (items.length === 1 ? " item." : " items."), "success");
+		return true;
+	} catch (error) {
+		showToast(error.message, "error");
+		setStatus(error.message, "error");
+		return false;
+	}
+}
+
+
+function openSettings() {
+	populateLanguageSelect(refs.languageInput, state.language);
+	applyInterfaceTheme(state.settings.interfaceTheme || DEFAULT_SETTINGS.interfaceTheme);
+	refs.fontFamilyInput.value = state.settings.fontFamily;
+	refs.fontSizeInput.value = state.settings.fontSize;
+	refs.autosaveInput.value = state.settings.autosaveMs;
+	refs.wordWrapInput.value = state.settings.wordWrap;
+	refs.editorThemeInput.value = state.settings.editorTheme || "cloud-dark";
+	refs.minimapInput.checked = !!state.settings.minimap;
+	refs.settingsModal.classList.add("open");
+	updateSettingsPreview();
+}
+
+function closeSettings() {
+	refs.settingsModal.classList.remove("open");
+}
+
+function applySettings() {
+	state.language = applyLanguage(refs.languageInput ? refs.languageInput.value : state.language);
+	if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	updateEntryPhrase(false);
+	updateEditorHeader();
+	state.settings = {
+		interfaceTheme: applyInterfaceTheme(refs.appearanceInput ? refs.appearanceInput.value : state.settings.interfaceTheme),
+		fontFamily: refs.fontFamilyInput.value.trim() || DEFAULT_SETTINGS.fontFamily,
+		fontSize: clamp(Number(refs.fontSizeInput.value) || DEFAULT_SETTINGS.fontSize, 10, 28),
+		autosaveMs: clamp(Number(refs.autosaveInput.value) || DEFAULT_SETTINGS.autosaveMs, 1000, 15000),
+		wordWrap: refs.wordWrapInput.value === "on" ? "on" : "off",
+		editorTheme: refs.editorThemeInput.value || "cloud-dark",
+		minimap: !!refs.minimapInput.checked,
+	};
+
+	saveJson(STORAGE.settings, state.settings);
+	state.editor.applySettings(state.settings);
+	closeSettings();
+	showToast(tx("settings") + " applied.", "success");
+}
+
+function resetSettings() {
+	state.settings = { ...DEFAULT_SETTINGS };
+	saveJson(STORAGE.settings, state.settings);
+	applyInterfaceTheme(state.settings.interfaceTheme);
+	state.editor.applySettings(state.settings);
+	openSettings();
+}
+
+function openProjectSearch() {
+	if (!hasConnection()) {
+		openConnectionModal();
+		return;
+	}
+	refs.projectSearchModal.classList.add("open");
+	refs.projectSearchStatus.textContent = "Search every script in the current project.";
+	setTimeout(() => { refs.projectSearchInput.focus(); refs.projectSearchInput.select(); }, 30);
+}
+
+function closeProjectSearch() {
+	refs.projectSearchModal.classList.remove("open");
+}
+
+function normalizeSearchText(value) {
+	return String(value || "").toLowerCase();
+}
+
+async function getSourceForSearch(file) {
+	if (state.projectSearchCache.has(file.fileId)) {
+		return state.projectSearchCache.get(file.fileId);
+	}
+
+	const openTab = state.openTabs.get(file.fileId);
+	if (openTab) {
+		state.projectSearchCache.set(file.fileId, openTab.source || "");
+		return openTab.source || "";
+	}
+
+	const data = await fetchSource(getAuth(), file.fileId);
+	const source = data.source || "";
+	state.projectSearchCache.set(file.fileId, source);
+	return source;
+}
+
+async function runProjectSearch() {
+	const query = refs.projectSearchInput.value.trim();
+	refs.projectSearchResults.innerHTML = "";
+
+	if (!query) {
+		refs.projectSearchStatus.textContent = "Type something to search.";
+		return;
+	}
+
+	const scripts = state.files.filter(isScriptItem);
+	const needle = normalizeSearchText(query);
+	const results = [];
+	refs.projectSearchStatus.textContent = "Searching " + scripts.length + " script(s)...";
+
+	for (const file of scripts) {
+		try {
+			const source = await getSourceForSearch(file);
+			const lines = source.split(/\r?\n/);
+			for (let index = 0; index < lines.length; index++) {
+				if (normalizeSearchText(lines[index]).includes(needle)) {
+					results.push({ file, lineNumber: index + 1, text: lines[index] });
+					if (results.length >= 150) break;
+				}
+			}
+		} catch (error) {
+			results.push({ file, lineNumber: 0, text: "Could not read file: " + error.message, error: true });
+		}
+
+		if (results.length >= 150) break;
+	}
+
+	refs.projectSearchStatus.textContent = results.length + " result(s) for \"" + query + "\"" + (results.length >= 150 ? " · limited to 150" : "");
+	renderProjectSearchResults(results);
+}
+
+function renderProjectSearchResults(results) {
+	refs.projectSearchResults.innerHTML = "";
+	if (results.length === 0) {
+		refs.projectSearchResults.innerHTML = '<div class="search-empty">No matches found.</div>';
+		return;
+	}
+
+	const fragment = document.createDocumentFragment();
+	for (const result of results) {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.className = "search-result" + (result.error ? " error" : "");
+		button.innerHTML = `
+			<div class="search-result-title">${escapeHtml(result.file.name)} <span>${escapeHtml(result.file.className)}</span></div>
+			<div class="search-result-path">${escapeHtml(result.file.root + "/" + result.file.relativePath)}${result.lineNumber ? ":" + result.lineNumber : ""}</div>
+			<code>${escapeHtml(result.text.trim() || " ")}</code>
+		`;
+		button.addEventListener("click", async () => {
+			await openFile(result.file);
+			closeProjectSearch();
+			if (result.lineNumber) state.editor.focusLine(result.lineNumber, "primary");
+		});
+		fragment.appendChild(button);
+	}
+	refs.projectSearchResults.appendChild(fragment);
+}
+
+function updateSettingsPreview() {
+	if (!refs.settingsPreview) return;
+	const themeName = refs.editorThemeInput.value || state.settings.editorTheme || DEFAULT_SETTINGS.editorTheme;
+	const fontSize = Number(refs.fontSizeInput.value) || DEFAULT_SETTINGS.fontSize;
+	const autosave = Number(refs.autosaveInput.value) || DEFAULT_SETTINGS.autosaveMs;
+	const minimapOn = !!refs.minimapInput.checked;
+	const wrapOn = refs.wordWrapInput.value === "on";
+
+	refs.settingsPreview.dataset.theme = themeName;
+	refs.settingsPreview.style.fontFamily = refs.fontFamilyInput.value || DEFAULT_SETTINGS.fontFamily;
+	refs.settingsPreview.style.fontSize = fontSize + "px";
+	refs.settingsPreviewMeta.textContent = "Lua · " + fontSize + "px · " + autosave + "ms";
+
+	if (refs.previewMinimap) refs.previewMinimap.classList.toggle("off", !minimapOn);
+	if (refs.previewMinimapBadge) refs.previewMinimapBadge.textContent = minimapOn ? "Minimap on" : "Minimap off";
+	if (refs.previewWrapBadge) refs.previewWrapBadge.textContent = wrapOn ? "Wrap on" : "Wrap off";
+
+	document.querySelectorAll("[data-theme-preset]").forEach(button => {
+		button.classList.toggle("active", button.dataset.themePreset === themeName);
+	});
+}
+
+function openBetaWarning(onContinue) {
+	if (!refs.betaWarningModal) {
+		if (typeof onContinue === "function") onContinue();
+		return;
+	}
+
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	applyLanguage(state.language);
+	refs.betaWarningModal.classList.add("open");
+	refs.betaWarningModal.dataset.waiting = "true";
+	refs.betaWarningModal._onContinue = onContinue || null;
+}
+
+function closeBetaWarning() {
+	if (!refs.betaWarningModal) return;
+	refs.betaWarningModal.classList.remove("open");
+	refs.betaWarningModal.dataset.waiting = "false";
+	const callback = refs.betaWarningModal._onContinue;
+	refs.betaWarningModal._onContinue = null;
+	if (typeof callback === "function") callback();
+}
+
+
+function openLearnModal() {
+	if (!refs.learnModal) return;
+	refs.learnModal.classList.add("open");
+}
+
+function closeLearnModal() {
+	if (!refs.learnModal) return;
+	refs.learnModal.classList.remove("open");
+}
+
+function getEntryPhrases() {
+	return [
+		t(state.language, "entryPhraseOne"),
+		t(state.language, "entryPhraseTwo"),
+		t(state.language, "entryPhraseThree"),
+		t(state.language, "entryPhraseFour"),
+	].filter(Boolean);
+}
+
+function updateEntryPhrase(next = false) {
+	if (!refs.entryPhraseText) return;
+	const phrases = getEntryPhrases();
+	if (phrases.length === 0) return;
+	if (next) state.entryPhraseIndex = (state.entryPhraseIndex + 1) % phrases.length;
+	else state.entryPhraseIndex = state.entryPhraseIndex % phrases.length;
+	refs.entryPhraseText.classList.add("changing");
+	setTimeout(() => {
+		refs.entryPhraseText.textContent = phrases[state.entryPhraseIndex];
+		refs.entryPhraseText.classList.remove("changing");
+	}, 170);
+}
+
+function bootEntryPhrases() {
+	if (!refs.entryPhraseText) return;
+	if (state.entryPhraseTimer) clearInterval(state.entryPhraseTimer);
+	state.entryPhraseIndex = 0;
+	refs.entryPhraseText.textContent = getEntryPhrases()[0] || "Welcome to Cloud, ready to build?";
+	state.entryPhraseTimer = setInterval(() => updateEntryPhrase(true), 3600);
+}
+
+function setupResizer() {
+	const saved = Number(localStorage.getItem(STORAGE.sidebar));
+	if (saved) {
+		document.documentElement.style.setProperty("--side-width", clamp(saved, 260, 620) + "px");
+	}
+
+	let dragging = false;
+
+	refs.resizer.addEventListener("mousedown", event => {
+		dragging = true;
+		document.body.classList.add("resizing");
+		event.preventDefault();
+	});
+
+	document.addEventListener("mousemove", event => {
+		if (!dragging) return;
+		const width = clamp(event.clientX, 260, 620);
+		document.documentElement.style.setProperty("--side-width", width + "px");
+		localStorage.setItem(STORAGE.sidebar, String(width));
+	});
+
+	document.addEventListener("mouseup", () => {
+		if (!dragging) return;
+		dragging = false;
+		document.body.classList.remove("resizing");
+	});
+}
+
+function handleEditorKeys(event, group = state.activeGroup) {
+	const key = event.key.toLowerCase();
+
+	if ((event.ctrlKey || event.metaKey) && key === "s") {
+		event.preventDefault();
+		event.stopPropagation();
+		saveCurrentFile(false, getActiveFileId(group));
+	}
+
+
+	if ((event.ctrlKey || event.metaKey) && key === "w") {
+		event.preventDefault();
+		event.stopPropagation();
+		const fileId = getActiveFileId(group);
+		if (fileId) closeTab(fileId);
+	}
+
+	if ((event.ctrlKey || event.metaKey) && event.shiftKey && key === "e") {
+		event.preventDefault();
+		event.stopPropagation();
+		foldActiveScript();
+	}
+
+	if ((event.ctrlKey || event.metaKey) && !event.shiftKey && key === "e") {
+		event.preventDefault();
+		event.stopPropagation();
+		unfoldActiveScript();
+	}
+
+	if ((event.ctrlKey || event.metaKey) && key === "i") {
+		event.preventDefault();
+		event.stopPropagation();
+		openCreatePanel(getBestCreationParent(), "Script");
+	}
+}
+
+function bindEvents() {
+	refs.loadButton.addEventListener("click", connectSession);
+	if (refs.gateConnectButton) refs.gateConnectButton.addEventListener("click", () => connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value));
+	if (refs.gateSessionInput) refs.gateSessionInput.addEventListener("keydown", event => { if (event.key === "Enter") connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value); });
+	if (refs.gateSecretInput) refs.gateSecretInput.addEventListener("keydown", event => { if (event.key === "Enter") connectSession(refs.gateSessionInput.value, refs.gateSecretInput.value); });
+	document.querySelectorAll(".open-learn-button").forEach(button => button.addEventListener("click", openLearnModal));
+	if (refs.openLearnButton) refs.openLearnButton.addEventListener("click", openLearnModal);
+	if (refs.closeLearnButton) refs.closeLearnButton.addEventListener("click", closeLearnModal);
+	if (refs.learnModal) refs.learnModal.addEventListener("click", event => { if (event.target === refs.learnModal) closeLearnModal(); });
+	refs.connectionButton.addEventListener("click", openConnectionModal);
+	refs.closeConnectionButton.addEventListener("click", closeConnectionModal);
+	refs.cancelConnectionButton.addEventListener("click", closeConnectionModal);
+	refs.disconnectButton.addEventListener("click", disconnectSession);
+	refs.refreshButton.addEventListener("click", () => loadSessionFiles(true));
+	if (refs.outputToggleButton) refs.outputToggleButton.addEventListener("click", () => setOutputOpen(!state.outputOpen));
+	if (refs.outputCloseButton) refs.outputCloseButton.addEventListener("click", () => setOutputOpen(false));
+	if (refs.outputRefreshButton) refs.outputRefreshButton.addEventListener("click", () => pollOutputLogs(true));
+	if (refs.outputClearButton) refs.outputClearButton.addEventListener("click", clearOutputPanel);
+	if (refs.outputLevelFilter) refs.outputLevelFilter.addEventListener("change", () => { state.outputFilters.level = refs.outputLevelFilter.value || "all"; renderOutputEntries(); });
+	if (refs.outputContextFilter) refs.outputContextFilter.addEventListener("change", () => { state.outputFilters.context = refs.outputContextFilter.value || "all"; renderOutputEntries(); });
+	if (refs.outputTextFilter) refs.outputTextFilter.addEventListener("input", () => { state.outputFilters.text = refs.outputTextFilter.value || ""; renderOutputEntries(); });
+	if (refs.outputDetailButton && refs.outputDetailMenu) {
+		refs.outputDetailButton.addEventListener("click", event => {
+			event.stopPropagation();
+			refs.outputDetailMenu.classList.toggle("open");
+			refs.outputDetailMenu.setAttribute("aria-hidden", refs.outputDetailMenu.classList.contains("open") ? "false" : "true");
+		});
+		document.addEventListener("click", event => {
+			if (!refs.outputDetailMenu.contains(event.target) && event.target !== refs.outputDetailButton && !refs.outputDetailButton.contains(event.target)) {
+				refs.outputDetailMenu.classList.remove("open");
+				refs.outputDetailMenu.setAttribute("aria-hidden", "true");
+			}
+		});
+	}
+	for (const [refName, key] of [["outputShowTimestamp", "timestamp"], ["outputShowContext", "context"], ["outputShowSource", "source"], ["outputShowPreview", "preview"]]) {
+		const input = refs[refName];
+		if (!input) continue;
+		input.addEventListener("change", () => { state.outputView[key] = !!input.checked; renderOutputEntries(); });
+	}
+	bindOutputResize();
+	refs.saveButton.addEventListener("click", () => saveCurrentFile(false));
+	if (refs.splitButton) refs.splitButton.addEventListener("click", () => splitTab(state.currentFileId));
+	refs.closeSplitButton.addEventListener("click", closeSplit);
+	refs.secondaryCloseButton.addEventListener("click", closeSplit);
+	refs.projectSearchButton.addEventListener("click", openProjectSearch);
+	refs.closeProjectSearchButton.addEventListener("click", closeProjectSearch);
+	refs.runProjectSearchButton.addEventListener("click", runProjectSearch);
+	refs.projectSearchInput.addEventListener("keydown", event => {
+		if (event.key === "Enter") runProjectSearch();
+		if (event.key === "Escape") closeProjectSearch();
+	});
+	for (const input of [refs.languageInput, refs.appearanceInput, refs.fontFamilyInput, refs.fontSizeInput, refs.autosaveInput, refs.wordWrapInput, refs.editorThemeInput, refs.minimapInput]) {
+		if (!input) continue;
+		input.addEventListener("input", updateSettingsPreview);
+		input.addEventListener("change", updateSettingsPreview);
+	}
+	document.querySelectorAll("[data-theme-preset]").forEach(button => {
+		button.addEventListener("click", () => {
+			refs.editorThemeInput.value = button.dataset.themePreset || "cloud-dark";
+			updateSettingsPreview();
+		});
+	});
+	refs.searchInput.addEventListener("input", renderTree);
+	refs.editorShell.addEventListener("dragover", event => {
+		const sourceId = state.draggingTabId || event.dataTransfer.getData("text/cloud-tab");
+		if (!sourceId || !state.openTabs.has(sourceId)) return;
+		event.preventDefault();
+		refs.splitDropHint.classList.add("visible");
+	});
+	refs.editorShell.addEventListener("dragleave", () => refs.splitDropHint.classList.remove("visible"));
+	refs.editorShell.addEventListener("drop", event => {
+		const sourceId = state.draggingTabId || event.dataTransfer.getData("text/cloud-tab");
+		refs.splitDropHint.classList.remove("visible");
+		if (!sourceId || !state.openTabs.has(sourceId)) return;
+		event.preventDefault();
+		const rect = refs.editorShell.getBoundingClientRect();
+		if (event.clientX > rect.left + rect.width * 0.45) splitTab(sourceId);
+	});
+	refs.sessionInput.addEventListener("keydown", event => {
+		if (event.key === "Enter") refs.secretInput.focus();
+	});
+	refs.secretInput.addEventListener("keydown", event => {
+		if (event.key === "Enter") connectSession();
+	});
+
+	refs.closeCreateButton.addEventListener("click", closeCreatePanel);
+	refs.cancelCreateButton.addEventListener("click", closeCreatePanel);
+	refs.confirmCreateButton.addEventListener("click", createItem);
+	refs.createNameInput.addEventListener("keydown", event => {
+		if (event.key === "Enter") createItem();
+		if (event.key === "Escape") closeCreatePanel();
+	});
+
+	refs.closeConfirmButton.addEventListener("click", () => closeConfirm(false));
+	refs.cancelConfirmButton.addEventListener("click", () => closeConfirm(false));
+	refs.acceptConfirmButton.addEventListener("click", () => closeConfirm(true));
+
+	refs.settingsButton.addEventListener("click", openSettings);
+	refs.closeSettingsButton.addEventListener("click", closeSettings);
+	refs.saveSettingsButton.addEventListener("click", applySettings);
+	refs.resetSettingsButton.addEventListener("click", resetSettings);
+	if (refs.languageInput) {
+		refs.languageInput.addEventListener("change", () => {
+			state.language = applyLanguage(refs.languageInput.value);
+			if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
+			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.gateLanguageSelect) {
+		refs.gateLanguageSelect.addEventListener("change", () => {
+			state.language = applyLanguage(refs.gateLanguageSelect.value);
+			if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
+			if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.betaLanguageSelect) {
+		refs.betaLanguageSelect.addEventListener("change", () => {
+			state.language = applyLanguage(refs.betaLanguageSelect.value);
+			populateLanguageSelect(refs.languageInput, state.language);
+			if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.appearanceInput) {
+		refs.appearanceInput.addEventListener("change", () => {
+			state.settings.interfaceTheme = applyInterfaceTheme(refs.appearanceInput.value);
+			saveJson(STORAGE.settings, state.settings);
+		});
+	}
+	if (refs.gateAppearanceSelect) {
+		refs.gateAppearanceSelect.addEventListener("change", () => {
+			state.settings.interfaceTheme = applyInterfaceTheme(refs.gateAppearanceSelect.value);
+			saveJson(STORAGE.settings, state.settings);
+		});
+	}
+	if (refs.betaContinueButton) refs.betaContinueButton.addEventListener("click", closeBetaWarning);
+
+	window.addEventListener("keydown", event => {
+		if (event.key === "Delete" && !isInputLike(event.target) && !isEditorEventTarget(event.target) && getDeleteTargets().length > 0) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			deleteSelectedItem();
+			return;
+		}
+
+		if (event.key === "F2" && !isInputLike(event.target)) {
+			event.preventDefault();
+			event.stopPropagation();
+			if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+			startRenameSelected();
+			return;
+		}
+		handleGlobalShortcut(event);
+	}, true);
+
+	window.addEventListener("beforeunload", event => {
+		saveWorkspaceState();
+		const hasDirtyTabs = Array.from(state.openTabs.values()).some(tab => tab.dirty);
+		if (!hasDirtyTabs) return;
+		event.preventDefault();
+		event.returnValue = "";
+	});
+
+	document.addEventListener("keydown", event => {
+		if (handleGlobalShortcut(event)) return;
+		const key = event.key.toLowerCase();
+
+		if ((event.ctrlKey || event.metaKey) && key === "s") {
+			event.preventDefault();
+			saveCurrentFile(false);
+		}
+
+		if ((event.ctrlKey || event.metaKey) && key === "w") {
+			event.preventDefault();
+			if (state.currentFileId) closeTab(state.currentFileId);
+		}
+
+		if ((event.ctrlKey || event.metaKey) && key === "i") {
+			event.preventDefault();
+			openCreatePanel(getBestCreationParent(), "Script");
+		}
+
+		if (event.key === "F2" && !isInputLike(event.target)) {
+			event.preventDefault();
+			startRenameSelected();
+		}
+
+		if (event.key === "Delete" && !isInputLike(event.target) && !isEditorEventTarget(event.target) && getDeleteTargets().length > 0) {
+			event.preventDefault();
+			deleteSelectedItem();
+		}
+
+		if (event.key === "Escape") {
+			closeProjectSearch();
+			closeLearnModal();
+			closeCreatePanel();
+			closeSettings();
+			closeConfirm(false);
+			if (refs.connectionModal.classList.contains("open") && hasConnection()) closeConnectionModal();
+		}
+	});
+}
+
+
+function createSafeEditorController() {
+	const fallback = refs.fallbackEditor || document.createElement("textarea");
+	const secondaryFallback = refs.fallbackEditorSecondary || fallback;
+	let primaryValue = fallback.value || "";
+	let secondaryValue = secondaryFallback.value || "";
+	return {
+		ready: false,
+		isSplit: false,
+		activeGroup: "primary",
+		getValue(group = "primary") { return group === "secondary" ? secondaryValue : primaryValue; },
+		setValue(value = "", group = "primary") {
+			if (group === "secondary") {
+				secondaryValue = value;
+				if (secondaryFallback) secondaryFallback.value = value;
+				return;
+			}
+			primaryValue = value;
+			if (fallback) fallback.value = value;
+		},
+		focus() { try { fallback.focus(); } catch (_) {} },
+		focusLine() { try { fallback.focus(); } catch (_) {} },
+		getViewState() { return { type: "fallback", selectionStart: 0, selectionEnd: 0, scrollTop: 0, scrollLeft: 0 }; },
+		applyViewState() {},
+		foldAll() {},
+		unfoldAll() {},
+		layout() {},
+		setSplit(enabled) {
+			this.isSplit = !!enabled;
+			if (refs.editorShell) refs.editorShell.classList.toggle("split", this.isSplit);
+		},
+		applySettings() {},
+	};
+}
+
+function bindEmergencyGateEvents() {
+	if (refs.gateConnectButton && !refs.gateConnectButton.dataset.cloudEmergencyBound) {
+		refs.gateConnectButton.dataset.cloudEmergencyBound = "true";
+		refs.gateConnectButton.addEventListener("click", () => connectSession(refs.gateSessionInput?.value || "", refs.gateSecretInput?.value || ""));
+	}
+	for (const input of [refs.gateSessionInput, refs.gateSecretInput]) {
+		if (!input || input.dataset.cloudEmergencyBound) continue;
+		input.dataset.cloudEmergencyBound = "true";
+		input.addEventListener("keydown", event => {
+			if (event.key === "Enter") connectSession(refs.gateSessionInput?.value || "", refs.gateSecretInput?.value || "");
+		});
+	}
+	document.querySelectorAll(".open-learn-button").forEach(button => {
+		if (button.dataset.cloudEmergencyBound) return;
+		button.dataset.cloudEmergencyBound = "true";
+		button.addEventListener("click", openLearnModal);
+	});
+	if (refs.closeLearnButton && !refs.closeLearnButton.dataset.cloudEmergencyBound) {
+		refs.closeLearnButton.dataset.cloudEmergencyBound = "true";
+		refs.closeLearnButton.addEventListener("click", closeLearnModal);
+	}
+	if (refs.gateLanguageSelect && !refs.gateLanguageSelect.dataset.cloudEmergencyBound) {
+		refs.gateLanguageSelect.dataset.cloudEmergencyBound = "true";
+		refs.gateLanguageSelect.addEventListener("change", () => {
+			state.language = applyLanguage(refs.gateLanguageSelect.value);
+			if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
+			updateEntryPhrase(false);
+			updateEditorHeader();
+		});
+	}
+	if (refs.gateAppearanceSelect && !refs.gateAppearanceSelect.dataset.cloudEmergencyBound) {
+		refs.gateAppearanceSelect.dataset.cloudEmergencyBound = "true";
+		refs.gateAppearanceSelect.addEventListener("change", () => {
+			state.settings.interfaceTheme = applyInterfaceTheme(refs.gateAppearanceSelect.value);
+			saveJson(STORAGE.settings, state.settings);
+		});
+	}
+	if (refs.settingsButton && !refs.settingsButton.dataset.cloudEmergencyBound) {
+		refs.settingsButton.dataset.cloudEmergencyBound = "true";
+		refs.settingsButton.addEventListener("click", openSettings);
+	}
+}
+
+function bootEditor() {
+	applyUiZoom(false);
+	try {
+		state.editor = createEditorController({
+		host: refs.monacoHost,
+		fallback: refs.fallbackEditor,
+		secondaryHost: refs.monacoHostSecondary,
+		secondaryFallback: refs.fallbackEditorSecondary,
+		shell: refs.editorShell,
+		settings: state.settings,
+		onChange: markCurrentDirty,
+		onFallbackKeyDown: handleEditorKeys,
+		onCursor(position, group) {
+			state.activeGroup = group || state.activeGroup;
+			if (Date.now() >= state.suppressViewStateSaveUntil) saveEditorViewForGroup(group);
+			refs.footerRight.textContent = "Ln " + position.lineNumber + ", Col " + position.column + " · Ctrl+S save · Ctrl+D duplicate · Ctrl+C/X/V scripts";
+			updateEditorHeader();
+		},
+		onActiveGroup: setActiveGroup,
+		onSave: group => saveCurrentFile(false, getActiveFileId(group)),
+		onClose: group => {
+			const fileId = getActiveFileId(group);
+			if (fileId) closeTab(fileId);
+		},
+		onCreate: () => openCreatePanel(getBestCreationParent(), "Script"),
+		onDuplicate: group => duplicateCurrentScript(group),
+		onRename: startRenameSelected,
+		onProjectSearch: openProjectSearch,
+		onFoldAll: foldActiveScript,
+		onUnfoldAll: unfoldActiveScript,
+		});
+	} catch (error) {
+		console.error("[Cloud] Editor boot failed. Fallback editor enabled:", error);
+		state.editor = createSafeEditorController();
+	}
+}
+
+function boot() {
+	const savedSession = sessionStorage.getItem(SESSION_STORAGE.sessionId) || "";
+	const savedSecret = sessionStorage.getItem(SESSION_STORAGE.secret) || "";
+
+	state.sessionId = savedSession;
+	state.secret = savedSecret;
+
+	applyInterfaceTheme(state.settings.interfaceTheme || DEFAULT_SETTINGS.interfaceTheme);
+	bootEntryPhrases();
+	setupResizer();
+	setupTabsWheelScroll();
+	try {
+		bindEvents();
+	} catch (error) {
+		console.error("[Cloud] Event binding failed. Emergency controls remain active:", error);
+		bindEmergencyGateEvents();
+	}
+	bootEditor();
+	if (refs.languageInput) populateLanguageSelect(refs.languageInput, state.language);
+	if (refs.gateLanguageSelect) populateLanguageSelect(refs.gateLanguageSelect, state.language);
+	if (refs.betaLanguageSelect) populateLanguageSelect(refs.betaLanguageSelect, state.language);
+	applyLanguage(state.language);
+	updateEntryPhrase(false);
+	renderTree();
+	updateEditorHeader();
+	updateConnectionUi(hasConnection(), hasConnection() ? "Connected" : "Disconnected");
+	syncConnectionModalMode();
+	setTimeout(hideBootSplash, 260);
+
+	if (hasConnection()) {
+		setTimeout(async () => {
+			const ok = await loadSessionFiles(true);
+			if (ok) {
+				await restoreWorkspaceState();
+				startPolling();
+			}
+		}, 150);
+	} else {
+		setTimeout(openConnectionModal, 150);
+	}
+}
+
+try {
+	boot();
+} catch (error) {
+	console.error("[Cloud] Boot failed:", error);
+	try { bindEmergencyGateEvents(); } catch (_) {}
+	if (!state.editor) state.editor = createSafeEditorController();
+	hideBootSplash();
+	try {
+		showToast("Cloud recovered from a boot error. Check the console for details.", "error");
+	} catch (_) {}
+}
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b

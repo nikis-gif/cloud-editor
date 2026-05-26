@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
 	"name": "cloud-editor-vscode",
 	"version": "2.0.0",
 	"description": "Cloud editor with a VS Code style workspace for Roblox Studio scripting.",
+=======
+	"name": "cloud-editor",
+	"version": "1.2.21",
+	"description": "Cloud - an integrated development environment for game scripting.",
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 	"private": true,
 	"main": "electron/main.js",
 	"author": "Niki",
@@ -10,11 +16,22 @@
 		"start": "node server.js",
 		"desktop": "electron .",
 		"dev:app": "electron .",
+<<<<<<< HEAD
 		"build:win": "electron-builder --win nsis --publish never"
 	},
 	"dependencies": {
 		"discord-rpc": "^4.0.1",
 		"electron-updater": "^6.3.9"
+=======
+		"build:win": "electron-builder --win nsis --publish never",
+		"build:app": "electron-builder",
+		"release": "electron-builder --win nsis --publish always",
+		"release:win": "electron-builder --win nsis --publish always"
+	},
+	"dependencies": {
+		"electron-updater": "^6.3.9",
+		"discord-rpc": "^4.0.1"
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 	},
 	"devDependencies": {
 		"electron": "^39.0.0",
@@ -32,13 +49,34 @@
 			"public/**/*",
 			"src/**/*",
 			"server.js",
+<<<<<<< HEAD
 			"package.json"
+=======
+			"package.json",
+			"public/assets/cloud-icon.ico",
+			"public/assets/cloud-icon.png",
+			"public/assets/cloud-logo.png"
+		],
+		"publish": [
+			{
+				"provider": "github",
+				"owner": "nikis-gif",
+				"repo": "cloud-editor",
+				"releaseType": "release"
+			}
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 		],
 		"win": {
 			"target": [
 				{
 					"target": "nsis",
+<<<<<<< HEAD
 					"arch": ["x64"]
+=======
+					"arch": [
+						"x64"
+					]
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 				}
 			],
 			"artifactName": "Cloud-Setup.${ext}",
@@ -51,7 +89,34 @@
 			"allowToChangeInstallationDirectory": true,
 			"createDesktopShortcut": true,
 			"createStartMenuShortcut": true,
+<<<<<<< HEAD
 			"shortcutName": "Cloud"
 		}
 	}
+=======
+			"shortcutName": "Cloud",
+			"installerIcon": "public/assets/cloud-icon.ico",
+			"uninstallerIcon": "public/assets/cloud-icon.ico",
+			"installerHeaderIcon": "public/assets/cloud-icon.ico"
+		},
+		"mac": {
+			"target": [
+				"dmg"
+			],
+			"category": "public.app-category.developer-tools"
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			],
+			"category": "Development"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/nikis-gif/cloud-editor.git"
+	},
+	"homepage": "https://github.com/nikis-gif/cloud-editor#readme"
+>>>>>>> 69bc47020a791f87c5543f97783fb08a51cd3d4b
 }
