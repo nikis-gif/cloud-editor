@@ -1,0 +1,57 @@
+{
+	"name": "cloud-editor-vscode",
+	"version": "2.0.0",
+	"description": "Cloud editor with a VS Code style workspace for Roblox Studio scripting.",
+	"private": true,
+	"main": "electron/main.js",
+	"author": "Niki",
+	"license": "UNLICENSED",
+	"scripts": {
+		"start": "node server.js",
+		"desktop": "electron .",
+		"dev:app": "electron .",
+		"build:win": "electron-builder --win nsis --publish never"
+	},
+	"dependencies": {
+		"discord-rpc": "^4.0.1",
+		"electron-updater": "^6.3.9"
+	},
+	"devDependencies": {
+		"electron": "^39.0.0",
+		"electron-builder": "^26.0.12"
+	},
+	"build": {
+		"appId": "com.cloud.editor",
+		"productName": "Cloud",
+		"asar": true,
+		"directories": {
+			"output": "dist"
+		},
+		"files": [
+			"electron/**/*",
+			"public/**/*",
+			"src/**/*",
+			"server.js",
+			"package.json"
+		],
+		"win": {
+			"target": [
+				{
+					"target": "nsis",
+					"arch": ["x64"]
+				}
+			],
+			"artifactName": "Cloud-Setup.${ext}",
+			"icon": "public/assets/cloud-icon.ico"
+		},
+		"nsis": {
+			"oneClick": false,
+			"perMachine": false,
+			"allowElevation": true,
+			"allowToChangeInstallationDirectory": true,
+			"createDesktopShortcut": true,
+			"createStartMenuShortcut": true,
+			"shortcutName": "Cloud"
+		}
+	}
+}

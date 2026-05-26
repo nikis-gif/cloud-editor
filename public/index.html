@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cloud</title>
+	<link rel="icon" type="image/png" href="/assets/cloud-logo.png">
+	<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+	<section id="sessionGate" class="session-gate">
+		<div class="gate-shell">
+			<div class="gate-preview">
+				<div class="gate-titlebar"><span></span><span></span><span></span></div>
+				<div class="gate-preview-body">
+					<div class="preview-activity"><i></i><i></i><i></i></div>
+					<div class="preview-sidebar">
+						<strong>EXPLORER</strong>
+						<p>ServerScriptService</p>
+						<p class="active">Main.server.lua</p>
+						<p>ReplicatedStorage</p>
+						<p>Shared.module.lua</p>
+					</div>
+					<div class="preview-editor"><pre><code>local Cloud = require(script.Cloud)
+
+Cloud:SyncScripts()
+Cloud.Output:Attach()
+Cloud.Editor:Open()</code></pre></div>
+				</div>
+			</div>
+			<form id="loginForm" class="login-card">
+				<img src="/assets/cloud-logo.png" alt="Cloud">
+				<h1>Cloud</h1>
+				<p>Connect your Roblox Studio session and edit scripts in a VS Code style cloud workspace.</p>
+				<label for="sessionInput">Session ID</label>
+				<input id="sessionInput" autocomplete="off" spellcheck="false" placeholder="Paste session ID">
+				<label for="secretInput">Secret</label>
+				<input id="secretInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste secret">
+				<button type="submit">Enter Workspace</button>
+				<span id="loginMessage"></span>
+			</form>
+		</div>
+	</section>
+	<main id="workbench" class="workbench hidden">
+		<header class="titlebar">
+			<div class="window-title"><img src="/assets/cloud-logo.png" alt="Cloud"><span>Cloud</span></div>
+			<div class="command-center"><span id="connectionDot"></span><button id="commandButton">Connected workspace</button></div>
+			<div class="title-actions"><button id="refreshButton">Refresh</button><button id="logoutButton">Disconnect</button></div>
+		</header>
+		<div class="workspace">
+			<nav class="activitybar">
+				<button id="explorerViewButton" class="active" title="Explorer">Files</button>
+				<button id="searchViewButton" title="Search">Find</button>
+			</nav>
+			<aside class="sidebar">
+				<section id="explorerView" class="side-view active">
+					<div class="side-header"><span>Explorer</span><button id="newScriptButton">New</button></div>
+					<div id="treeRoot" class="tree"></div>
+				</section>
+				<section id="searchView" class="side-view">
+					<div class="side-header"><span>Search</span></div>
+					<input id="searchInput" class="search-input" placeholder="Search codebase" spellcheck="false">
+					<div id="searchResults" class="search-results"></div>
+				</section>
+			</aside>
+			<section class="editor-area">
+				<div id="tabs" class="tabs"></div>
+				<div id="editorHost" class="editor-host"></div>
+				<div id="emptyEditor" class="empty-editor"><h2>Cloud Workspace</h2><p>Select a script from Explorer or search results.</p></div>
+			</section>
+		</div>
+		<section class="panel">
+			<div class="panel-header"><span>Terminal</span><div><button id="clearOutputButton">Clear</button><button id="togglePanelButton">Toggle</button></div></div>
+			<div id="outputList" class="output-list"></div>
+		</section>
+		<footer class="statusbar"><span id="statusLeft">Ready</span><span id="statusRight">Lua | Spaces: 4 | UTF-8</span></footer>
+	</main>
+	<div id="contextMenu" class="context-menu hidden"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+	<script src="/js/api.js"></script>
+	<script src="/js/editor.js"></script>
+	<script src="/js/app.js"></script>
+</body>
+</html>
